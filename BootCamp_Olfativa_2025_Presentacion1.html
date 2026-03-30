@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boot Camp Olfativa 2025 · Perfiles del Equipo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0a0f1e;color:#fff;height:100vh;overflow:hidden;user-select:none}
+
+/* ── DECK ── */
+.deck{width:100%;height:100vh;position:relative}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px;opacity:0;transition:opacity .35s}
+.slide.active{display:flex;opacity:1}
+
+/* ── NAV ── */
+.nav{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;z-index:100;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:40px;padding:8px 18px}
+.nav-btn{background:none;border:none;color:rgba(255,255,255,.7);font-size:18px;cursor:pointer;padding:2px 8px;transition:color .2s}
+.nav-btn:hover{color:#fff}
+.nav-dots{display:flex;gap:5px;align-items:center}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:all .2s}
+.dot.active{background:#fff;width:18px;border-radius:4px}
+.slide-counter{font-size:11px;color:rgba(255,255,255,.5);min-width:36px;text-align:center}
+
+/* ── PORTADA ── */
+.portada{background:linear-gradient(135deg,#0d1b2e 0%,#0a2240 50%,#0d1b2e 100%)}
+.portada-logo{width:72px;height:72px;border-radius:16px;background:linear-gradient(135deg,#1D9E75,#378ADD);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;margin-bottom:28px;letter-spacing:-1px}
+.portada h1{font-size:52px;font-weight:700;text-align:center;line-height:1.1;letter-spacing:-1px;margin-bottom:8px}
+.portada h1 span{background:linear-gradient(90deg,#1D9E75,#378ADD,#7F77DD);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.portada-sub{font-size:18px;color:rgba(255,255,255,.6);text-align:center;margin-bottom:40px}
+.portada-chips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:36px}
+.chip{font-size:12px;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7)}
+.portada-cta{font-size:13px;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:6px}
+
+/* ── PERFIL SLIDE ── */
+.perfil-slide{flex-direction:row;gap:0;padding:0;align-items:stretch;justify-content:flex-start}
+.perfil-left{width:320px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 36px;position:relative;overflow:hidden}
+.perfil-left::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.25)}
+.perfil-left-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center}
+.avatar-big{width:96px;height:96px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;color:#fff;margin-bottom:20px;border:3px solid rgba(255,255,255,.4)}
+.perfil-nombre{font-size:22px;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.2}
+.perfil-rol{font-size:12px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px}
+.perfil-cluster-badge{font-size:11px;padding:4px 12px;border-radius:12px;background:rgba(255,255,255,.2);color:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.3)}
+.perfil-right{flex:1;padding:44px 48px;display:flex;flex-direction:column;justify-content:center;background:#0c1220;overflow:hidden}
+.sp-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;opacity:.6}
+.sp-text{font-size:22px;font-weight:600;line-height:1.35;margin-bottom:32px}
+.section-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;opacity:.5;margin-bottom:10px}
+.fortalezas{display:flex;flex-direction:column;gap:8px;margin-bottom:28px}
+.fort-item{display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.4;color:rgba(255,255,255,.85)}
+.fort-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.contribucion{font-size:13.5px;line-height:1.6;color:rgba(255,255,255,.7);border-left:2px solid;padding-left:16px;margin-bottom:24px}
+.crecimiento-row{display:flex;align-items:flex-start;gap:10px;background:rgba(255,255,255,.05);border-radius:8px;padding:12px 16px;font-size:13px;color:rgba(255,255,255,.65);line-height:1.4}
+.cr-arrow{font-size:16px;flex-shrink:0;margin-top:1px}
+
+/* ── MAPA ── */
+.mapa-slide{background:#060d1a;flex-direction:column;padding:32px 48px}
+.mapa-title{font-size:13px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:8px;text-align:center}
+.mapa-h2{font-size:32px;font-weight:700;text-align:center;margin-bottom:32px}
+.clusters-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;width:100%;max-width:1100px}
+.cluster-card{border-radius:12px;padding:16px;border:1px solid}
+.cluster-card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;opacity:.85}
+.cluster-members{display:flex;flex-direction:column;gap:6px}
+.cluster-member{display:flex;align-items:center;gap:8px;font-size:12px}
+.cm-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;flex-shrink:0}
+.identidad{max-width:900px;text-align:center;margin-top:24px;padding:16px 28px;background:rgba(255,255,255,.05);border-radius:12px;border:1px solid rgba(255,255,255,.1)}
+.identidad p{font-size:14px;color:rgba(255,255,255,.7);line-height:1.6;font-style:italic}
+
+/* ── BG PATTERNS ── */
+.bg-circles{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.bg-circles span{position:absolute;border-radius:50%;opacity:.08}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- ══ PORTADA ══════════════════════════════════════════ -->
+<div class="slide portada active" id="s0">
+  <div class="bg-circles">
+    <span style="width:500px;height:500px;background:#1D9E75;top:-100px;left:-100px"></span>
+    <span style="width:400px;height:400px;background:#7F77DD;bottom:-80px;right:-80px"></span>
+    <span style="width:250px;height:250px;background:#378ADD;top:40%;left:40%"></span>
+  </div>
+  <div class="portada-logo">O</div>
+  <h1>El Equipo<br><span>Boot Camp 2025</span></h1>
+  <p class="portada-sub">Transformación Tecnológica · Olfativa · Mérida, Marzo 2025</p>
+  <div class="portada-chips">
+    <span class="chip">15 perfiles psicométricos</span>
+    <span class="chip">5 clusters de contribución</span>
+    <span class="chip">Implementación Microsoft 365</span>
+  </div>
+  <p class="portada-cta">→ Usa las flechas del teclado o los botones para navegar</p>
+</div>
+
+<!-- ══ PERFILES ══════════════════════════════════════════ -->
+<!-- Template repeated for each person -->
+
+<div class="slide perfil-slide" id="s1">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#0d5c3a,#1D9E75)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">CM</div>
+      <div class="perfil-nombre">Carolyn Masis Vega</div>
+      <div class="perfil-rol">BPO</div>
+      <div class="perfil-cluster-badge">Ejecutan y cierran</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#5DCAA5">"Convierte el caos en orden: cuando el proyecto se enreda, tú encuentras la ruta que todos pueden seguir."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#1D9E75"></span>Responsabilidad y cumplimiento — asumes compromisos sin necesitar supervisión externa.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#1D9E75"></span>Armonía y cohesión — reduces la fricción y facilitas que el equipo llegue a acuerdos.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#1D9E75"></span>Ejecución metódica bajo presión — conviertes procesos complejos en pasos claros.</div>
+    </div>
+    <div class="contribucion" style="border-color:#1D9E75">Tu presencia reduce la ansiedad colectiva ante el cambio porque das consistencia cuando todo parece moverse.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Desarrollar flexibilidad ante cambios de plan sin perder el hilo conductor.</div>
+  </div>
+</div>
+
+<div class="slide perfil-slide" id="s2">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#0e3a6e,#378ADD)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">EC</div>
+      <div class="perfil-nombre">Edwin Chan Naal</div>
+      <div class="perfil-rol">BPO</div>
+      <div class="perfil-cluster-badge">Analizan y diagnostican</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#85B7EB">"Ves lo que los datos esconden: diagnosticas el problema antes de que el equipo sepa que existe."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#378ADD"></span>Pensamiento analítico profundo — encuentras patrones e inconsistencias que otros pasan por alto.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#378ADD"></span>Diagnóstico técnico preciso — identificas la causa raíz antes de que escale.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#378ADD"></span>Aprendizaje continuo — tu curiosidad te mantiene actualizado ante cada reto nuevo.</div>
+    </div>
+    <div class="contribucion" style="border-color:#378ADD">El equipo necesita tu profundidad para no avanzar a ciegas en la implementación. Eres quien conecta los requerimientos técnicos con la realidad operativa.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Traducir insights técnicos en mensajes accesibles para perfiles no técnicos.</div>
+  </div>
+</div>
+
+<div class="slide perfil-slide" id="s3">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#0e3a6e,#378ADD)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">AJ</div>
+      <div class="perfil-nombre">Armando Jaramillo Remedios</div>
+      <div class="perfil-rol">BPO</div>
+      <div class="perfil-cluster-badge">Analizan y diagnostican</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#85B7EB">"El guardián del detalle: donde otros ven verde, tú ves el riesgo que nadie quiso notar."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#378ADD"></span>Deliberación y análisis de riesgos — evalúas cada ángulo antes de comprometerte.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#378ADD"></span>Precisión y atención al detalle — tu revisión convierte procesos en sistemas robustos.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#378ADD"></span>Pensamiento crítico estructurado — haces las preguntas difíciles que protegen al equipo.</div>
+    </div>
+    <div class="contribucion" style="border-color:#378ADD">Eres el guardián de la calidad del proceso: el que hace las preguntas difíciles antes de lanzar, el que revisa dos veces antes de confirmar.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Acelerar la decisión una vez que el análisis está suficientemente completo.</div>
+  </div>
+</div>
+
+<div class="slide perfil-slide" id="s4">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#0d5c3a,#1D9E75)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">MP</div>
+      <div class="perfil-nombre">Marcial Pérez González</div>
+      <div class="perfil-rol">Key User</div>
+      <div class="perfil-cluster-badge">Ejecutan y cierran</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#5DCAA5">"Hace que las cosas sucedan: transforma cualquier plan en acción concreta y resultados tangibles."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#1D9E75"></span>Orientación inmediata a resultados — tu energía se activa cuando hay un entregable que completar.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#1D9E75"></span>Responsabilidad y cumplimiento — lo que dices que harás, lo haces.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#1D9E75"></span>Empuje y persistencia — cuando hay obstáculos, tú mantienes el avance sin paralizarse.</div>
+    </div>
+    <div class="contribucion" style="border-color:#1D9E75">Eres el motor de arranque del equipo. Tu energía de cierre es clave en etapas de go-live donde se necesita velocidad sin perder el estándar.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Incorporar análisis previo antes de ejecutar para reducir retrabajo.</div>
+  </div>
+</div>
+
+<div class="slide perfil-slide" id="s5">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#0e3a6e,#378ADD)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">TG</div>
+      <div class="perfil-nombre">Tamara Guzmán Valdez</div>
+      <div class="perfil-rol">PMO</div>
+      <div class="perfil-cluster-badge">Analizan y diagnostican</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#85B7EB">"La brújula analítica: convierte datos complejos en claridad para que el equipo sepa dónde está parado."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#378ADD"></span>Síntesis y análisis — conviertes información dispersa en insights accionables.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#378ADD"></span>Pensamiento sistémico — ves cómo las partes del proyecto se afectan mutuamente.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#378ADD"></span>Comprensión profunda — no avanzas hasta entender bien el problema.</div>
+    </div>
+    <div class="contribucion" style="border-color:#378ADD">En tu rol de PMO, aportas la brújula que orienta al equipo cuando se pierde en el detalle operativo. Conviertes ambigüedad en claridad accionable.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Comunicar conclusiones con mayor velocidad cuando el contexto lo exige.</div>
+  </div>
+</div>
+
+<div class="slide perfil-slide" id="s6">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#0d5c3a,#1D9E75)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">HS</div>
+      <div class="perfil-nombre">Héctor Santamaría Dámaso</div>
+      <div class="perfil-rol">Key User</div>
+      <div class="perfil-cluster-badge">Ejecutan y cierran</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#5DCAA5">"El pilar de la constancia: mantiene el estándar alto cuando la presión baja la guardia de todos los demás."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#1D9E75"></span>Constancia y disciplina operativa — el mismo nivel de esfuerzo y calidad siempre.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#1D9E75"></span>Cumplimiento de compromisos — tu palabra es tu mejor indicador de gestión.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#1D9E75"></span>Estabilidad bajo presión — eres el punto fijo que da referencia cuando todo se mueve.</div>
+    </div>
+    <div class="contribucion" style="border-color:#1D9E75">Tu constancia le da confiabilidad al proyecto. Eres quien recuerda que la disciplina no es opcional sino el camino más corto a la calidad.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Desarrollar mayor proactividad para anticipar problemas antes de que lleguen.</div>
+  </div>
+</div>
+
+<div class="slide perfil-slide" id="s7">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#2a1a6e,#7F77DD)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">HC</div>
+      <div class="perfil-nombre">Herson Castro Rueda</div>
+      <div class="perfil-rol">Key User</div>
+      <div class="perfil-cluster-badge">Conectan y movilizan</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#AFA9EC">"El puente entre mundos: conecta personas y procesos que no sabían que se necesitaban."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#7F77DD"></span>Conexión interpersonal natural — construyes relaciones de confianza con rapidez.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#7F77DD"></span>Influencia positiva — tu presencia eleva la energía del grupo de forma natural.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#7F77DD"></span>Adaptación social — ajustas tu comunicación según la persona y el contexto.</div>
+    </div>
+    <div class="contribucion" style="border-color:#7F77DD">Las resistencias al cambio bajan cuando tú eres el puente entre las personas y el nuevo proceso. Haces que la adopción del sistema no dependa solo de la capacitación.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Mayor rigor en el seguimiento de compromisos adquiridos.</div>
+  </div>
+</div>
+
+<div class="slide perfil-slide" id="s8">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#4a2800,#BA7517)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">DK</div>
+      <div class="perfil-nombre">Diego Iván Kau Poot</div>
+      <div class="perfil-rol">Key User</div>
+      <div class="perfil-cluster-badge">Estructuran el método</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#FAC775">"El arquitecto de procesos: diseña sistemas que funcionan solos, sin depender de que todos recuerden todo."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#BA7517"></span>Diseño y estandarización — conviertes conocimiento tácito en flujos reproducibles.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#BA7517"></span>Liderazgo estructurado — roles definidos y pasos ordenados.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#BA7517"></span>Visión sistémica — diseñas pensando en cómo cada proceso conecta con los demás.</div>
+    </div>
+    <div class="contribucion" style="border-color:#BA7517">Cuando diseñas un flujo, el sistema funciona sin ti presente. Eso es exactamente lo que necesita una implementación escalable.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Flexibilidad para adaptar métodos cuando el contexto cambia rápido.</div>
+  </div>
+</div>
+
+<div class="slide perfil-slide" id="s9">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#4a2800,#BA7517)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">CM</div>
+      <div class="perfil-nombre">Christian Martínez Pacheco</div>
+      <div class="perfil-rol">Key User</div>
+      <div class="perfil-cluster-badge">Estructuran el método</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#FAC775">"Rigor con resultados: aplica método y precisión para que cada entregable tenga la calidad que el cliente espera."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#BA7517"></span>Orientación comercial — conectas la calidad técnica con el valor que el cliente percibe.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#BA7517"></span>Rigor metodológico — sigues el método sin saltarte pasos.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#BA7517"></span>Capacidad técnico-comercial — hablas con igual fluidez el idioma del proceso y del cliente.</div>
+    </div>
+    <div class="contribucion" style="border-color:#BA7517">El equipo te necesita para que los entregables no solo sean correctos sino relevantes. Garantizas que la implementación produzca valor de negocio real.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Integrar perspectiva humana para reducir resistencia al cambio.</div>
+  </div>
+</div>
+
+<div class="slide perfil-slide" id="s10">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#1a3d0a,#639922)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">EG</div>
+      <div class="perfil-nombre">Eisly Denisse García Pérez</div>
+      <div class="perfil-rol">BPO</div>
+      <div class="perfil-cluster-badge">Aseguran la calidad</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#97C459">"La garantía del equipo: donde pone los ojos, el error no pasa. Punto."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#639922"></span>Ojo crítico para la calidad — detectas errores que otros pasan por alto.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#639922"></span>Atención exhaustiva al detalle — revisas con la profundidad necesaria.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#639922"></span>Integridad y estándares altos — no firmas un entregable que no cumpla el estándar.</div>
+    </div>
+    <div class="contribucion" style="border-color:#639922">Tu ojo crítico es el último filtro que protege la reputación del equipo. Tu integridad con los estándares genera la confianza de que lo que se entrega es sólido.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Comunicar hallazgos de calidad con más empatía para generar apertura.</div>
+  </div>
+</div>
+
+<div class="slide perfil-slide" id="s11">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#1a3d0a,#639922)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">RB</div>
+      <div class="perfil-nombre">Rashit Burgos Balam</div>
+      <div class="perfil-rol">Key User</div>
+      <div class="perfil-cluster-badge">Aseguran la calidad</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#97C459">"El filtro de excelencia: asegura que lo que sale del equipo no solo funcione, sino que brille."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#639922"></span>Estándares de excelencia comercial — tu referencia de calidad es la experiencia del cliente.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#639922"></span>Rigor en criterios — defines umbrales de calidad claros y objetivos.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#639922"></span>Orientación al cliente final — cada decisión incluye la pregunta: ¿qué percibe el cliente?</div>
+    </div>
+    <div class="contribucion" style="border-color:#639922">Eres quien no acepta "suficientemente bueno" cuando el cliente merece excelente. El equipo te necesita para no bajar la guardia en las últimas etapas.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Tolerar la imperfección temporal en fases de prototipo.</div>
+  </div>
+</div>
+
+<div class="slide perfil-slide" id="s12">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#2a1a6e,#7F77DD)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">CL</div>
+      <div class="perfil-nombre">Cintya López Sosa</div>
+      <div class="perfil-rol">BPO</div>
+      <div class="perfil-cluster-badge">Conectan y movilizan</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#AFA9EC">"La chispa que enciende equipos: donde hay resistencia al cambio, creas apertura y entusiasmo genuino."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#7F77DD"></span>Liderazgo inspiracional — activas el deseo de comprometerse, no solo de cumplir.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#7F77DD"></span>Conexión emocional — haces que las personas se sientan vistas e importantes.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#7F77DD"></span>Activación del cambio — donde hay resistencia, creas apertura y luego entusiasmo.</div>
+    </div>
+    <div class="contribucion" style="border-color:#7F77DD">Tu capacidad de movilizar emocionalmente es uno de los activos más escasos en cualquier implementación. Eres quien hace que las personas quieran usar el nuevo sistema, no solo que tengan que hacerlo.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Mayor estructura en el seguimiento de compromisos que genera.</div>
+  </div>
+</div>
+
+<div class="slide perfil-slide" id="s13">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#2a1a6e,#7F77DD)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">KL</div>
+      <div class="perfil-nombre">Kriscia López Sosa</div>
+      <div class="perfil-rol">Key User</div>
+      <div class="perfil-cluster-badge">Conectan y movilizan</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#AFA9EC">"El corazón del equipo: crea el clima de confianza donde las personas se animan a dar lo mejor de sí."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#7F77DD"></span>Empatía y calidez relacional — percibes cómo se sienten las personas y generas seguridad.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#7F77DD"></span>Construcción de confianza — creas el clima donde las personas se arriesgan a aprender.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#7F77DD"></span>Cohesión emocional — recuerdas que detrás de cada proceso hay personas.</div>
+    </div>
+    <div class="contribucion" style="border-color:#7F77DD">El clima emocional puede ser la diferencia entre el éxito y el abandono del proyecto. Tú eres quien mantiene ese clima. Sin él, la implementación puede tener el mejor sistema y aún así fracasar.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Mayor asertividad para defender posiciones cuando el equipo lo necesita.</div>
+  </div>
+</div>
+
+<div class="slide perfil-slide" id="s14">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#0d5c3a,#1D9E75)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">KL</div>
+      <div class="perfil-nombre">Karla Mariela Lara Hernández</div>
+      <div class="perfil-rol">BPO / Directora de Proyecto</div>
+      <div class="perfil-cluster-badge">Ejecutan y cierran</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#5DCAA5">"Estructura que inspira: combina el orden de los procesos con la energía para llevar al equipo a la meta."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#1D9E75"></span>Liderazgo ejecutivo estructurado — combinas visión de proyecto con capacidad operativa.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#1D9E75"></span>Orientación a resultados con personas — foco en entregables sin perder de vista al equipo.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#1D9E75"></span>Disciplina y compromiso organizacional — tu nivel de compromiso establece el estándar.</div>
+    </div>
+    <div class="contribucion" style="border-color:#1D9E75">El equipo te mira para saber si van bien, y tu claridad ejecutiva les da la seguridad para avanzar con confianza. Sabes cuándo hay que cerrar y cuándo hay que escuchar.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Mayor disposición a delegar sin perder la calidad del entregable.</div>
+  </div>
+</div>
+
+<div class="slide perfil-slide" id="s15">
+  <div class="perfil-left" style="background:linear-gradient(160deg,#2d1600,#85500B)">
+    <div class="perfil-left-content">
+      <div class="avatar-big" style="background:rgba(255,255,255,.2)">AM</div>
+      <div class="perfil-nombre">Anthony Mandujano</div>
+      <div class="perfil-rol">Director General</div>
+      <div class="perfil-cluster-badge">Patrocinador Ejecutivo</div>
+    </div>
+  </div>
+  <div class="perfil-right">
+    <div class="sp-label">Superpoder</div>
+    <div class="sp-text" style="color:#FAC775">"Ves el destino antes que nadie, y enciendes el motor para que todos arranquen."</div>
+    <div class="section-label">Tus fortalezas clave</div>
+    <div class="fortalezas">
+      <div class="fort-item"><span class="fort-dot" style="background:#BA7517"></span>Visión estratégica y futurista — ves dónde debe estar la organización y diseñas el camino.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#BA7517"></span>Negociación e influencia ejecutiva — tu capacidad de persuadir abre puertas que otros no pueden.</div>
+      <div class="fort-item"><span class="fort-dot" style="background:#BA7517"></span>Motor de acción y decisión veloz — conviertes la visión en movimiento real.</div>
+    </div>
+    <div class="contribucion" style="border-color:#BA7517">Tu aportación más valiosa es la señal inequívoca de que la transformación tecnológica es una prioridad real. Cuando el equipo pierde el norte, tu presencia recalibra la dirección.</div>
+    <div class="crecimiento-row"><span class="cr-arrow">↗</span>Siguiente nivel: Rituales de seguimiento estructurado que complementen la velocidad de visión.</div>
+  </div>
+</div>
+
+<!-- ══ MAPA DEL EQUIPO ════════════════════════════════════ -->
+<div class="slide mapa-slide" id="s16">
+  <p class="mapa-title">Radiografía colectiva</p>
+  <h2 class="mapa-h2">El equipo de transformación Olfativa</h2>
+  <div class="clusters-grid">
+    <div class="cluster-card" style="background:rgba(29,158,117,.1);border-color:rgba(29,158,117,.3)">
+      <div class="cluster-card-title" style="color:#5DCAA5">⬡ Ejecutan y cierran</div>
+      <div class="cluster-members">
+        <div class="cluster-member"><div class="cm-avatar" style="background:#1D9E75">CM</div><span>Carolyn · BPO</span></div>
+        <div class="cluster-member"><div class="cm-avatar" style="background:#1D9E75">MP</div><span>Marcial · Key User</span></div>
+        <div class="cluster-member"><div class="cm-avatar" style="background:#1D9E75">HS</div><span>Héctor · Key User</span></div>
+        <div class="cluster-member"><div class="cm-avatar" style="background:#1D9E75">KL</div><span>Karla · Dir. Proy.</span></div>
+      </div>
+    </div>
+    <div class="cluster-card" style="background:rgba(55,138,221,.1);border-color:rgba(55,138,221,.3)">
+      <div class="cluster-card-title" style="color:#85B7EB">⬡ Analizan y diagnostican</div>
+      <div class="cluster-members">
+        <div class="cluster-member"><div class="cm-avatar" style="background:#378ADD">EC</div><span>Edwin · BPO</span></div>
+        <div class="cluster-member"><div class="cm-avatar" style="background:#378ADD">TG</div><span>Tamara · PMO</span></div>
+        <div class="cluster-member"><div class="cm-avatar" style="background:#378ADD">AJ</div><span>Armando · BPO</span></div>
+      </div>
+    </div>
+    <div class="cluster-card" style="background:rgba(127,119,221,.1);border-color:rgba(127,119,221,.3)">
+      <div class="cluster-card-title" style="color:#AFA9EC">⬡ Conectan y movilizan</div>
+      <div class="cluster-members">
+        <div class="cluster-member"><div class="cm-avatar" style="background:#7F77DD">CL</div><span>Cintya · BPO</span></div>
+        <div class="cluster-member"><div class="cm-avatar" style="background:#7F77DD">HC</div><span>Herson · Key User</span></div>
+        <div class="cluster-member"><div class="cm-avatar" style="background:#7F77DD">KL</div><span>Kriscia · Key User</span></div>
+      </div>
+    </div>
+    <div class="cluster-card" style="background:rgba(186,117,23,.1);border-color:rgba(186,117,23,.3)">
+      <div class="cluster-card-title" style="color:#FAC775">⬡ Estructuran el método</div>
+      <div class="cluster-members">
+        <div class="cluster-member"><div class="cm-avatar" style="background:#BA7517">DK</div><span>Diego · Key User</span></div>
+        <div class="cluster-member"><div class="cm-avatar" style="background:#BA7517">CM</div><span>Christian · Key User</span></div>
+      </div>
+    </div>
+    <div class="cluster-card" style="background:rgba(99,153,34,.1);border-color:rgba(99,153,34,.3)">
+      <div class="cluster-card-title" style="color:#97C459">⬡ Aseguran la calidad</div>
+      <div class="cluster-members">
+        <div class="cluster-member"><div class="cm-avatar" style="background:#639922">EG</div><span>Eisly · BPO</span></div>
+        <div class="cluster-member"><div class="cm-avatar" style="background:#639922">RB</div><span>Rashit · Key User</span></div>
+        <div class="cluster-member" style="margin-top:8px"><div class="cm-avatar" style="background:#85500B;width:30px;height:30px;font-size:10px">AM</div><span style="color:#FAC775;font-size:11px">Anthony · DG Patrocinador</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="identidad">
+    <p>"Un equipo que ejecuta con rigor, analiza con profundidad, conecta con autenticidad, estructura con inteligencia y garantiza con excelencia — todo al mismo tiempo. Eso es lo que hace posible una transformación real."</p>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- ══ NAV BAR ════════════════════════════════════════════ -->
+<nav class="nav">
+  <button class="nav-btn" id="prev" onclick="go(-1)">←</button>
+  <div class="nav-dots" id="dots"></div>
+  <button class="nav-btn" id="next" onclick="go(1)">→</button>
+  <span class="slide-counter" id="counter">1 / 17</span>
+</nav>
+
+<script>
+const TOTAL = 17;
+let cur = 0;
+
+const dots = document.getElementById('dots');
+for(let i=0;i<TOTAL;i++){
+  const d=document.createElement('span');
+  d.className='dot'+(i===0?' active':'');
+  d.onclick=()=>goTo(i);
+  dots.appendChild(d);
+}
+
+function goTo(n){
+  document.getElementById('s'+cur).classList.remove('active');
+  dots.children[cur].classList.remove('active');
+  cur=Math.max(0,Math.min(TOTAL-1,n));
+  document.getElementById('s'+cur).classList.add('active');
+  dots.children[cur].classList.add('active');
+  document.getElementById('counter').textContent=(cur+1)+' / '+TOTAL;
+}
+
+function go(d){ goTo(cur+d); }
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown') go(1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp') go(-1);
+});
+</script>
+</body>
+</html>
