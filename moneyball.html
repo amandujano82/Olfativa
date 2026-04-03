@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Moneyball · PRIME · Olfativa 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#060606;font-family:'DM Sans',sans-serif;color:#EDE8DC}
+
+/* ═══════════════════════════════
+   SLIDE SYSTEM — display none/flex
+═══════════════════════════════ */
+#deck{position:fixed;inset:0;z-index:1}
+.sl{
+  display:none;
+  position:absolute;
+  inset:0;
+  flex-direction:column;
+}
+.sl.on{
+  display:flex;
+  animation:fadeIn .35s ease forwards;
+}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateX(16px)}
+  to{opacity:1;transform:none}
+}
+
+/* ═══════════════════════════════
+   UI CHROME
+═══════════════════════════════ */
+#bar{position:fixed;top:0;left:0;height:2px;background:#C8922A;z-index:99;transition:width .4s;pointer-events:none}
+#ctr{position:fixed;top:16px;right:20px;font-size:10px;letter-spacing:.2em;color:#333;z-index:99;text-transform:uppercase}
+#nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:99;display:flex;align-items:center;gap:12px}
+.nb{width:32px;height:32px;border-radius:50%;border:1px solid #222;background:rgba(0,0,0,.7);color:#555;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.nb:hover{border-color:#C8922A;color:#C8922A}
+#dots{display:flex;gap:5px;align-items:center}
+.dot{width:4px;height:4px;border-radius:50%;background:#222;cursor:pointer;transition:all .3s}
+.dot.d{background:#5a3a10}
+.dot.a{background:#C8922A;width:16px;border-radius:2px}
+
+/* ═══════════════════════════════
+   PAUSE OVERLAY
+═══════════════════════════════ */
+#pov{
+  position:fixed;inset:0;z-index:80;
+  background:rgba(0,0,0,.96);
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+}
+#pov.on{display:flex}
+.p-ico{font-size:30px}
+.p-t{font-family:'Bebas Neue';font-size:clamp(44px,6vw,72px);letter-spacing:.08em;color:#EDE8DC}
+.p-s{font-size:clamp(14px,1.5vw,17px);color:#7a7060;font-weight:300;text-align:center;max-width:500px;line-height:1.7}
+.p-d{margin-top:6px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#7a5618;cursor:pointer;border:1px solid #7a5618;padding:8px 22px;border-radius:3px;transition:all .2s}
+.p-d:hover{color:#C8922A;border-color:#C8922A}
+
+/* ═══════════════════════════════
+   SHARED HELPERS
+═══════════════════════════════ */
+.bg-img{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0}
+.overlay{position:absolute;inset:0;z-index:1}
+.content{position:relative;z-index:2;padding:6vh 7vw;display:flex;flex-direction:column;justify-content:center;height:100%}
+
+.tag{display:inline-flex;font-size:9px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;padding:3px 9px;border-radius:2px;border:.5px solid;line-height:1.7}
+.t-time{background:#120d04;border-color:#3a2008;color:#d4a040}
+.t-pause{background:#1a1008;border-color:#7a5618;color:#C8922A}
+.t-a{background:#05101a;border-color:#0d2840;color:#5aabdf}
+.t-d{background:#130806;border-color:#301208;color:#e07055}
+.t-k{background:#040e08;border-color:#0a2816;color:#4dc88a}
+.t-ab{background:#120d04;border-color:#2c1f08;color:#d4a040}
+.t-r{background:#0a0814;border-color:#1c1436;color:#9a82d8}
+.t-ia{background:#08100f;border-color:#0a2422;color:#45b8b0}
+
+.tags{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+.scene-label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#555;font-style:italic;margin-left:4px}
+
+/* Big section heading */
+.s-heading{font-family:'Bebas Neue';font-size:clamp(28px,4vw,54px);letter-spacing:.05em;color:#EDE8DC;line-height:1.05}
+.s-heading em{color:#C8922A;font-style:normal}
+
+/* Body text */
+.body-txt{font-size:clamp(13px,1.3vw,16px);color:#8a8070;font-weight:300;line-height:1.7}
+
+/* THE QUESTION — always this style, always visible */
+.THE-QUESTION{
+  font-family:'Playfair Display';
+  font-size:clamp(22px,3vw,42px);
+  color:#FFFFFF;
+  font-style:italic;
+  line-height:1.35;
+}
+.THE-QUESTION em{color:#E8B84B;font-style:normal}
+
+/* Instruction pill */
+.inst{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#2a2420;border-top:.5px solid #161616;padding-top:14px;margin-top:auto}
+
+/* Do-block */
+.do-block{background:#0d0d0d;border:.5px solid #1a1a1a;border-radius:6px;padding:13px 16px}
+.do-lbl{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#4a4438;margin-bottom:7px}
+.do-row{display:flex;gap:9px;align-items:flex-start;font-size:clamp(12px,1.1vw,14px);color:#5a5448;font-weight:300;line-height:1.55;margin-bottom:5px}
+.do-dot{width:3px;height:3px;border-radius:50%;background:#5a3a10;margin-top:5px;flex-shrink:0}
+
+/* Two columns */
+.two-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.col{border-radius:8px;padding:20px 18px;border:.5px solid;display:flex;flex-direction:column;gap:10px}
+.col.blue{background:rgba(90,171,223,.06);border-color:rgba(90,171,223,.18)}
+.col.red{background:rgba(224,112,85,.06);border-color:rgba(224,112,85,.18)}
+.col-lbl{font-size:9px;letter-spacing:.18em;text-transform:uppercase;font-weight:500}
+.col.blue .col-lbl{color:#5aabdf}
+.col.red .col-lbl{color:#e07055}
+.col-main{font-family:'Playfair Display';font-size:clamp(16px,1.9vw,26px);color:#EDE8DC;font-style:italic;line-height:1.3}
+.col-note{font-size:clamp(12px,1.1vw,14px);color:#6a6058;font-weight:300;line-height:1.5}
+
+/* Divider line */
+.divider{height:.5px;background:#141414;margin:16px 0}
+
+/* Fill blank */
+.fill-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:5px}
+.fill-n{font-family:'Bebas Neue';font-size:clamp(17px,2vw,24px);color:#5a3a10;width:24px;flex-shrink:0;line-height:1.4}
+.fill-pre{font-family:'Playfair Display';font-size:clamp(18px,2.3vw,32px);color:#EDE8DC;font-style:italic;line-height:1.4}
+.fill-blank{font-family:'Playfair Display';font-size:clamp(18px,2.3vw,32px);color:#C8922A;border-bottom:1.5px solid rgba(200,146,42,.4);padding:0 14px;min-width:clamp(120px,16vw,240px);display:inline-block;font-style:italic;line-height:1.4}
+
+/* Mirror cards */
+.mirror-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.mc{background:rgba(255,255,255,.025);border:.5px solid #181818;border-radius:7px;padding:15px 13px;display:flex;flex-direction:column;gap:7px}
+.mc-name{font-family:'Playfair Display';font-size:clamp(13px,1.3vw,17px);color:#EDE8DC;font-weight:700}
+.mc-sep{height:.5px;background:#1a1a1a}
+.mc-lbl{font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#5a3a10}
+.mc-item{display:flex;gap:7px;align-items:flex-start}
+.mc-dot{width:3px;height:3px;border-radius:50%;background:#3a2808;margin-top:5px;flex-shrink:0}
+.mc-txt{font-size:clamp(10px,.95vw,12px);color:#6a6058;font-weight:300;line-height:1.45}
+
+/* Plenaria */
+.pl-col{display:flex;flex-direction:column;gap:10px}
+.pl-lbl{font-size:9px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;padding-bottom:8px;border-bottom:.5px solid #161616}
+.pl-lbl.gold{color:#C8922A}
+.pl-lbl.teal{color:#45b8b0}
+.pq{display:flex;gap:10px;align-items:flex-start}
+.pq-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;margin-top:8px}
+.pq-dot.gold{background:#5a3a10}
+.pq-dot.teal{background:#0a3028}
+.pq-txt{font-size:clamp(14px,1.5vw,19px);font-weight:300;line-height:1.5;color:#EDE8DC}
+.pq-txt.dim{color:#7a7060}
+
+/* ═══════════════════════════════════════════
+   SLIDE 0 — COVER
+═══════════════════════════════════════════ */
+#s0{position:relative;overflow:hidden}
+#s0 .bg-img{filter:brightness(.4) contrast(1.1)}
+#s0 .overlay{background:linear-gradient(115deg,rgba(6,6,6,.97) 48%,rgba(6,6,6,.3))}
+#s0 .ct{position:relative;z-index:2;padding:9vh 8vw;display:flex;flex-direction:column;justify-content:center;height:100%}
+.cv-ghost{font-family:'Bebas Neue';font-size:clamp(180px,32vw,400px);color:rgba(255,255,255,.022);position:absolute;right:-2vw;bottom:-5vh;line-height:1;user-select:none;pointer-events:none;z-index:1}
+.cv-vline{position:absolute;right:0;top:0;bottom:0;width:.5px;background:linear-gradient(to bottom,transparent,rgba(200,146,42,.4),transparent);z-index:2}
+.cv-kbd{position:absolute;bottom:4vh;right:7vw;font-size:10px;color:#1e1c18;letter-spacing:.15em;text-transform:uppercase;z-index:3}
+.cv-over{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:#C8922A;margin-bottom:2.5vh}
+.cv-h{font-family:'Bebas Neue';font-size:clamp(82px,16vw,210px);line-height:.88;letter-spacing:.02em}
+.cv-h em{color:#C8922A;font-style:normal}
+.cv-sub{margin-top:4vh;font-size:clamp(14px,1.5vw,18px);color:rgba(237,232,220,.4);font-weight:300;max-width:480px;line-height:1.8}
+
+/* ═══════════════════════════════════════════
+   SLIDE 1 — AI CONTEXT
+═══════════════════════════════════════════ */
+#s1{background:#060606;justify-content:center;padding:6vh 7vw;gap:0}
+.ai-over{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:#C8922A;margin-bottom:12px}
+.ai-h{font-family:'Bebas Neue';font-size:clamp(30px,4.5vw,58px);letter-spacing:.05em;color:#EDE8DC;line-height:1;margin-bottom:28px}
+.ai-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.ai-card{border-radius:8px;padding:22px 18px;display:flex;flex-direction:column;gap:10px;border:.5px solid}
+.ai-card.c1{background:rgba(90,171,223,.06);border-color:rgba(90,171,223,.18)}
+.ai-card.c2{background:rgba(200,146,42,.06);border-color:rgba(200,146,42,.18)}
+.ai-card.c3{background:rgba(154,130,216,.06);border-color:rgba(154,130,216,.18)}
+.ai-card.c4{background:rgba(69,184,176,.06);border-color:rgba(69,184,176,.18)}
+.ai-src{font-size:9px;letter-spacing:.16em;text-transform:uppercase;font-weight:500}
+.ai-card.c1 .ai-src{color:#5aabdf}
+.ai-card.c2 .ai-src{color:#C8922A}
+.ai-card.c3 .ai-src{color:#9a82d8}
+.ai-card.c4 .ai-src{color:#45b8b0}
+.ai-num{font-family:'Bebas Neue';font-size:clamp(34px,4.5vw,56px);line-height:1;color:#EDE8DC}
+.ai-txt{font-size:clamp(12px,1.2vw,14px);color:#7a7060;font-weight:300;line-height:1.55}
+.ai-bottom{display:flex;align-items:center;justify-content:space-between;border-top:.5px solid #161616;padding-top:16px;gap:20px}
+.ai-foot-q{font-family:'Playfair Display';font-size:clamp(15px,1.7vw,21px);color:#EDE8DC;font-style:italic;flex:1}
+.ai-foot-tag{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#5a3a10;border:.5px solid #2a1808;padding:7px 14px;border-radius:3px;white-space:nowrap}
+
+/* ═══════════════════════════════════════════
+   SLIDE 2 — LOS SCOUTS
+═══════════════════════════════════════════ */
+#s2{background:#060606;justify-content:center;padding:5.5vh 7vw;gap:20px}
+
+/* ═══════════════════════════════════════════
+   SLIDE 3 — PETER BRAND
+═══════════════════════════════════════════ */
+#s3{position:relative;overflow:hidden}
+#s3 .bg-img{filter:brightness(.25) saturate(.4)}
+#s3 .overlay{background:linear-gradient(to right,rgba(6,6,6,.97) 58%,rgba(6,6,6,.45))}
+#s3 .content{max-width:66%;gap:22px}
+.pt-q-box{border-left:2px solid #5a3a10;padding-left:20px}
+.pt-q-lbl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5a3a10;margin-bottom:8px}
+.ai-inline{background:rgba(200,146,42,.05);border:.5px solid rgba(200,146,42,.15);border-radius:6px;padding:12px 16px}
+.ai-inline-lbl{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#7a5618;margin-bottom:5px}
+.ai-inline-txt{font-size:clamp(12px,1.2vw,14px);color:#7a6040;font-weight:300;line-height:1.55}
+
+/* ═══════════════════════════════════════════
+   SLIDE 4 — EL PROCESO
+═══════════════════════════════════════════ */
+#s4{background:#060606;justify-content:center;padding:5.5vh 8vw;gap:22px}
+
+/* ═══════════════════════════════════════════
+   SLIDE 5 — ART HOWE (full drama)
+═══════════════════════════════════════════ */
+#s5{position:relative;overflow:hidden;align-items:center;justify-content:center}
+#s5 .bg-img{filter:brightness(.22) saturate(.3)}
+#s5 .overlay{background:rgba(6,6,6,.55)}
+#s5 .content{align-items:center;justify-content:center;text-align:center;gap:28px}
+.art-q{font-family:'Playfair Display';font-size:clamp(44px,8vw,108px);color:#FFFFFF;font-style:italic;line-height:1.08}
+.art-q em{color:#E8B84B;font-style:normal}
+.art-hint{font-size:clamp(11px,1.1vw,14px);color:rgba(237,232,220,.25);letter-spacing:.2em;text-transform:uppercase}
+.art-ai-box{background:rgba(224,112,85,.06);border:.5px solid rgba(224,112,85,.18);border-radius:6px;padding:12px 24px;max-width:600px}
+.art-ai-txt{font-size:clamp(12px,1.2vw,15px);color:rgba(224,112,85,.55);font-weight:300;line-height:1.6}
+
+/* ═══════════════════════════════════════════
+   SLIDE 6 — LA PREGUNTA EQUIVOCADA
+═══════════════════════════════════════════ */
+#s6{background:#060606;justify-content:center;padding:5.5vh 7vw;gap:20px}
+
+/* ═══════════════════════════════════════════
+   SLIDE 7 — ¿CREES EN ESTO?
+═══════════════════════════════════════════ */
+#s7{position:relative;overflow:hidden;align-items:center;justify-content:center}
+#s7 .bg-img{filter:brightness(.22) saturate(.35)}
+#s7 .overlay{background:rgba(6,6,6,.52)}
+#s7 .content{align-items:center;justify-content:center;text-align:center;gap:30px}
+.cr-q{font-family:'Playfair Display';font-size:clamp(48px,9vw,116px);color:#FFFFFF;font-style:italic;line-height:1.05}
+.cr-q em{color:#E8B84B;font-style:normal}
+.cr-box{background:rgba(10,10,10,.75);border:.5px solid #222;border-radius:6px;padding:13px 26px;backdrop-filter:blur(8px)}
+.cr-inst{font-size:clamp(13px,1.3vw,16px);color:#6a6058;font-weight:300;line-height:1.6}
+
+/* ═══════════════════════════════════════════
+   SLIDE 8 — LA RACHA
+═══════════════════════════════════════════ */
+#s8{position:relative;overflow:hidden;align-items:flex-end;padding:0 7vw 9vh}
+#s8 .bg-img{filter:brightness(.3) saturate(.6)}
+#s8 .overlay{background:linear-gradient(to top,rgba(6,6,6,.98) 40%,rgba(6,6,6,.1))}
+#s8 .content{position:relative;z-index:2;padding:0;height:auto;display:grid;grid-template-columns:1fr 1fr;gap:5vw;align-items:end;width:100%}
+.ra-h{font-family:'Bebas Neue';font-size:clamp(50px,8.5vw,112px);line-height:.9;color:#EDE8DC}
+.ra-h em{color:#C8922A}
+.ra-why{font-size:clamp(13px,1.3vw,16px);color:#6a6058;font-weight:300;line-height:1.65;margin-top:14px}
+.ra-steps{display:flex;flex-direction:column;gap:13px}
+.ra-step{display:flex;gap:13px;align-items:flex-start}
+.ra-n{font-family:'Bebas Neue';font-size:20px;color:#5a3a10;line-height:1.1;width:20px;flex-shrink:0}
+.ra-t{font-size:clamp(13px,1.4vw,17px);color:#7a7060;font-weight:300;line-height:1.55}
+
+/* ═══════════════════════════════════════════
+   SLIDE 9 — IT'S A PROCESS
+═══════════════════════════════════════════ */
+#s9{overflow:hidden;flex-direction:row}
+.proc-img{width:42%;position:relative;flex-shrink:0}
+.proc-img .bg-img{filter:brightness(.45) saturate(.7)}
+.proc-img .overlay{background:linear-gradient(to left,rgba(6,6,6,0) 40%,rgba(6,6,6,.75))}
+#s9 .content{flex:1;background:#060606;padding:6vh 5vw;gap:20px;justify-content:center}
+
+/* ═══════════════════════════════════════════
+   SLIDE 10 — JOHN HENRY
+═══════════════════════════════════════════ */
+#s10{position:relative;overflow:hidden;align-items:center;justify-content:center}
+#s10 .bg-img{filter:brightness(.2) saturate(.4)}
+#s10 .overlay{background:linear-gradient(to top,rgba(6,6,6,.98) 25%,rgba(6,6,6,.6))}
+#s10 .content{align-items:center;justify-content:center;text-align:center;gap:24px;padding:7vh 10vw}
+.jh-ai-box{background:rgba(154,130,216,.05);border:.5px solid rgba(154,130,216,.18);border-radius:6px;padding:11px 22px;max-width:700px}
+.jh-ai-txt{font-size:clamp(11px,1.1vw,14px);color:rgba(154,130,216,.6);font-weight:300;line-height:1.55}
+.jh-decl-lbl{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#5a3a10}
+.jh-decl{font-family:'Playfair Display';font-size:clamp(18px,2.5vw,34px);color:#FFFFFF;font-style:italic;line-height:1.4;max-width:820px}
+.jh-decl em{color:#E8B84B;font-style:normal}
+.jh-sep{width:60px;height:.5px;background:#5a3a10}
+.jh-q{font-family:'Playfair Display';font-size:clamp(16px,2vw,26px);color:rgba(237,232,220,.55);font-style:italic;line-height:1.4}
+
+/* ═══════════════════════════════════════════
+   SLIDE 11 — PERSONAJES ESPEJO
+═══════════════════════════════════════════ */
+#s11{position:relative;overflow:hidden;padding:4.5vh 6vw;gap:20px;justify-content:center}
+#s11 .bg-img{filter:brightness(.15) saturate(.3)}
+#s11 .overlay{background:rgba(6,6,6,.88)}
+#s11 .ct{position:relative;z-index:2;display:flex;flex-direction:column;gap:20px;height:100%;justify-content:center}
+.mir-over{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#C8922A}
+.mir-h{font-family:'Bebas Neue';font-size:clamp(28px,4.5vw,56px);letter-spacing:.05em;color:#EDE8DC;line-height:1}
+.mir-sub{font-size:clamp(12px,1.2vw,15px);color:#6a6058;font-weight:300}
+.mir-foot{font-size:clamp(12px,1.2vw,14px);color:#2a2420;font-style:italic;text-align:center;padding-top:12px;border-top:.5px solid #141414}
+
+/* ═══════════════════════════════════════════
+   SLIDE 12 — ME REFLEJÉ EN
+═══════════════════════════════════════════ */
+#s12{background:#060606;justify-content:center;padding:4.5vh 8vw;gap:20px}
+.dyn-over{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#C8922A}
+.dyn-h{font-family:'Bebas Neue';font-size:clamp(26px,4vw,54px);letter-spacing:.05em;color:#EDE8DC;line-height:1}
+.dyn-inst{font-size:clamp(13px,1.3vw,15px);color:#6a6058;font-weight:300;line-height:1.6}
+.dyn-rows{display:flex;flex-direction:column;gap:clamp(10px,1.8vh,18px)}
+
+/* ═══════════════════════════════════════════
+   SLIDE 13 — PLENARIA
+═══════════════════════════════════════════ */
+#s13{background:#060606;justify-content:center;padding:5.5vh 7vw;gap:22px}
+.pl-over{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#C8922A}
+.pl-h{font-family:'Bebas Neue';font-size:clamp(26px,4vw,52px);letter-spacing:.05em;color:#EDE8DC;line-height:1}
+.pl-cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.pl-foot{font-size:clamp(12px,1.1vw,14px);color:#2a2420;font-weight:300;border-top:.5px solid #141414;padding-top:13px}
+
+/* ═══════════════════════════════════════════
+   SLIDE 14 — CIERRE
+═══════════════════════════════════════════ */
+#s14{background:#060606;justify-content:center;padding:8vh 8vw;gap:32px}
+.cl-over{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:#C8922A}
+.cl-h{font-family:'Bebas Neue';font-size:clamp(52px,9vw,112px);line-height:.92;color:#EDE8DC}
+.cl-qs{display:flex;flex-direction:column;gap:18px}
+.cl-qr{display:flex;gap:20px;align-items:flex-start}
+.cl-n{font-family:'Bebas Neue';font-size:clamp(46px,6.5vw,74px);color:#161616;line-height:1;width:56px;flex-shrink:0}
+.cl-qt{font-family:'Playfair Display';font-size:clamp(18px,2.4vw,30px);color:#EDE8DC;line-height:1.35;padding-top:4px;font-style:italic}
+.cl-rule{border-top:.5px solid #141414;padding-top:2.5vh;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#5a3a10}
+</style>
+</head>
+<body>
+
+<div id="bar"></div>
+<div id="ctr"></div>
+
+<!-- PAUSE OVERLAY -->
+<div id="pov">
+  <div class="p-ico">⏸</div>
+  <div class="p-t">Pausa la película</div>
+  <div class="p-s" id="psub"></div>
+  <div class="p-d" onclick="closePause()">Continuar →</div>
+</div>
+
+<div id="deck">
+
+<!-- ══ 0 COVER ══ -->
+<div class="sl on" id="s0">
+  <div class="bg-img" style="background-image:url('https://images.unsplash.com/photo-1566577739112-5180d4bf9390?auto=format&fit=crop&w=1920&q=80')"></div>
+  <div class="overlay"></div>
+  <div class="cv-ghost">MB</div>
+  <div class="cv-vline"></div>
+  <div class="ct" style="position:relative;z-index:2;padding:9vh 8vw;display:flex;flex-direction:column;justify-content:center;height:100%">
+    <div class="cv-over">Comité PRIME · Olfativa 2026</div>
+    <div class="cv-h">MONEY<em>BALL</em></div>
+    <div class="cv-sub">Una sesión sobre quién eres tú en el cambio — y qué decides hacer con eso.</div>
+  </div>
+  <div class="cv-kbd">← → navegar &nbsp;·&nbsp; F pantalla completa &nbsp;·&nbsp; Espacio cerrar pausa</div>
+</div>
+
+<!-- ══ 1 AI CONTEXT ══ -->
+<div class="sl" id="s1">
+  <div class="ai-over">Antes de empezar — el mundo afuera</div>
+  <div class="ai-h">El juego cambió. <span style="color:#C8922A">Otra vez.</span></div>
+  <div class="ai-grid">
+    <div class="ai-card c1">
+      <div class="ai-src">McKinsey 2025</div>
+      <div class="ai-num">88% → 1%</div>
+      <div class="ai-txt">De organizaciones que ya usan IA en alguna función — pero solo el 1% tiene madurez real. La brecha del 87% es exactamente donde está la oportunidad.</div>
+    </div>
+    <div class="ai-card c2">
+      <div class="ai-src">Mercer / WEF 2025</div>
+      <div class="ai-num">54%</div>
+      <div class="ai-txt">De líderes empresariales creen que su empresa no será competitiva después de 2030 sin adoptar IA a escala. Son los propios directivos hablando de sí mismos.</div>
+    </div>
+    <div class="ai-card c3">
+      <div class="ai-src">WEF Future of Jobs 2025</div>
+      <div class="ai-num">39%</div>
+      <div class="ai-txt">De las habilidades clave de los puestos actuales van a cambiar antes de 2030. No los puestos — las habilidades dentro de ellos.</div>
+    </div>
+    <div class="ai-card c4">
+      <div class="ai-src">LinkedIn / WEF / Inc 5000</div>
+      <div class="ai-num">7x</div>
+      <div class="ai-txt">Creció la demanda de habilidades de IA en dos años. De 1M a 7M puestos que las piden explícitamente. Más rápido que los celulares en su primera década.</div>
+    </div>
+  </div>
+  <div class="ai-bottom">
+    <div class="ai-foot-q">"La IA avanza más rápido que los celulares en su primera década. Recuerda cuándo el WhatsApp era opcional para Olfativa."</div>
+    <div class="ai-foot-tag">Esto no es el futuro — es ahora</div>
+  </div>
+</div>
+
+<!-- ══ 2 SCOUTS ══ -->
+<div class="sl" id="s2" data-pause="Cuando Billy sale frustrado de la sala de scouts.">
+  <div class="tags"><span class="tag t-time">Min 15–18</span><span class="tag t-pause">⏸ Pausa</span><span class="tag t-a">Awareness</span><span class="scene-label">— Los scouts en la sala</span></div>
+  <div class="s-heading">La experiencia que te construyó<br>puede ser lo que hoy te <em>limita.</em></div>
+  <div class="body-txt">No porque estés equivocado. Sino porque el juego cambió — y lo que antes te hacía ganar ya no alcanza para lo que viene. Los scouts no son los villanos. Son el producto de un sistema que funcionó. Y eso es exactamente el problema.</div>
+  <div class="two-cols">
+    <div class="col blue">
+      <div class="col-lbl">Lo que los scouts tienen razón</div>
+      <div class="col-main">Años de experiencia real. Patrones que funcionaron durante décadas. Nadie construye ese conocimiento por accidente.</div>
+    </div>
+    <div class="col red">
+      <div class="col-lbl">Lo que ya no pueden ver</div>
+      <div class="col-main">Que el juego cambió. Que sus métricas miden comodidad, no desempeño. Que defender lo conocido se volvió más importante que ganar.</div>
+    </div>
+  </div>
+  <div class="THE-QUESTION">"¿En qué parte de tu área estás midiendo lo que te da comodidad — en vez de lo que genera resultado?"</div>
+  <div class="inst">Anota en papel · no compartas todavía · 2 minutos</div>
+</div>
+
+<!-- ══ 3 PETER BRAND ══ -->
+<div class="sl" id="s3" data-pause='Cuando Billy dice "Explícamelo de nuevo".'>
+  <div class="bg-img" style="background-image:url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1920&q=80')"></div>
+  <div class="overlay"></div>
+  <div class="content" style="gap:22px">
+    <div class="tags"><span class="tag t-time">Min 22–25</span><span class="tag t-pause">⏸ Pausa</span><span class="tag t-a">Awareness</span></div>
+    <div class="pt-q-box">
+      <div class="pt-q-lbl">El dato que nadie quería ver</div>
+      <div class="THE-QUESTION" style="font-size:clamp(20px,2.6vw,36px)">"Peter Brand no es una persona. Es la información que ya tienes — y que nadie está usando para tomar decisiones. Teams, Business Central y Zendesk son nuestro Peter Brand."</div>
+    </div>
+    <div class="ai-inline">
+      <div class="ai-inline-lbl">PwC 2026 · Salesforce SMB Report</div>
+      <div class="ai-inline-txt">La tecnología entrega solo el 20% del valor. El 80% restante viene de las personas que rediseñan cómo se trabaja. Y las empresas que crecen tienen el doble de probabilidad de tener un stack tecnológico integrado que las que están en declive. PRIME no es el destino — es la pista de despegue.</div>
+    </div>
+    <div>
+      <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#5a5448;margin-bottom:8px">La pregunta para tu área</div>
+      <div class="THE-QUESTION">"¿Quién está siendo Billy en tu área — eligiendo creer en el sistema? ¿Y quién está siendo el scout que lo ignora?"</div>
+    </div>
+    <div class="inst">En voz alta · rotafolio · 5 minutos</div>
+  </div>
+</div>
+
+<!-- ══ 4 EL PROCESO ══ -->
+<div class="sl" id="s4" data-pause='Cuando alguien pregunta si Billy sabe lo que está haciendo.'>
+  <div class="tags"><span class="tag t-time">Min 55–60</span><span class="tag t-pause">⏸ Pausa</span><span class="tag t-k">Knowledge</span></div>
+  <div>
+    <div class="s-heading" style="margin-bottom:8px">El cambio se ve <em>mal</em> antes de verse bien.</div>
+    <div class="body-txt">El momento donde el proceso parece roto es exactamente donde más se necesita a un Champion. No para decir "ya funciona" — sino para decir "sigue el plan." Teams: del 7% al 25% de uso real de canales en cuatro semanas — y el 73% del equipo ya declara usarlos la mayoría de las veces. Desde adentro, en semana dos, parecía que no funcionaba.</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:clamp(14px,2.5vh,26px)">
+    <div class="fill-row">
+      <div class="fill-n">1.</div>
+      <span class="fill-pre">En este momento, PRIME en mi área se está viendo como </span><span class="fill-blank">&nbsp;</span>
+    </div>
+    <div class="fill-row">
+      <div class="fill-n">2.</div>
+      <span class="fill-pre">Y yo he contribuido a esa percepción porque </span><span class="fill-blank">&nbsp;</span>
+    </div>
+  </div>
+  <div class="inst">Silencio · papel · 3 minutos · ronda voluntaria después</div>
+</div>
+
+<!-- ══ 5 ART HOWE ══ -->
+<div class="sl" id="s5" data-pause="Cuando Billy descubre que Art no ejecutó el plan.">
+  <div class="bg-img" style="background-image:url('https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&w=1920&q=80')"></div>
+  <div class="overlay"></div>
+  <div class="content" style="align-items:center;justify-content:center;text-align:center;gap:28px">
+    <div class="tags" style="justify-content:center"><span class="tag t-time">Min 65–68</span><span class="tag t-pause">⏸ Pausa</span><span class="tag t-d">Desire</span></div>
+    <div class="art-q">¿Cuándo has sido<br><em>Art Howe?</em></div>
+    <div class="art-hint">No te lo preguntes. Respóndelo.</div>
+    <div class="art-ai-box">
+      <div class="art-ai-txt">"La mayoría de las empresas fallan en capturar valor de la IA no porque la tecnología falle — sino porque las personas y la política interna la frenan en silencio." — Harvard Business Review 2025</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 6 PREGUNTA EQUIVOCADA ══ -->
+<div class="sl" id="s6" data-pause='Cuando Billy dice "Estás haciendo la pregunta equivocada".'>
+  <div class="tags"><span class="tag t-time">Min 73–76</span><span class="tag t-pause">⏸ Pausa</span><span class="tag t-d">Desire</span></div>
+  <div class="s-heading">La pregunta que te haces<br>determina la decisión que tomas.</div>
+  <div class="two-cols">
+    <div class="col blue">
+      <div class="col-lbl">La pregunta de Peter Brand</div>
+      <div class="col-main">"¿Me van a correr si hago esto?"</div>
+      <div class="col-note">Legítima. Honesta. Y completamente equivocada en este momento. El miedo racional es la forma más sofisticada de no querer cambiar.</div>
+    </div>
+    <div class="col red">
+      <div class="col-lbl">La pregunta de Billy Beane</div>
+      <div class="col-main">"¿Es esto lo correcto para el equipo?"</div>
+      <div class="col-note">Más incómoda. Más costosa. La única que mueve algo real. La que define si eres colaborador — o Champion.</div>
+    </div>
+  </div>
+  <div class="THE-QUESTION">"¿Cuál de las dos te está guiando a ti — ahora mismo, con PRIME?"</div>
+  <div class="inst">En voz alta · sin juzgar · 5 minutos</div>
+</div>
+
+<!-- ══ 7 ¿CREES EN ESTO? ══ -->
+<div class="sl" id="s7" data-pause="Justo cuando termina la escena. Antes de que el grupo procese.">
+  <div class="bg-img" style="background-image:url('https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=1920&q=80')"></div>
+  <div class="overlay"></div>
+  <div class="content" style="align-items:center;justify-content:center;text-align:center;gap:30px">
+    <div class="tags" style="justify-content:center"><span class="tag t-time">Min 78–80</span><span class="tag t-pause">⏸ Pausa</span><span class="tag t-d">Desire — momento bisagra</span></div>
+    <div class="cr-q">¿Crees en esto,<br><em>sí</em> o no?</div>
+    <div class="cr-box">
+      <div class="cr-inst">30 seg de silencio → ronda en voz alta → una frase por persona → sin condiciones → sin explicaciones → Tony va al último</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 8 LA RACHA ══ -->
+<div class="sl" id="s8" data-pause="Cuando el estadio celebra la victoria número 20.">
+  <div class="bg-img" style="background-image:url('https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&w=1920&q=80')"></div>
+  <div class="overlay"></div>
+  <div class="content">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="tags"><span class="tag t-time">Min 85–92</span><span class="tag t-pause">⏸ Pausa</span><span class="tag t-ab">Ability</span></div>
+      <div class="ra-h">Nombramos<br><em>victorias.</em></div>
+      <div class="ra-why">El sistema empezó a funcionar cuando nadie lo esperaba. Teams pasó del 7% al 25% de uso real de canales — y el 73% del equipo ya declara usarlos la mayoría de las veces. Ya está pasando. Lo que falta es nombrarlo en voz alta y construir sobre eso.</div>
+    </div>
+    <div class="ra-steps">
+      <div class="ra-step"><div class="ra-n">1</div><div class="ra-t">Piensa en una victoria personal con PRIME. No la del equipo — la tuya. Concreta. No tiene que ser grande.</div></div>
+      <div class="ra-step"><div class="ra-n">2</div><div class="ra-t">Si dices "ninguna" — ¿qué fue diferente esta semana, aunque sea pequeño? Siempre hay algo.</div></div>
+      <div class="ra-step"><div class="ra-n">3</div><div class="ra-t">Ronda completa. Sin saltarse a nadie. Facilitador anota en rotafolio. La lista visible es el dato.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 9 IT'S A PROCESS ══ -->
+<div class="sl" id="s9" data-pause="En el silencio de Billy en el estadio vacío.">
+  <div class="proc-img">
+    <div class="bg-img" style="background-image:url('https://images.unsplash.com/photo-1540747913346-19212a4b423b?auto=format&fit=crop&w=900&q=80')"></div>
+    <div class="overlay"></div>
+  </div>
+  <div class="content" style="gap:20px">
+    <div class="tags"><span class="tag t-time">Min 105–108</span><span class="tag t-pause">⏸ Pausa</span><span class="tag t-r">Reinforcement</span></div>
+    <div>
+      <div class="s-heading" style="margin-bottom:8px">El mayor riesgo después de una victoria<br>es creer que <em>ya terminó.</em></div>
+      <div class="body-txt">Business Central empieza en agosto. Zendesk está en piloto. El trabajo del Champion no es arrancar — es sostener cuando baja la presión. Billy en el estadio vacío no celebra el record. Sabe que sin refuerzo, el equipo vuelve a los viejos hábitos.</div>
+    </div>
+    <div>
+      <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#6a6058;margin-bottom:8px">Proyección — escribe primero</div>
+      <div class="THE-QUESTION">"Imagina que en 6 meses PRIME funciona exactamente como debería en tu área. ¿Qué hiciste diferente? ¿Qué podrías empezar hoy?"</div>
+    </div>
+    <div class="do-block">
+      <div class="do-lbl">Puente</div>
+      <div class="do-row"><div class="do-dot"></div><div>El plan de Reinforcement de mayo — incentivos y warnings — es "it's a process" institucionalizado. Diseñar el sistema para que lo correcto sea más fácil que lo de siempre.</div></div>
+    </div>
+    <div class="inst">Papel · 3 min · ronda voluntaria</div>
+  </div>
+</div>
+
+<!-- ══ 10 JOHN HENRY ══ -->
+<div class="sl" id="s10" data-pause="Cuando Billy cuelga el teléfono.">
+  <div class="bg-img" style="background-image:url('https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1920&q=80')"></div>
+  <div class="overlay"></div>
+  <div class="content" style="align-items:center;justify-content:center;text-align:center;gap:24px;padding:7vh 10vw">
+    <div class="tags" style="justify-content:center"><span class="tag t-time">Min 118–122</span><span class="tag t-pause">⏸ Pausa</span><span class="tag t-r">Reinforcement</span></div>
+    <div class="jh-ai-box">
+      <div class="jh-ai-txt">MIT Sloan · Inc 5000 — Las organizaciones que adoptan IA superan a las que no la usan en productividad Y participación de mercado. Los primeros adoptadores ya tienen 18–24 meses de ventaja. Quien domina una transformación integrada hoy tiene un perfil que pocas personas en México pueden demostrar.</div>
+    </div>
+    <div>
+      <div class="jh-decl-lbl">Tony — habla en primera persona aquí</div>
+      <div class="jh-decl">"Yo no tengo problema si después de PRIME alguno se va a una empresa más grande. Si eso pasa, <em>hicimos bien el trabajo.</em> La pregunta es la misma que le hicieron a Billy:"</div>
+    </div>
+    <div class="jh-sep"></div>
+    <div class="jh-q">"¿Se quedan a terminar lo que empezaron?"</div>
+  </div>
+</div>
+
+<!-- ══ 11 PERSONAJES ESPEJO ══ -->
+<div class="sl" id="s11">
+  <div class="bg-img" style="background-image:url('https://images.unsplash.com/photo-1522202176988-66273c7fd9be?auto=format&fit=crop&w=1920&q=80')"></div>
+  <div class="overlay"></div>
+  <div class="ct">
+    <div class="mir-over">Después de los créditos</div>
+    <div class="mir-h">Personajes espejo</div>
+    <div class="mir-sub">¿Con quién te identificas hoy? No tienes que decirlo en voz alta todavía.</div>
+    <div class="mirror-grid">
+      <div class="mc"><div class="mc-name">Billy Beane</div><div class="mc-sep"></div><div class="mc-lbl">Refleja a quien</div><div class="mc-item"><div class="mc-dot"></div><div class="mc-txt">Empuja el cambio y se siente solo sosteniéndolo</div></div><div class="mc-item"><div class="mc-dot"></div><div class="mc-txt">Acepta el costo de decisiones difíciles</div></div><div class="mc-item"><div class="mc-dot"></div><div class="mc-txt">Cree en el modelo aunque incomode</div></div></div>
+      <div class="mc"><div class="mc-name">Peter Brand</div><div class="mc-sep"></div><div class="mc-lbl">Refleja a quien</div><div class="mc-item"><div class="mc-dot"></div><div class="mc-txt">Ve una lógica nueva y piensa distinto</div></div><div class="mc-item"><div class="mc-dot"></div><div class="mc-txt">Confía en el sistema</div></div><div class="mc-item"><div class="mc-dot"></div><div class="mc-txt">Todavía aprendiendo a sostenerse frente a otros</div></div></div>
+      <div class="mc"><div class="mc-name">Los scouts</div><div class="mc-sep"></div><div class="mc-lbl">Reflejan a quien</div><div class="mc-item"><div class="mc-dot"></div><div class="mc-txt">Confía mucho en la experiencia pasada</div></div><div class="mc-item"><div class="mc-dot"></div><div class="mc-txt">Se siente amenazado por una nueva lógica</div></div><div class="mc-item"><div class="mc-dot"></div><div class="mc-txt">Lo conocido le daba identidad o seguridad</div></div></div>
+      <div class="mc"><div class="mc-name">El coach</div><div class="mc-sep"></div><div class="mc-lbl">Refleja a quien</div><div class="mc-item"><div class="mc-dot"></div><div class="mc-txt">Puede decir que sí</div></div><div class="mc-item"><div class="mc-dot"></div><div class="mc-txt">Pero sigue operando igual</div></div><div class="mc-item"><div class="mc-dot"></div><div class="mc-txt">Mantiene el modelo anterior sin decirlo frontalmente</div></div></div>
+      <div class="mc"><div class="mc-name">Los jugadores</div><div class="mc-sep"></div><div class="mc-lbl">Reflejan a quien</div><div class="mc-item"><div class="mc-dot"></div><div class="mc-txt">Siente incertidumbre y miedo a perder su lugar</div></div><div class="mc-item"><div class="mc-dot"></div><div class="mc-txt">Tiene dudas sobre cómo encaja en la nueva etapa</div></div></div>
+    </div>
+    <div class="mir-foot">Tómate un momento. No hay respuesta incorrecta.</div>
+  </div>
+</div>
+
+<!-- ══ 12 ME REFLEJÉ EN ══ -->
+<div class="sl" id="s12">
+  <div class="dyn-over">Dinámica central — silencio primero, ronda voluntaria después</div>
+  <div class="dyn-h">Me reflejé en…</div>
+  <div class="dyn-inst">Completa estas frases en papel. Sin compartir todavía. 5 minutos.</div>
+  <div class="dyn-rows">
+    <div class="fill-row"><div class="fill-n">1.</div><span class="fill-pre">Me reflejé en </span><span class="fill-blank">&nbsp;</span></div>
+    <div class="fill-row"><div class="fill-n">2.</div><span class="fill-pre">Me reflejé ahí porque </span><span class="fill-blank">&nbsp;</span></div>
+    <div class="fill-row"><div class="fill-n">3.</div><span class="fill-pre">Lo que eso me mostró de mí es </span><span class="fill-blank">&nbsp;</span></div>
+    <div class="fill-row"><div class="fill-n">4.</div><span class="fill-pre">Frente al cambio, yo tiendo a </span><span class="fill-blank">&nbsp;</span></div>
+    <div class="fill-row"><div class="fill-n">5.</div><span class="fill-pre">La parte de mí que más necesita evolucionar es </span><span class="fill-blank">&nbsp;</span></div>
+    <div class="fill-row"><div class="fill-n">6.</div><span class="fill-pre">Para crecer con Olfativa, necesito dejar de </span><span class="fill-blank">&nbsp;</span><span class="fill-pre"> y empezar a </span><span class="fill-blank">&nbsp;</span></div>
+  </div>
+  <div class="inst">5 min escritura · ronda voluntaria · nadie está obligado a compartir todo</div>
+</div>
+
+<!-- ══ 13 PLENARIA ══ -->
+<!-- ══ 13 CIERRE ══ -->
+<div class="sl" id="s13">
+  <div class="cl-over">Para cerrar</div>
+  <div class="cl-h">LAS TRES<br>PREGUNTAS</div>
+  <div class="cl-qs">
+    <div class="cl-qr"><div class="cl-n">1</div><div class="cl-qt">¿Con qué personaje te identificaste más — y qué dice eso de dónde estás en este proceso?</div></div>
+    <div class="cl-qr"><div class="cl-n">2</div><div class="cl-qt">¿Qué parte de tu forma de trabajar está lista para la siguiente etapa — y qué parte sigue atrapada en la anterior?</div></div>
+    <div class="cl-qr"><div class="cl-n">3</div><div class="cl-qt">¿Crees en PRIME, sí o no? Una frase. Sin condiciones.</div></div>
+  </div>
+  <div class="cl-rule">Termina con silencio. No resumas. No concluyas. Deja que el grupo salga con la pregunta adentro.</div>
+</div>
+
+</div><!-- /deck -->
+
+<div id="nav">
+  <button class="nb" onclick="go(-1)">←</button>
+  <div id="dots"></div>
+  <button class="nb" onclick="go(1)">→</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.sl');
+const N = slides.length;
+let cur = 0;
+
+function showSlide(idx) {
+  slides[cur].classList.remove('on');
+  cur = idx;
+  slides[cur].classList.add('on');
+  // Pause overlay
+  const pm = slides[cur].dataset.pause;
+  if (pm) {
+    document.getElementById('psub').textContent = pm;
+    document.getElementById('pov').classList.add('on');
+  }
+  // UI
+  const dots = document.querySelectorAll('.dot');
+  dots.forEach((d, i) => {
+    d.className = 'dot' + (i < cur ? ' d' : i === cur ? ' a' : '');
+  });
+  document.getElementById('ctr').textContent = (cur + 1) + ' / ' + N;
+  document.getElementById('bar').style.width = (cur / (N - 1) * 100) + '%';
+}
+
+function go(dir) {
+  const next = cur + dir;
+  if (next >= 0 && next < N) showSlide(next);
+}
+
+function closePause() {
+  document.getElementById('pov').classList.remove('on');
+}
+
+// Build dots
+const dotsEl = document.getElementById('dots');
+for (let i = 0; i < N; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' a' : '');
+  d.style.cursor = 'pointer';
+  const ic = i;
+  d.onclick = () => showSlide(ic);
+  dotsEl.appendChild(d);
+}
+
+document.getElementById('ctr').textContent = '1 / ' + N;
+document.getElementById('bar').style.width = '0%';
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+  else if (e.key === ' ') { e.preventDefault(); closePause(); }
+  else if (e.key.toLowerCase() === 'f') document.documentElement.requestFullscreen?.();
+});
+</script>
+</body>
+</html>
