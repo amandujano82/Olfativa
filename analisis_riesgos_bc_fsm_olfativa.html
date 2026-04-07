@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis de Riesgos BC + FSM — Proyecto PRIME Olfativa</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0C0F14;--surface:#151922;--surface-2:#1C2230;--surface-3:#232A38;--border:#2A3244;--text:#E8ECF4;--text-dim:#8B95A8;--text-muted:#5A6478;--accent-red:#FF4D4F;--accent-red-dim:rgba(255,77,79,.12);--accent-orange:#FF8C00;--accent-orange-dim:rgba(255,140,0,.12);--accent-yellow:#FAAD14;--accent-yellow-dim:rgba(250,173,20,.12);--accent-green:#52C41A;--accent-green-dim:rgba(82,196,26,.12);--accent-blue:#1890FF;--accent-blue-dim:rgba(24,144,255,.12);--accent-purple:#9B59B6;--accent-purple-dim:rgba(155,89,182,.12);--premium:#D4AF37;--premium-dim:rgba(212,175,55,.12);--essential:#4ECDC4;--essential-dim:rgba(78,205,196,.12)}*{margin:0;padding:0;box-sizing:border-box}body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}.container{max-width:1200px;margin:0 auto;padding:40px 24px 80px}.header{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border)}.header-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--accent-orange-dim);border:1px solid rgba(255,140,0,.25);border-radius:20px;font-size:11px;font-weight:600;color:var(--accent-orange);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:16px}.header h1{font-family:'DM Serif Display',serif;font-size:42px;font-weight:400;line-height:1.15;margin-bottom:12px}.header h1 span{color:var(--accent-orange)}.header-sub{font-size:16px;color:var(--text-dim);max-width:720px}.header-meta{display:flex;gap:24px;margin-top:20px;flex-wrap:wrap}.meta-item{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted)}.meta-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}.nav{display:flex;gap:4px;margin-bottom:36px;overflow-x:auto;padding-bottom:4px;border-bottom:1px solid var(--border)}.nav-tab{padding:10px 18px;font-size:13px;font-weight:500;color:var(--text-muted);background:0 0;border:none;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}.nav-tab:hover{color:var(--text-dim)}.nav-tab.active{color:var(--accent-orange);border-bottom-color:var(--accent-orange)}.section{display:none;animation:fadeIn .3s ease}.section.active{display:block}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.section-title{font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:8px}.section-desc{color:var(--text-dim);font-size:14px;margin-bottom:32px;max-width:720px}.risk-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:20px;transition:border-color .2s}.risk-card:hover{border-color:var(--surface-3)}.risk-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}.risk-header-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0}.risk-number{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;flex-shrink:0}.risk-title{font-size:17px;font-weight:600;line-height:1.3}.tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;flex-shrink:0}.tag-hecho{background:var(--accent-blue-dim);color:var(--accent-blue);border:1px solid rgba(24,144,255,.2)}.tag-inferencia{background:var(--accent-yellow-dim);color:var(--accent-yellow);border:1px solid rgba(250,173,20,.2)}.tag-opinion{background:var(--accent-purple-dim);color:var(--accent-purple);border:1px solid rgba(155,89,182,.2)}.tag-critico{background:var(--accent-red-dim);color:var(--accent-red);border:1px solid rgba(255,77,79,.2)}.tag-alto{background:var(--accent-orange-dim);color:var(--accent-orange);border:1px solid rgba(255,140,0,.2)}.tag-medio{background:var(--accent-yellow-dim);color:var(--accent-yellow);border:1px solid rgba(250,173,20,.2)}.sev-critico .risk-number{background:var(--accent-red-dim);color:var(--accent-red)}.sev-alto .risk-number{background:var(--accent-orange-dim);color:var(--accent-orange)}.sev-medio .risk-number{background:var(--accent-yellow-dim);color:var(--accent-yellow)}.risk-body{font-size:14px;color:var(--text-dim);line-height:1.7}.risk-body p{margin-bottom:12px}.risk-body strong{color:var(--text);font-weight:600}.risk-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}.evidence-label{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-right:4px}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px}@media(max-width:768px){.comparison,.impact-grid,.wave-compare{grid-template-columns:1fr}.header h1{font-size:30px}}.comp-card{background:var(--surface);border-radius:12px;padding:28px;border:2px solid var(--border);position:relative;overflow:hidden}.comp-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}.comp-essential{border-color:rgba(78,205,196,.3)}.comp-essential::before{background:var(--essential)}.comp-premium{border-color:rgba(212,175,55,.3)}.comp-premium::before{background:var(--premium)}.comp-badge{display:inline-flex;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px}.comp-essential .comp-badge{background:var(--essential-dim);color:var(--essential)}.comp-premium .comp-badge{background:var(--premium-dim);color:var(--premium)}.comp-card h3{font-size:18px;font-weight:600;margin-bottom:6px}.comp-card .price{font-size:13px;color:var(--text-muted);margin-bottom:20px}.comp-list{list-style:none}.comp-list li{display:flex;align-items:flex-start;gap:10px;padding:8px 0;font-size:13.5px;color:var(--text-dim);border-bottom:1px solid rgba(42,50,68,.5)}.comp-list li:last-child{border-bottom:none}.comp-icon{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px}.icon-yes{background:var(--accent-green-dim);color:var(--accent-green)}.icon-no{background:var(--accent-red-dim);color:var(--accent-red)}.icon-warn{background:var(--accent-yellow-dim);color:var(--accent-yellow)}.matrix-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:32px}.matrix-table th{text-align:left;padding:12px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);background:var(--surface);border-bottom:2px solid var(--border)}.matrix-table td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--text-dim);vertical-align:top}.matrix-table tr:hover td{background:rgba(28,34,48,.5)}.matrix-table .cell-gap{color:var(--accent-red);font-weight:600}.matrix-table .cell-ok{color:var(--accent-green)}.matrix-table .cell-warn{color:var(--accent-yellow)}.verdict{background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(255,140,0,.05));border:1px solid rgba(212,175,55,.25);border-radius:12px;padding:28px;margin-top:32px;margin-bottom:32px}.verdict h3{font-family:'DM Serif Display',serif;font-size:20px;color:var(--premium);margin-bottom:12px}.verdict p{font-size:14px;color:var(--text-dim);line-height:1.7}.verdict strong{color:var(--text)}.partner-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:20px}.partner-box h4{font-size:15px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}.partner-box p{font-size:14px;color:var(--text-dim);line-height:1.7}.callout{background:var(--accent-red-dim);border-left:3px solid var(--accent-red);padding:16px 20px;border-radius:0 8px 8px 0;margin:16px 0;font-size:14px;color:var(--text-dim);line-height:1.6}.callout strong{color:var(--accent-red)}.callout-warn{background:var(--accent-orange-dim);border-left-color:var(--accent-orange)}.callout-warn strong{color:var(--accent-orange)}.callout-info{background:var(--accent-blue-dim);border-left-color:var(--accent-blue)}.callout-info strong{color:var(--accent-blue)}.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:36px}.summary-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center}.summary-number{font-family:'DM Serif Display',serif;font-size:36px;line-height:1;margin-bottom:6px}.summary-label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);font-weight:600}.wave-label-row{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-bottom:8px;padding:0 4px}.impact-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}.impact-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}.impact-card h4{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}.impact-card p{font-size:13px;color:var(--text-dim);line-height:1.6}.wave-scenario{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:24px;margin:20px 0}.wave-scenario h4{font-size:14px;font-weight:600;margin-bottom:8px}.wave-scenario p{font-size:13.5px;color:var(--text-dim);line-height:1.7;margin-bottom:8px}.wave-compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}.wave-compare-box{padding:16px;border-radius:8px;font-size:13px;line-height:1.6}.wave-compare-box.ess{background:rgba(78,205,196,.06);border:1px solid rgba(78,205,196,.2);color:var(--text-dim)}.wave-compare-box.prem{background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.2);color:var(--text-dim)}.wave-compare-box strong{display:block;margin-bottom:6px;font-size:12px;text-transform:uppercase;letter-spacing:.8px}.wave-compare-box.ess strong{color:var(--essential)}.wave-compare-box.prem strong{color:var(--premium)}.sub-section{margin-top:40px;padding-top:28px;border-top:1px solid var(--border)}.sub-section-title{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px}.sub-section-desc{color:var(--text-dim);font-size:14px;margin-bottom:24px;max-width:680px}.footer{margin-top:48px;padding-top:24px;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--text-muted)}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="header-badge">📋 Análisis para Alineación</div>
+  <h1>Business Central + Field Service:<br><span>Puntos Abiertos para Definir en Conjunto</span></h1>
+  <p class="header-sub">Análisis técnico de la integración BC ↔ Dataverse ↔ FSM para el Proyecto PRIME de Olfativa. El objetivo es identificar riesgos documentados en la industria y alinear con el partner un plan para mitigarlos antes del Go Live.</p>
+  <div class="header-meta">
+    <div class="meta-item"><div class="meta-dot" style="background:var(--accent-blue)"></div> HECHO = Confirmado en sesiones o documentación Microsoft</div>
+    <div class="meta-item"><div class="meta-dot" style="background:var(--accent-yellow)"></div> INFERENCIA = Deducción del contexto del proyecto</div>
+    <div class="meta-item"><div class="meta-dot" style="background:var(--accent-purple)"></div> OPINIÓN EXPERTA = Criterio de consultor</div>
+  </div>
+</div>
+
+<div class="summary-grid">
+  <div class="summary-card"><div class="summary-number" style="color:var(--accent-red)">14</div><div class="summary-label">Riesgos identificados</div></div>
+  <div class="summary-card"><div class="summary-number" style="color:var(--accent-red)">5</div><div class="summary-label">Severidad crítica</div></div>
+  <div class="summary-card"><div class="summary-number" style="color:var(--accent-orange)">6</div><div class="summary-label">Pendientes de discutir</div></div>
+  <div class="summary-card"><div class="summary-number" style="color:var(--accent-yellow)">9</div><div class="summary-label">Gaps abiertos</div></div>
+  <div class="summary-card"><div class="summary-number" style="color:var(--premium)">1</div><div class="summary-label">Decisión de licencia</div></div>
+</div>
+
+<nav class="nav" id="nav">
+  <button class="nav-tab active" data-tab="licencia">Essentials vs Premium</button>
+  <button class="nav-tab" data-tab="waves">Impacto Wave Releases</button>
+  <button class="nav-tab" data-tab="tecnicos">Riesgos Técnicos</button>
+  <button class="nav-tab" data-tab="partner">Validaciones Pendientes</button>
+  <button class="nav-tab" data-tab="olfativa">Riesgos Específicos Olfativa</button>
+  <button class="nav-tab" data-tab="acciones">Agenda de Definición</button>
+</nav>
+
+<!-- TAB 1: LICENCIA -->
+<div class="section active" id="licencia">
+  <h2 class="section-title">Essentials vs. Premium: La Decisión que Define Todo</h2>
+  <p class="section-desc">La elección de licencia determina qué mecanismos de integración BC ↔ FSM están disponibles, cuánto desarrollo adicional será necesario, y qué tan expuesto queda el proyecto a cada actualización semestral de Microsoft.</p>
+
+  <div class="comparison">
+    <div class="comp-card comp-essential">
+      <div class="comp-badge">Essentials</div>
+      <h3>Opción actual del proyecto</h3>
+      <p class="price">~$70 USD/usuario/mes</p>
+      <ul class="comp-list">
+        <li><div class="comp-icon icon-yes">✓</div> Integration Type "Project": Work Orders → Project Journal Lines en BC</li>
+        <li><div class="comp-icon icon-yes">✓</div> Mapeo PJLINE-WORDERPRODUCT (consumo de productos)</li>
+        <li><div class="comp-icon icon-yes">✓</div> Mapeo PJLINE-WORDERSERVICE (consumo de servicios)</li>
+        <li><div class="comp-icon icon-yes">✓</div> Mapeo LOCATIONS (sincronización BC → FS unidireccional)</li>
+        <li><div class="comp-icon icon-yes">✓</div> Virtual Tables para disponibilidad de inventario en campo</li>
+        <li><div class="comp-icon icon-yes">✓</div> Hoja de planificación MPS/MRP</li>
+        <li><div class="comp-icon icon-no">✗</div> <strong style="color:var(--accent-red)">NO incluye mapeo SVCITEM-CUSTASSET</strong> — sin vínculo nativo entre difusor (Service Item) y cliente (Customer Asset) en FSM</li>
+        <li><div class="comp-icon icon-no">✗</div> <strong style="color:var(--accent-red)">NO sincroniza Service Orders ↔ Work Orders</strong> bidireccionalmente</li>
+        <li><div class="comp-icon icon-no">✗</div> NO incluye versiones de BOM (sustitutos A/B/C para aromas)</li>
+        <li><div class="comp-icon icon-warn">!</div> Toda funcionalidad faltante requiere desarrollo adicional con costo y mantenimiento recurrente ante cada Wave Release</li>
+      </ul>
+    </div>
+
+    <div class="comp-card comp-premium">
+      <div class="comp-badge">Premium</div>
+      <h3>Opción a evaluar según el modelo de negocio</h3>
+      <p class="price">~$100 USD/usuario/mes · +43% sobre Essentials</p>
+      <ul class="comp-list">
+        <li><div class="comp-icon icon-yes">✓</div> <strong>Todo lo de Essentials +</strong></li>
+        <li><div class="comp-icon icon-yes">✓</div> Integration Type "Project and Service": sincronización bidireccional completa</li>
+        <li><div class="comp-icon icon-yes">✓</div> <strong style="color:var(--premium)">Mapeo SVCITEM-CUSTASSET</strong> — difusor vinculado nativamente al cliente en FSM</li>
+        <li><div class="comp-icon icon-yes">✓</div> <strong style="color:var(--premium)">Service Orders ↔ Work Orders</strong> bidireccional</li>
+        <li><div class="comp-icon icon-yes">✓</div> Módulo completo de Service Management en BC</li>
+        <li><div class="comp-icon icon-yes">✓</div> Service Items con historial, contratos de servicio, SLA tracking nativo</li>
+        <li><div class="comp-icon icon-yes">✓</div> Versiones de BOM para sustitutos</li>
+        <li><div class="comp-icon icon-yes">✓</div> Manufacturing completo (si se necesita a futuro)</li>
+        <li><div class="comp-icon icon-warn">!</div> Toggle "Premium Experience" debe activarse en Company Information — si no, el campo Integration Type no aparece</li>
+        <li><div class="comp-icon icon-warn">!</div> No se puede activar Service sin Project — es paquete completo</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>¿Por qué esto es relevante para Olfativa?</strong><br>
+    El modelo B2B es <strong>renta de difusores</strong>. Los difusores siguen siendo activos de Olfativa asignados a clientes. El negocio necesita rastrear: qué difusor (NS) está con qué cliente, desde cuándo, con qué aroma, cuánto consume, cuándo se recarga, cuándo se retira. Eso es <strong>exactamente</strong> lo que SVCITEM-CUSTASSET resuelve nativamente con Premium. Sin Premium, este vínculo se construye con desarrollo adicional sobre Dataverse — <strong>con costo de construcción y mantenimiento recurrente ante cada Wave Release</strong>.
+  </div>
+
+  <h3 style="font-size:16px;font-weight:600;margin:28px 0 16px;">Comparativo Funcional por Capacidad Requerida</h3>
+
+  <table class="matrix-table">
+    <thead><tr><th>Capacidad Requerida por Olfativa</th><th>Essentials</th><th>Premium</th><th>Tipo</th></tr></thead>
+    <tbody>
+      <tr><td>Vincular difusor (NS) a cliente en FSM nativamente</td><td class="cell-gap">✗ Requiere desarrollo adicional</td><td class="cell-ok">✓ SVCITEM-CUSTASSET nativo</td><td><span class="tag tag-hecho">HECHO</span></td></tr>
+      <tr><td>Sincronizar Service Orders ↔ Work Orders bidireccional</td><td class="cell-gap">✗ Solo Project Journals (unidireccional)</td><td class="cell-ok">✓ Mapeo SRVORDER bidireccional</td><td><span class="tag tag-hecho">HECHO</span></td></tr>
+      <tr><td>Historial de servicio por activo (difusor) rastreable desde BC</td><td class="cell-gap">✗ Datos aislados en FSM</td><td class="cell-ok">✓ Service Items con historial completo</td><td><span class="tag tag-hecho">HECHO</span></td></tr>
+      <tr><td>SLA tracking nativo por contrato de cliente</td><td class="cell-gap">✗ Requiere desarrollo adicional</td><td class="cell-ok">✓ Service Contracts con SLA integrado</td><td><span class="tag tag-hecho">HECHO</span></td></tr>
+      <tr><td>Consumo de inventario desde Work Order afecta BC</td><td class="cell-ok">✓ Vía Project Journal Lines</td><td class="cell-ok">✓ Vía Project Journal Lines</td><td><span class="tag tag-hecho">HECHO</span></td></tr>
+      <tr><td>Disponibilidad de inventario visible en campo</td><td class="cell-ok">✓ Virtual Tables</td><td class="cell-ok">✓ Virtual Tables</td><td><span class="tag tag-hecho">HECHO</span></td></tr>
+      <tr><td>Versiones de BOM para sustitutos de aroma (A/B/C)</td><td class="cell-gap">✗ Gap aceptado</td><td class="cell-ok">✓ Incluido</td><td><span class="tag tag-hecho">HECHO</span></td></tr>
+      <tr><td>Mantenimiento ante Wave Releases semestrales</td><td class="cell-gap">ALTO — Cada desarrollo adicional se expone a rotura</td><td class="cell-ok">BAJO — Microsoft mantiene mapeos estándar</td><td><span class="tag tag-opinion">OPINIÓN EXPERTA</span></td></tr>
+      <tr><td>Complejidad de la integración BC ↔ FSM</td><td class="cell-gap">ALTA — 3 capas + desarrollos sobre Dataverse</td><td class="cell-ok">ESTÁNDAR — Flujos nativos documentados</td><td><span class="tag tag-opinion">OPINIÓN EXPERTA</span></td></tr>
+      <tr><td>Dependencia del partner para mantenimiento continuo</td><td class="cell-gap">PERMANENTE — Solo el partner conoce los desarrollos</td><td class="cell-ok">BAJA — Funcionalidad estándar, cualquier partner certificado puede dar soporte</td><td><span class="tag tag-opinion">OPINIÓN EXPERTA</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="verdict">
+    <h3>🏷 Recomendación: Essentials vs. Premium</h3>
+    <p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Para un modelo de <strong>renta de activos con servicio recurrente en campo</strong>, Premium presenta menor riesgo operativo a mediano plazo. El ahorro mensual de Essentials se compensa con desarrollo adicional que:</p>
+    <p>1) <strong>Conlleva costo de construcción</strong> para compensar las funcionalidades no incluidas.<br>
+    2) <strong>Se expone a rotura con cada Wave Release</strong> semestral de Microsoft (ver pestaña "Impacto Wave Releases").<br>
+    3) <strong>Agrega complejidad técnica</strong> sobre una integración de tres capas (BC → Dataverse → FSM).<br>
+    4) <strong>Genera dependencia del partner</strong> para mantener código que solo ellos conocen.</p>
+    <p style="margin-top:12px"><span class="tag tag-inferencia" style="margin-right:8px">INFERENCIA</span> Es importante que en la próxima sesión se confirme con Clouzzy cuál es su propuesta técnica para resolver la trazabilidad difusor↔cliente con Essentials, y que se compare formalmente contra el escenario Premium antes de avanzar.</p>
+  </div>
+</div>
+
+<!-- TAB 2: WAVE RELEASES -->
+<div class="section" id="waves">
+  <h2 class="section-title">Impacto de las Wave Releases Semestrales</h2>
+  <p class="section-desc">Microsoft actualiza BC y FSM automáticamente 2× al año (Wave 1 abril, Wave 2 octubre). El impacto es radicalmente diferente si el proyecto usa funcionalidad estándar (Premium) vs. desarrollo adicional (Essentials).</p>
+
+  <div class="callout callout-warn">
+    <strong>Dato crítico de timing:</strong> Go Live BC: agosto 2026. Wave 2 de 2026: octubre 2026 — apenas <strong>8 semanas después</strong>. Cualquier desarrollo del Go Live enfrenta su primera prueba de supervivencia casi inmediatamente. Además, el Go Live de FSM <strong>coincide</strong> con la fecha de aplicación de Wave 2.
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;margin:24px 0;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:20px;">Línea de Tiempo: Go Lives vs. Wave Releases</h4>
+    <div style="position:relative;overflow-x:auto;">
+      <div class="wave-label-row" style="min-width:700px;"><span>ABR 2026</span><span>MAY</span><span>JUN</span><span>JUL</span><span>AGO</span><span>SEP</span><span>OCT</span><span>NOV</span><span>DIC</span><span>ABR 2027</span></div>
+      <div style="position:relative;min-width:700px;height:140px;margin-top:8px;">
+        <div style="position:absolute;left:0;top:0;right:55%;height:36px;background:rgba(24,144,255,.1);border:1px solid rgba(24,144,255,.2);border-radius:6px;display:flex;align-items:center;padding:0 12px;"><span style="font-size:11px;font-weight:600;color:var(--accent-blue);">BC 2026 Wave 1 (v28) — Ya aplicada</span></div>
+        <div style="position:absolute;left:60%;top:0;right:0;height:36px;background:rgba(255,140,0,.1);border:1px solid rgba(255,140,0,.2);border-radius:6px;display:flex;align-items:center;padding:0 12px;"><span style="font-size:11px;font-weight:600;color:var(--accent-orange);">BC 2026 Wave 2 (v29)</span></div>
+        <div style="position:absolute;left:44.4%;top:44px;width:2px;height:70px;background:var(--accent-red);"></div>
+        <div style="position:absolute;left:44.4%;top:44px;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--accent-red);background:var(--surface);padding:2px 8px;border:1px solid var(--accent-red);border-radius:4px;white-space:nowrap;">GO LIVE BC — AGO 2026</div>
+        <div style="position:absolute;left:66.6%;top:44px;width:2px;height:70px;background:var(--accent-red);"></div>
+        <div style="position:absolute;left:66.6%;top:44px;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--accent-red);background:var(--surface);padding:2px 8px;border:1px solid var(--accent-red);border-radius:4px;white-space:nowrap;">GO LIVE FSM — OCT 2026</div>
+        <div style="position:absolute;left:66.6%;top:80px;transform:translateX(-50%);font-size:10px;font-weight:600;color:var(--accent-orange);background:var(--accent-orange-dim);padding:2px 8px;border-radius:4px;white-space:nowrap;">⚡ Wave 2 se aplica aquí</div>
+        <div style="position:absolute;left:44.4%;top:128px;width:22.2%;height:0;border-top:1px dashed var(--text-muted);"></div>
+        <div style="position:absolute;left:55.5%;top:132px;transform:translateX(-50%);font-size:10px;color:var(--text-muted);white-space:nowrap;">← solo 8 semanas →</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;">
+    <h3 class="sub-section-title">¿Cómo Funcionan las Wave Releases?</h3>
+    <p class="sub-section-desc"><span class="tag tag-hecho" style="margin-right:8px">HECHO</span> Documentado en Microsoft Learn y confirmado en la guía técnica analizada.</p>
+  </div>
+
+  <div class="impact-grid">
+    <div class="impact-card"><h4>📅 Frecuencia y automatismo</h4><p>2 actualizaciones mayores/año al ambiente productivo de forma <strong>automática</strong>. No es opcional: el tenant se actualiza aunque la empresa no esté lista.</p></div>
+    <div class="impact-card"><h4>⚡ Feature Management automático</h4><p>Cada Wave activa features antes opcionales. <strong>"Autosave with every field change"</strong> (v27) rompió lógica customizada en implementaciones globales.</p></div>
+    <div class="impact-card"><h4>🔄 Objetos renombrados o eliminados</h4><p><strong>BC 2025 Wave 2 (v27) renombró tablas del módulo Subscription & Recurring Billing</strong> — exactamente el módulo que Olfativa usa para B2B. Causa errores de sincronización de schema.</p></div>
+    <div class="impact-card"><h4>💰 Motores obligatorios</h4><p><strong>BC 2026 Wave 1 (v28) hizo obligatorio el nuevo motor de precios.</strong> Implementaciones con listas de precios personalizadas requirieron migración forzada.</p></div>
+  </div>
+
+  <div class="sub-section">
+    <h3 class="sub-section-title">Impacto Diferencial: Essentials vs. Premium ante Cada Wave</h3>
+    <p class="sub-section-desc"><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Este es el factor de decisión más importante entre ambas opciones a mediano plazo y vale la pena analizarlo con el partner en detalle.</p>
+  </div>
+
+  <div class="wave-scenario">
+    <h4>Escenario 1: Trazabilidad Difusor ↔ Cliente</h4>
+    <p>Olfativa necesita vincular cada difusor (NS) a un cliente en FSM para saber quién tiene qué, cuándo se instaló, y cuándo toca servicio.</p>
+    <div class="wave-compare">
+      <div class="wave-compare-box ess"><strong>Con Essentials</strong>Sin SVCITEM-CUSTASSET, se construye con <strong>campos adicionales en Dataverse</strong>. Cada Wave puede: (a) renombrar o depreciar la entidad base del desarrollo, (b) cambiar la API que Power Automate usa para la sincronización, (c) activar un feature que conflictúe con la lógica construida. <strong>Cada Wave requiere revisión, prueba y potencial reparación del desarrollo</strong>, lo cual conlleva costo de consultoría recurrente.</div>
+      <div class="wave-compare-box prem"><strong>Con Premium</strong>SVCITEM-CUSTASSET es un componente <strong>estándar mantenido por Microsoft</strong>. Cuando la Wave se aplica, Microsoft garantiza que sus mapeos funcionan. Si algo se rompe, publican Known Issue y lo corrigen. <strong>No se requiere intervención del partner</strong> para que la trazabilidad siga operando.</div>
+    </div>
+  </div>
+
+  <div class="wave-scenario">
+    <h4>Escenario 2: 12 Órdenes de Trabajo por Contrato de Suscripción</h4>
+    <p><span class="tag tag-hecho" style="margin-right:4px">HECHO</span> Al activar contrato → genera 12 OT en FSM. Requiere desarrollo en ambos escenarios, pero la superficie de riesgo difiere.</p>
+    <div class="wave-compare">
+      <div class="wave-compare-box ess"><strong>Con Essentials</strong>El flujo genera Work Orders vía API de Dataverse. Si la Wave cambia el schema de Work Order, el flujo puede fallar o generar WOs incompletas. Esto se suma a los otros desarrollos (trazabilidad, Service Orders, SLA) que también requieren revisión. <strong>Efecto acumulativo: N desarrollos × 2 Waves/año = 2N revisiones de mantenimiento anuales.</strong></div>
+      <div class="wave-compare-box prem"><strong>Con Premium</strong>El flujo de generación de WO es desarrollo en ambos casos, pero es el <strong>único desarrollo significativo</strong>. Todo lo demás (trazabilidad, Service Orders, SLA) es estándar. La superficie se reduce a <strong>1 desarrollo × 2 Waves/año = 2 revisiones</strong> en vez de 6–8.</div>
+    </div>
+  </div>
+
+  <div class="wave-scenario">
+    <h4>Escenario 3: Subscription Billing + FSM (Riesgo Compuesto)</h4>
+    <p><span class="tag tag-hecho" style="margin-right:4px">HECHO</span> BC 2025 Wave 2 renombró tablas del módulo Subscription Billing. Olfativa usa este módulo como base de su modelo B2B.</p>
+    <div class="wave-compare">
+      <div class="wave-compare-box ess"><strong>Con Essentials</strong>El módulo de Suscripciones es estándar, pero la <strong>interfaz con FSM es 100% desarrollo adicional</strong>. Si el renombramiento de tablas afecta esa interfaz, la activación de contratos se interrumpe. <strong>Sin Service Orders nativas, no hay mecanismo de contingencia:</strong> o el desarrollo funciona, o no hay generación de órdenes de trabajo. Un solo punto de falla para toda la operación B2B.</div>
+      <div class="wave-compare-box prem"><strong>Con Premium</strong>Service Orders en BC se sincronizan nativamente con Work Orders en FSM. La cadena "Contrato → Service Order → Work Order" tiene <strong>dos eslabones estándar</strong> y solo uno de desarrollo. Si el desarrollo falla, <strong>se puede generar la Service Order manualmente en BC como contingencia</strong> — el mapeo nativo se encarga del resto.</div>
+    </div>
+  </div>
+
+  <div class="wave-scenario" style="border:2px solid rgba(255,77,79,.3);">
+    <h4 style="color:var(--accent-red);">⚡ Escenario Específico: Wave 2 de Octubre 2026</h4>
+    <p>Primera Wave post Go Live BC y coincide con Go Live FSM. Momento de máxima vulnerabilidad del proyecto.</p>
+    <div class="wave-compare">
+      <div class="wave-compare-box ess"><strong>Con Essentials — Octubre 2026</strong>Equipo en primeras 8 semanas con BC, en curva de aprendizaje, partner en hypercare. <strong>Microsoft aplica Wave 2 automáticamente</strong>, que puede cambiar formularios, renombrar objetos, activar features y modificar la UI que los usuarios apenas están aprendiendo. <strong>Si hay 3–5 desarrollos sobre Dataverse, cada uno es un punto de falla simultáneo.</strong> Desde la perspectiva de gestión del cambio (ADKAR), el equipo que llegó a Knowledge/Ability puede retroceder cuando el sistema "cambia" bajo sus pies — generando desconfianza precisamente en el momento más frágil.</div>
+      <div class="wave-compare-box prem"><strong>Con Premium — Octubre 2026</strong>Los mismos riesgos de cambio de UI aplican. Pero la superficie de desarrollo adicional es mínima: solo la generación de WO requiere validación. <strong>Los mapeos nativos se actualizan como parte de la Wave.</strong> El hypercare se enfoca en adopción, no en reparar desarrollos. Recuperación post-Wave significativamente más rápida.</div>
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <h3 class="sub-section-title">Efecto Acumulativo a 3 Años (6 Wave Releases)</h3>
+    <p class="sub-section-desc"><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> El verdadero impacto de la decisión de licencia no está en el costo inicial — está en el mantenimiento recurrente cada 6 meses durante toda la vida útil del sistema.</p>
+  </div>
+
+  <table class="matrix-table">
+    <thead><tr><th>Factor</th><th>Essentials (3 años, 6 Waves)</th><th>Premium (3 años, 6 Waves)</th></tr></thead>
+    <tbody>
+      <tr><td>Desarrollos que requieren revisión por Wave</td><td class="cell-gap">3–5 (trazabilidad, Service Orders, SLA, interfaz suscripciones, reingreso sobrante)</td><td class="cell-ok">1 (generación WO desde contrato)</td></tr>
+      <tr><td>Revisiones de mantenimiento en 3 años</td><td class="cell-gap">18–30 revisiones (3–5 × 6 Waves)</td><td class="cell-ok">6 revisiones (1 × 6 Waves)</td></tr>
+      <tr><td>Probabilidad de rotura post-Wave por año</td><td class="cell-gap">ALTA — más puntos de falla</td><td class="cell-ok">BAJA — superficie mínima</td></tr>
+      <tr><td>Dependencia del partner</td><td class="cell-gap">PERMANENTE — solo el partner conoce los desarrollos</td><td class="cell-ok">PUNTUAL — solo para el desarrollo específico</td></tr>
+      <tr><td>Continuidad si se cambia de partner</td><td class="cell-gap">COMPLEJA — documentación de desarrollos raramente completa; nuevo partner necesita reverse-engineer</td><td class="cell-ok">FLUIDA — funcionalidad estándar; cualquier partner certificado puede soportar</td></tr>
+      <tr><td>Capacidad del equipo interno (Tamara) para resolver</td><td class="cell-gap">LIMITADA — desarrollos requieren AL Code y Dataverse plugins</td><td class="cell-ok">MAYOR — funcionalidad estándar con documentación oficial y comunidad</td></tr>
+    </tbody>
+  </table>
+
+  <div class="verdict">
+    <h3>🔄 Resumen: Wave Releases como Factor de Decisión</h3>
+    <p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Las Waves transforman la decisión Essentials vs. Premium de una comparación de costo mensual a una cuestión de <strong>resiliencia operativa a largo plazo</strong>.</p>
+    <p style="margin-top:8px">Con Essentials, el proyecto entra en un ciclo de mantenimiento semestral: cada 6 meses hay que validar y potencialmente reparar 3–5 desarrollos, con costo, riesgo de interrupción, y fricción con usuarios que perciben cambios inesperados. <strong>Es comparable a elegir un vehículo con menor costo inicial pero que requiere mantenimiento especializado cada 6 meses bajo riesgo de falla.</strong></p>
+    <p style="margin-top:8px">Con Premium, la superficie de mantenimiento se reduce a lo mínimo. Microsoft mantiene todo lo demás. <strong>La inversión adicional en licencia compra predictibilidad operativa.</strong></p>
+    <p style="margin-top:12px"><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Se recomienda que Clouzzy presente formalmente su análisis del impacto de Waves sobre los desarrollos que propone construir con Essentials. Esto permitirá al equipo de Olfativa tomar una decisión informada con todos los factores sobre la mesa.</p>
+  </div>
+</div>
+
+<!-- TAB 3: RIESGOS TÉCNICOS -->
+<div class="section" id="tecnicos">
+  <h2 class="section-title">Riesgos Técnicos de la Integración</h2>
+  <p class="section-desc">Problemas documentados en implementaciones BC ↔ FSM que es importante abordar con el partner antes del Go Live para definir mitigaciones conjuntas.</p>
+
+  <div class="risk-card sev-critico"><div class="risk-header"><div class="risk-header-left"><div class="risk-number">01</div><div class="risk-title">Facturación Duplicada: Motor Nativo de FSM vs. BC</div></div><span class="tag tag-critico">Crítico</span></div><div class="risk-body"><p>Field Service tiene motor de facturación propio. Con la integración activa, <strong>ambos sistemas pueden generar documentos financieros para las mismas Work Orders</strong>. Resultado: invoices duplicadas y descuadre contable.</p><p>Debe <strong>deshabilitarse explícitamente</strong> en Field Service Settings <strong>antes</strong> de cualquier sincronización. Es un paso de configuración documentado por Microsoft que conviene incluir como prerequisito en el runbook de go-live.</p><p><strong>Impacto Olfativa:</strong> Con 500–700 documentos B2B/mes, una duplicación no detectada genera un descuadre contable difícil de reconciliar.</p></div><div class="risk-tags"><span class="evidence-label">Evidencia:</span><span class="tag tag-hecho">HECHO — Documentado en guía técnica Microsoft</span><span class="tag tag-hecho">HECHO — Riesgo #2 del proyecto, pendiente de definir</span></div></div>
+
+  <div class="risk-card sev-critico"><div class="risk-header"><div class="risk-header-left"><div class="risk-number">02</div><div class="risk-title">Job Queue Entries Silenciosos: Divergencia Invisible</div></div><span class="tag tag-critico">Crítico</span></div><div class="risk-body"><p>La sincronización corre vía <strong>Job Queue Entries</strong> en segundo plano. Si falla, <strong>no hay alerta automática por defecto</strong>. Datos dejan de sincronizarse silenciosamente. Con ~100 kg/mes de aroma y 2,500 difusores, la divergencia acumulada puede ser significativa.</p><p><strong>Mitigación recomendada:</strong> Configurar alertas vía Power Automate, revisar Integration Sync Jobs periódicamente los primeros 90 días, y asignar permisos completos al usuario de integración. Importante incluirlo en el plan de monitoreo post-go-live.</p></div><div class="risk-tags"><span class="evidence-label">Evidencia:</span><span class="tag tag-hecho">HECHO — Riesgo #3 del proyecto, pendiente de discutir</span><span class="tag tag-opinion">OPINIÓN EXPERTA — Causa frecuente de problemas post-go-live en implementaciones FSM</span></div></div>
+
+  <div class="risk-card sev-critico"><div class="risk-header"><div class="risk-header-left"><div class="risk-number">03</div><div class="risk-title">Master Data Coupling Incompleto: Fallas en Cascada</div></div><span class="tag tag-critico">Crítico</span></div><div class="risk-body"><p>BC valida que <strong>todos</strong> los registros dependientes estén "acoplados" entre BC y Dataverse. Si una moneda, unidad de medida o maestro no está acoplado, <strong>la sincronización completa falla</strong>. El error apunta al documento, no al campo faltante — lo que dificulta el diagnóstico.</p><p><strong>Ejemplos relevantes para Olfativa:</strong> Items con tipo incorrecto en FSM ("Service" vs. "Inventory"), unidad de horas no configurada (bloquea sincronización de WO Services), y con 1,700 clientes la validación exhaustiva de coupling es indispensable antes del go-live.</p></div><div class="risk-tags"><span class="evidence-label">Evidencia:</span><span class="tag tag-hecho">HECHO — Riesgo #5 del proyecto, pendiente de discutir</span><span class="tag tag-hecho">HECHO — Datos maestros actuales no están homologados</span></div></div>
+
+  <div class="risk-card sev-alto"><div class="risk-header"><div class="risk-header-left"><div class="risk-number">04</div><div class="risk-title">Inventario Negativo en Ubicaciones de Técnicos</div></div><span class="tag tag-alto">Alto</span></div><div class="risk-body"><p>Técnico registra consumo → FSM deduce de su ubicación (camioneta). <strong>Sin transferencia previa del almacén</strong>, genera inventario negativo. BC lo permite por defecto.</p><p><strong>Mitigación:</strong> "Prevent Negative Inventory" en Inventory Setup + configurar ubicaciones como warehouses en FSM + entrenar técnicos en transferencias pre-ruta.</p></div><div class="risk-tags"><span class="tag tag-hecho">HECHO — Riesgo #4, proceso TO BE definido pero sin configuración formal</span></div></div>
+
+  <div class="risk-card sev-alto"><div class="risk-header"><div class="risk-header-left"><div class="risk-number">05</div><div class="risk-title">Líneas Budget vs. Billable: Doble Asiento Inesperado</div></div><span class="tag tag-alto">Alto</span></div><div class="risk-body"><p>Sincronización de WO Services genera <strong>dos líneas de Project Planning</strong> (Budget + Billable). Reportes de P&L pueden mostrar cifras infladas si no se incorpora este comportamiento en el diseño contable.</p></div><div class="risk-tags"><span class="tag tag-hecho">HECHO — Documentado en Known Issues de Microsoft</span><span class="tag tag-opinion">OPINIÓN EXPERTA — Requiere definición con el equipo contable pre-go-live</span></div></div>
+
+  <div class="risk-card sev-alto"><div class="risk-header"><div class="risk-header-left"><div class="risk-number">06</div><div class="risk-title">Reingreso de Sobrante de Aroma: Sin Soporte Nativo</div></div><span class="tag tag-alto">Alto</span></div><div class="risk-body"><p>Técnico entrega menos aroma del facturado. <strong>No hay flujo estándar para reingresar sobrante</strong> en la integración BC-FSM. Además, los actuals generados no quedan asociados a la WO de origen. Se necesita definir el mecanismo con el partner.</p></div><div class="risk-tags"><span class="tag tag-hecho">HECHO — Gap G-03 "sin modelar"</span><span class="tag tag-hecho">HECHO — Known Issues Microsoft: actuals no asociados a WO</span></div></div>
+
+  <div class="risk-card sev-medio"><div class="risk-header"><div class="risk-header-left"><div class="risk-number">07</div><div class="risk-title">Prerequisito D365 Sales Pendiente de Verificar</div></div><span class="tag tag-medio">Medio</span></div><div class="risk-body"><p>FSM requiere <strong>D365 Sales instalado en el mismo Dataverse</strong>. Si no está, la configuración falla. Es un prerequisito binario que conviene confirmar cuanto antes para evitar bloqueos en la fase de configuración.</p></div><div class="risk-tags"><span class="tag tag-hecho">HECHO — Gap G-05 "No verificado"</span></div></div>
+</div>
+
+<!-- TAB 4: VALIDACIONES PENDIENTES -->
+<div class="section" id="partner">
+  <h2 class="section-title">Validaciones Pendientes con el Partner</h2>
+  <p class="section-desc">Puntos que es importante abordar con Clouzzy para asegurar que la integración BC ↔ FSM se diseñe con las salvaguardas necesarias. El objetivo es alinear expectativas y construir un plan robusto juntos.</p>
+
+  <div class="callout callout-info"><strong>Contexto:</strong> BC y FSM son sistemas con arquitecturas diferentes. BC opera directamente; FSM opera a través de Dataverse con su propia app móvil y lógica de despacho. La integración entre ambos agrega una capa de complejidad que es importante planificar desde el diseño. Estos puntos buscan asegurar que todos los riesgos documentados se aborden antes del Go Live.</div>
+
+  <div class="partner-box"><h4>📋 Punto 1: Sesión dedicada a FSM y su integración con BC</h4><p><span class="tag tag-hecho" style="margin-right:8px">HECHO</span> Se han realizado 10 sesiones TO BE cubriendo todos los módulos de BC. La sesión de FSM está programada para la semana del 13 de abril. <span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Es importante que esta sesión no solo cubra la funcionalidad de FSM, sino que aborde explícitamente la integración con BC: cómo fluyen datos, qué se sincroniza, qué mecanismos de monitoreo se usarán, y cómo se resuelven los riesgos documentados en esta tabla. Algunas decisiones de inventario, facturación y master data tomadas en sesiones anteriores pueden necesitar revisarse a la luz del diseño de FSM.</p></div>
+
+  <div class="partner-box"><h4>📋 Punto 2: Riesgos de integración que necesitan plan de mitigación</h4><p><span class="tag tag-hecho" style="margin-right:8px">HECHO</span> De los 9 riesgos del proyecto, 3 están marcados como pendientes de discusión: monitoreo de Dataverse/Job Queue (#3), master data coupling (#5), y Wave Releases (#6). Estos son riesgos bien documentados en implementaciones BC+FSM. <span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Sería valioso que el partner presente su plan de mitigación para cada uno, lo que permitiría al equipo evaluar el nivel de preparación y planificar contingencias.</p></div>
+
+  <div class="partner-box"><h4>📋 Punto 3: Definición de licenciamiento para la integración FSM</h4><p><span class="tag tag-hecho" style="margin-right:8px">HECHO</span> El proyecto está con Essentials. La documentación de Microsoft indica que el Integration Type "Project and Service" y el mapeo SVCITEM-CUSTASSET requieren Premium. Es importante que el partner presente formalmente cuál es la ruta técnica para cada opción, incluyendo los desarrollos adicionales necesarios con Essentials y su plan de mantenimiento ante Waves.</p></div>
+
+  <div class="partner-box"><h4>📋 Punto 4: Configuración de facturación nativa de FSM</h4><p><span class="tag tag-hecho" style="margin-right:8px">HECHO</span> La deshabilitación del motor de facturación nativo de FSM es un prerequisito documentado por Microsoft antes de activar sincronización con BC. Importante confirmar que está incluido en el runbook de configuración.</p></div>
+
+  <div class="partner-box"><h4>📋 Punto 5: Plan de monitoreo de sincronización</h4><p><span class="tag tag-hecho" style="margin-right:8px">HECHO</span> Gap G-07: "Monitoreo de Job Queue Entries — No diseñado". <span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Es recomendable definir con el partner un plan de alertas, dashboards y protocolos de escalación para la sincronización BC ↔ Dataverse ↔ FSM antes del go-live.</p></div>
+
+  <div class="partner-box"><h4>📋 Punto 6: Verificación de prerequisitos técnicos</h4><p><span class="tag tag-hecho" style="margin-right:8px">HECHO</span> Pendientes de verificar: licencia D365 Sales disponible, estado del entorno Dataverse, moneda base coincidente. Son validaciones rápidas (minutos) que conviene ejecutar cuanto antes para evitar sorpresas en la fase de configuración de FSM.</p></div>
+
+  <div class="partner-box"><h4>📋 Punto 7: Experiencia del equipo en FSM</h4><p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> BC y FSM son especialidades distintas. Sería valioso conocer la experiencia del equipo de Clouzzy específicamente en implementaciones de Field Service integradas con BC, para evaluar si el proyecto se beneficiaría de sumar un recurso especialista en FSM durante las fases de diseño y configuración. Esto no es inusual — muchos partners complementan sus equipos con especialistas cuando el proyecto lo requiere.</p></div>
+</div>
+
+<!-- TAB 5: OLFATIVA -->
+<div class="section" id="olfativa">
+  <h2 class="section-title">Riesgos Específicos del Modelo de Negocio</h2>
+  <p class="section-desc">Desafíos únicos de la combinación: renta de activos + servicio recurrente + suscripción + multi-ubicación + aromas con lote y caducidad.</p>
+
+  <div class="risk-card sev-critico"><div class="risk-header"><div class="risk-header-left"><div class="risk-number">A</div><div class="risk-title">Trazabilidad: Difusor + Aroma + Cliente por Servicio</div></div><span class="tag tag-critico">Crítico</span></div><div class="risk-body"><p><span class="tag tag-hecho" style="margin-right:8px">HECHO</span> Gap G-01: "Trazabilidad B2B: lote aroma + NS difusor por cliente en cada servicio — Sin solución, depende de sesión FSM".</p><p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Para 2,500 difusores con 1,700 clientes, la trazabilidad difusor↔cliente es la columna vertebral del modelo. Es importante que la sesión de FSM defina la solución técnica para esto — y la elección Essentials/Premium impacta directamente cómo se resuelve.</p></div></div>
+
+  <div class="risk-card sev-critico"><div class="risk-header"><div class="risk-header-left"><div class="risk-number">B</div><div class="risk-title">12 OT por Contrato: Desarrollo Pendiente de Diseño</div></div><span class="tag tag-critico">Crítico</span></div><div class="risk-body"><p><span class="tag tag-hecho" style="margin-right:8px">HECHO</span> "Al activar contrato → genera 12 OT en FSM — REQUIERE DESARROLLO — interfaz sin diseñar".</p><p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Este es probablemente el desarrollo más complejo del proyecto. Implica: evento BC → Power Automate → 12 Work Orders con fechas, productos, cliente y ubicación correctos. Es fundamental que el partner presente un diseño técnico detallado, incluyendo plan de mantenimiento ante Wave Releases.</p></div></div>
+
+  <div class="risk-card sev-alto"><div class="risk-header"><div class="risk-header-left"><div class="risk-number">C</div><div class="risk-title">Offline Profiles: App Móvil en Campo</div></div><span class="tag tag-alto">Alto</span></div><div class="risk-body"><p><span class="tag tag-hecho" style="margin-right:8px">HECHO</span> La integración BC-FSM instala perfiles offline que <strong>sobrescriben</strong> los out-of-the-box. Sin configuración adecuada, la app no funciona sin internet.</p><p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> La app móvil es el punto de contacto de los técnicos con FSM. Si falla en campo, la adopción se compromete desde el primer día. Es recomendable probar los offline profiles en condiciones reales de campo durante el piloto, no solo en oficina.</p></div></div>
+
+  <div class="risk-card sev-alto"><div class="risk-header"><div class="risk-header-left"><div class="risk-number">D</div><div class="risk-title">Palacio de Hierro SLA: 350 Difusores en 10 Días</div></div><span class="tag tag-alto">Alto</span></div><div class="risk-body"><p><span class="tag tag-hecho" style="margin-right:8px">HECHO</span> ~350 difusores, SLA 10 días hábiles/mes, 2 técnicos dedicados.</p><p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Dado el SLA contractual, es recomendable que el piloto de FSM se realice con cuentas de menor riesgo contractual. Palacio puede incorporarse al sistema digital una vez estabilizada la operación, minimizando el riesgo de incumplimiento durante la curva de aprendizaje.</p></div></div>
+
+  <div class="risk-card sev-medio"><div class="risk-header"><div class="risk-header-left"><div class="risk-number">E</div><div class="risk-title">Inventario Compartido B2B+B2C Sin Priorización</div></div><span class="tag tag-medio">Medio</span></div><div class="risk-body"><p><span class="tag tag-hecho" style="margin-right:8px">HECHO</span> Riesgo #9: "SIN SOLUCIÓN". Cuando canal B2B y Shopify B2C compiten por mismo SKU, no hay regla de priorización definida. Importante abordar antes de que ambos canales operen desde BC.</p></div></div>
+</div>
+
+<!-- TAB 6: AGENDA -->
+<div class="section" id="acciones">
+  <h2 class="section-title">Agenda de Definición con el Partner</h2>
+  <p class="section-desc">Temas priorizados por urgencia para abordar con Clouzzy en las próximas semanas. La ventana para decisiones arquitecturales se cierra con la precarga de catálogos en mayo.</p>
+
+  <div class="callout callout-warn"><strong>Contexto temporal:</strong> Abril 2026. Go Live BC: agosto (4 meses). Go Live FSM: octubre (6 meses). Precarga catálogos: mayo (1 mes). Wave 2: octubre — 8 semanas post go-live BC.</div>
+
+  <h3 style="font-size:16px;font-weight:600;margin:28px 0 16px;color:var(--accent-red);">🔴 Semana del 7–11 de abril (Visita Mérida)</h3>
+
+  <div class="partner-box"><h4>1. Definir Essentials vs. Premium con análisis completo</h4><p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Solicitar a Clouzzy que presente: tabla de funcionalidades que Olfativa requiere y cómo se resuelven con cada licencia, desarrollos adicionales necesarios con Essentials, y plan de mantenimiento de cada desarrollo ante Waves semestrales. Tomar la decisión con toda la información disponible.</p></div>
+
+  <div class="partner-box"><h4>2. Verificar prerequisitos técnicos de FSM</h4><p><span class="tag tag-hecho" style="margin-right:8px">HECHO</span> Pendientes: licencia D365 Sales, estado Dataverse, moneda base. <span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Son verificaciones de minutos en Power Platform Admin Center. Idealmente se resuelven durante la visita.</p></div>
+
+  <div class="partner-box"><h4>3. Confirmar experiencia del equipo en FSM</h4><p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Conversar abiertamente sobre la experiencia del equipo de Clouzzy en Field Service. Si es necesario, evaluar juntos si sumar un recurso especialista en FSM fortalecería el proyecto. Muchos partners complementan equipos en escenarios de integración BC+FSM — es práctica estándar, no una carencia.</p></div>
+
+  <h3 style="font-size:16px;font-weight:600;margin:28px 0 16px;color:var(--accent-orange);">🟠 Abril (Sesión FSM semana 13)</h3>
+
+  <div class="partner-box"><h4>4. Abordar los riesgos técnicos con plan de mitigación</h4><p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Llevar como agenda: (1) Desactivación de facturación nativa FSM (2) Monitoreo de Job Queue (3) Coupling de master data (4) Inventario negativo (5) Plan para Wave 2 de octubre (6) Offline profiles (7) Diseño de generación de 12 OT (8) Flujo de reingreso de sobrante. Pedir plan de mitigación para cada punto.</p></div>
+
+  <div class="partner-box"><h4>5. Cerrar modelo de trazabilidad antes de precarga</h4><p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> La estructura de datos maestros (difusores, clientes, atributos) debe estar definida antes de mayo. La decisión Essentials/Premium impacta directamente cómo se estructuran.</p></div>
+
+  <h3 style="font-size:16px;font-weight:600;margin:28px 0 16px;color:var(--accent-yellow);">🟡 Mayo – Julio 2026</h3>
+
+  <div class="partner-box"><h4>6. Sincronización completa en sandbox con datos reales</h4><p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Ejecutar sincronización con datos reales antes del go-live. Validar coupling de 1,700 clientes, ítems, difusores, ubicaciones y unidades de medida. Cada falla en sandbox es un bloqueo evitado en producción.</p></div>
+
+  <div class="partner-box"><h4>7. Piloto FSM con técnicos seleccionados</h4><p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Selección alineada con ADKAR: 1 entusiasta + 1 líder de opinión + 1 escéptico. Probar offline, consumo, fotos, cierre de WO en campo real. Iniciar con cuentas de bajo riesgo contractual (no Palacio de Hierro) y completar antes del rollout general.</p></div>
+
+  <div class="partner-box"><h4>8. Alertas y monitoreo como prerequisito de go-live</h4><p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Power Automate → alerta a Tamara ante fallo de Job Queue. Dashboard de Integration Sync Errors. Protocolo: falla >2h = escalación inmediata al partner. Definir como prerequisito no negociable del go-live.</p></div>
+
+  <div class="verdict" style="margin-top:36px;">
+    <h3>📋 Agenda Ejecutiva para la Reunión con Clouzzy</h3>
+    <p><span class="tag tag-opinion" style="margin-right:8px">OPINIÓN EXPERTA</span> Tres preguntas clave para alinear con el partner:</p>
+    <p style="margin-top:8px"><em>1. ¿Cuál es la experiencia del equipo en implementaciones de Field Service integradas con Business Central? ¿Consideran que el proyecto se beneficiaría de sumar un especialista en FSM?</em></p>
+    <p><em>2. Para la trazabilidad de 2,500 difusores por cliente (NS + aroma + historial de servicio), ¿cuál es la propuesta técnica con Essentials? Necesitamos ver la arquitectura, el esfuerzo estimado y el plan de mantenimiento ante cada Wave Release — para poder comparar formalmente contra el escenario Premium.</em></p>
+    <p><em>3. De los riesgos documentados para la integración BC ↔ FSM (facturación dual, Job Queue, master data coupling, Wave Releases), ¿cuál es el plan de mitigación? Nos gustaría tener un documento con la respuesta a cada uno antes de avanzar a la fase de configuración de FSM.</em></p>
+    <p style="margin-top:12px"><strong>El objetivo es que tanto Olfativa como Clouzzy lleguen al Go Live con un plan sólido que proteja la inversión y maximice la probabilidad de éxito del Proyecto PRIME.</strong></p>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">Proyecto PRIME — Olfativa — Abril 2026 · Documento de trabajo para alineación interna y con partner · Confidencial</div>
+
+<script>
+document.querySelectorAll('.nav-tab').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));tab.classList.add('active');document.getElementById(tab.dataset.tab).classList.add('active');window.scrollTo({top:document.getElementById('nav').offsetTop-20,behavior:'smooth'});});});
+</script>
+</body>
+</html>
