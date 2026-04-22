@@ -1,0 +1,3116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Olfativa · Arquitectura Microsoft Teams</title>
+<link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teams-purple: #6264A7;
+    --teams-dark: #201F1E;
+    --teams-sidebar: #242132;
+    --teams-sidebar-hover: #3D3A57;
+    --teams-sidebar-active: #464775;
+    --teams-white: #FFFFFF;
+    --teams-gray: #F3F2F1;
+    --teams-light-gray: #EDEBE9;
+    --teams-border: #E1DFDD;
+    --teams-text: #252423;
+    --teams-secondary: #605E5C;
+    --std-blue: #0078D4;
+    --std-light: #EFF6FC;
+    --priv-red: #A4262C;
+    --priv-light: #FDE7E9;
+    --fut-gray: #797775;
+    --fut-light: #F3F2F1;
+    --post-green: #107C10;
+    --post-light: #DFF6DD;
+    --hilo-orange: #C55A11;
+    --hilo-light: #FFF4CE;
+    --fase1-color: #0078D4;
+    --fase2-color: #5C2D91;
+    --connector-bg: #E8F4FD;
+    --connector-text: #0078D4;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1B1A19;
+    color: var(--teams-text);
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .app {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Activity Rail ── */
+  .rail {
+    width: 56px;
+    background: var(--teams-sidebar);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0;
+    gap: 4px;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+  }
+
+  .rail-logo {
+    width: 32px;
+    height: 32px;
+    background: #6264A7;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .rail-item {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s;
+  }
+
+  .rail-item:hover { background: rgba(255,255,255,0.1); }
+  .rail-item.active { background: rgba(100,100,167,0.5); color: white; }
+  .rail-item.active::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    width: 3px;
+    height: 20px;
+    background: white;
+    border-radius: 0 3px 3px 0;
+  }
+
+  .rail-icon { font-size: 18px; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 260px;
+    background: var(--teams-sidebar);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    padding: 16px 14px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .sidebar-title {
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .sidebar-subtitle {
+    color: rgba(255,255,255,0.4);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  .teams-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+
+  .teams-list::-webkit-scrollbar { width: 4px; }
+  .teams-list::-webkit-scrollbar-track { background: transparent; }
+  .teams-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+  .phase-label {
+    color: rgba(255,255,255,0.3);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 12px 14px 4px;
+  }
+
+  .team-item {
+    padding: 6px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 0;
+    transition: background 0.12s;
+    position: relative;
+  }
+
+  .team-item:hover { background: rgba(255,255,255,0.06); }
+
+  .team-item.active {
+    background: var(--teams-sidebar-active);
+  }
+
+  .team-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--teams-purple);
+    border-radius: 0 2px 2px 0;
+  }
+
+  .team-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .team-info { flex: 1; min-width: 0; }
+
+  .team-name {
+    color: rgba(255,255,255,0.85);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .team-item.active .team-name { color: white; font-weight: 600; }
+
+  .team-meta {
+    color: rgba(255,255,255,0.35);
+    font-size: 10px;
+    margin-top: 1px;
+  }
+
+  .team-badge {
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 10px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .badge-f1 { background: rgba(0,120,212,0.25); color: #6CAEE0; }
+  .badge-f2 { background: rgba(92,45,145,0.3); color: #B39DDB; }
+  .badge-temp { background: rgba(200,130,40,0.25); color: #E8A740; }
+  .badge-new { background: rgba(16,124,16,0.25); color: #5EAA5E; }
+
+  /* ── Main Content ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #FAFAF9;
+    overflow: hidden;
+  }
+
+  .main-header {
+    background: white;
+    border-bottom: 1px solid var(--teams-border);
+    padding: 0 24px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .header-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .header-info { flex: 1; }
+
+  .header-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--teams-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header-meta {
+    font-size: 11px;
+    color: var(--teams-secondary);
+    margin-top: 1px;
+  }
+
+  .header-tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  .header-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--teams-secondary);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .header-btn:hover { background: var(--teams-light-gray); }
+
+  /* ── Channel Content ── */
+  .channel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px 24px;
+  }
+
+  .channel-content::-webkit-scrollbar { width: 6px; }
+  .channel-content::-webkit-scrollbar-track { background: transparent; }
+  .channel-content::-webkit-scrollbar-thumb { background: var(--teams-border); border-radius: 3px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--teams-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .channels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  /* ── Channel Card ── */
+  .channel-card {
+    background: white;
+    border: 1px solid var(--teams-border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+
+  .channel-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    border-color: var(--teams-purple);
+  }
+
+  .card-header {
+    padding: 12px 14px 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border-bottom: 1px solid var(--teams-light-gray);
+  }
+
+  .channel-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .icon-std { background: var(--std-light); }
+  .icon-priv { background: var(--priv-light); }
+  .icon-fut { background: var(--fut-light); }
+
+  .card-title-area { flex: 1; min-width: 0; }
+
+  .card-channel-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--teams-text);
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 5px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    line-height: 1.4;
+  }
+
+  .badge-std { background: var(--std-light); color: var(--std-blue); }
+  .badge-priv { background: var(--priv-light); color: var(--priv-red); }
+  .badge-fut { background: var(--fut-light); color: var(--fut-gray); border: 1px dashed #ccc; }
+  .badge-post { background: var(--post-light); color: var(--post-green); }
+  .badge-hilo { background: var(--hilo-light); color: var(--hilo-orange); }
+  .badge-connector { background: #EFF6FF; color: #2563EB; }
+
+  /* ── Card Body ── */
+  .card-body {
+    padding: 12px 14px;
+  }
+
+  .card-desc {
+    font-size: 12px;
+    color: var(--teams-secondary);
+    line-height: 1.55;
+    margin-bottom: 10px;
+  }
+
+  .card-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .meta-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--teams-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .meta-value {
+    font-size: 11.5px;
+    color: var(--teams-text);
+    font-weight: 500;
+    line-height: 1.35;
+  }
+
+  .meta-value .notif-icon { margin-right: 3px; }
+
+  /* ── Protocol Box ── */
+  .protocol-box {
+    background: #F8F7FF;
+    border: 1px solid #E8E6FF;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-top: 10px;
+  }
+
+  .protocol-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--teams-purple);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .protocol-text {
+    font-size: 11px;
+    color: #3D3B54;
+    line-height: 1.6;
+  }
+
+
+
+  /* ── Matrix Layout ── */
+  .channels-matrix {
+    background: white;
+    border: 1px solid var(--teams-border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .matrix-row {
+    display: flex;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--teams-light-gray);
+    transition: background 0.12s;
+    min-height: 52px;
+  }
+
+  .matrix-row:last-child { border-bottom: none; }
+  .matrix-row:hover { background: #F8F7FF; }
+
+  .matrix-row-canal {
+    width: 260px;
+    flex-shrink: 0;
+    padding: 13px 16px;
+    border-right: 1px solid var(--teams-light-gray);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .matrix-canal-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--teams-text);
+    line-height: 1.3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .matrix-canal-icon { font-size: 14px; flex-shrink: 0; }
+
+  .matrix-canal-meta {
+    font-size: 10.5px;
+    color: var(--teams-secondary);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .meta-dot { color: var(--teams-border); }
+
+  .matrix-obj {
+    flex: 1;
+    padding: 13px 16px;
+    font-size: 12px;
+    color: var(--teams-secondary);
+    line-height: 1.6;
+    border-right: 1px solid var(--teams-light-gray);
+  }
+
+  .matrix-alert {
+    font-size: 11px;
+    color: #7A4F00;
+    background: #FFF9F0;
+    border: 1px solid #FFE0A6;
+    border-radius: 4px;
+    padding: 3px 7px;
+    margin-top: 5px;
+    display: inline-block;
+  }
+
+  .matrix-ant {
+    width: 170px;
+    flex-shrink: 0;
+    padding: 13px 14px;
+    font-size: 11px;
+    color: #A19F9D;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  .matrix-header {
+    display: flex;
+    background: #F3F2F1;
+    border-bottom: 2px solid var(--teams-border);
+  }
+
+  .matrix-header-canal { width: 260px; padding: 8px 16px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--teams-secondary); border-right: 1px solid var(--teams-border); flex-shrink: 0; }
+  .matrix-header-obj { flex: 1; padding: 8px 16px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--teams-secondary); border-right: 1px solid var(--teams-border); }
+  .matrix-header-ant { width: 170px; padding: 8px 14px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--teams-secondary); flex-shrink: 0; }
+
+  .formato-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  /* ── Formato Post Box ── */
+  .formato-box {
+    background: var(--formato-bg, #FFF4CE);
+    border: 1px solid var(--formato-border, #FFE0A6);
+    border-radius: 6px;
+    padding: 7px 10px;
+    margin-top: 8px;
+  }
+  .formato-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 3px;
+  }
+  .formato-template {
+    font-size: 10px;
+    opacity: 0.75;
+    margin-bottom: 4px;
+    font-family: monospace;
+  }
+  .formato-example {
+    font-size: 11px;
+    font-family: monospace;
+    line-height: 1.5;
+    font-weight: 500;
+  }
+  /* ── Alert Box ── */
+  .alert-box {
+    background: #FFF9F0;
+    border: 1px solid #FFE0A6;
+    border-radius: 6px;
+    padding: 7px 10px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #7A4F00;
+    line-height: 1.5;
+    display: flex;
+    gap: 5px;
+  }
+
+
+  /* ── Objetivo Box ── */
+  .objetivo-box {
+    background: #F0FFF4;
+    border: 1px solid #B7EBC8;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+  }
+  .objetivo-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #107C10;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .objetivo-text {
+    font-size: 11px;
+    color: #1A4D1A;
+    line-height: 1.6;
+  }
+  /* ── Overview Panel ── */
+  .overview {
+    background: white;
+    border: 1px solid var(--teams-border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .overview-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-num {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--teams-purple);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--teams-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .overview-divider {
+    width: 1px;
+    height: 36px;
+    background: var(--teams-border);
+  }
+
+  .overview-note {
+    flex: 1;
+    font-size: 11.5px;
+    color: var(--teams-secondary);
+    line-height: 1.5;
+    min-width: 200px;
+  }
+
+  /* ── Governance Bar ── */
+  .gov-bar {
+    background: linear-gradient(135deg, #6264A7 0%, #464775 100%);
+    color: white;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .gov-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 150px;
+  }
+
+  .gov-label {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.7;
+  }
+
+  .gov-value {
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.95;
+  }
+
+  /* ── Notification legend ── */
+  .legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--teams-secondary);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  /* Scrollbar in channel-content */
+  .channel-content::-webkit-scrollbar { width: 6px; }
+
+  /* Animación de entrada */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .channel-card { animation: fadeIn 0.2s ease both; }
+  .channel-card:nth-child(2) { animation-delay: 0.03s; }
+  .channel-card:nth-child(3) { animation-delay: 0.06s; }
+  .channel-card:nth-child(4) { animation-delay: 0.09s; }
+  .channel-card:nth-child(5) { animation-delay: 0.12s; }
+  .channel-card:nth-child(6) { animation-delay: 0.15s; }
+
+  /* Mobile hint */
+  @media (max-width: 700px) {
+    .sidebar { width: 0; overflow: hidden; }
+    .channels-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Rail -->
+  <div class="rail">
+    <div class="rail-logo">O</div>
+    <div class="rail-item" id="railDashboard" title="Dashboard · Por qué cambiamos" onclick="showDashboard()">
+      <span class="rail-icon">🏠</span>
+    </div>
+    <div class="rail-item" id="railRoadmap" title="Roadmap · La ruta a 2027" onclick="showRoadmap()">
+      <span class="rail-icon">🗺️</span>
+    </div>
+    <div class="rail-item active" id="railEquipos" title="Equipos" onclick="showEquipos()">
+      <span class="rail-icon">⊞</span>
+    </div>
+    <div class="rail-item" id="railGuia" title="Guía · Post vs Hilo" onclick="showGuia()">
+      <span class="rail-icon">💡</span>
+    </div>
+    <div class="rail-item" id="railReglas" title="Reglas de Oro" onclick="showReglas()">
+      <span class="rail-icon">⭐</span>
+    </div>
+    <div class="rail-item" id="railCopilot" title="Copilot · Prompts" onclick="showCopilot()">
+      <span class="rail-icon">🤖</span>
+    </div>
+    <div class="rail-item" id="railNotif" title="Notificaciones · Configuración" onclick="showNotif()">
+      <span class="rail-icon">🔔</span>
+    </div>
+    <div class="rail-item" id="railGlosario" title="Glosario" onclick="showGlosario()">
+      <span class="rail-icon">📖</span>
+    </div>
+    <div class="rail-item" id="railReuniones" title="Reuniones · Grabación · Copilot" onclick="showReuniones()">
+      <span class="rail-icon">🎥</span>
+    </div>
+    <div class="rail-item" id="railFormatos" title="Formatos de Post" onclick="showFormatos()">
+      <span class="rail-icon">📐</span>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">Microsoft Teams</div>
+      <div class="sidebar-subtitle">Arquitectura PRIME · Olfativa</div>
+    </div>
+    <div class="teams-list" id="teamsList"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="main-header" id="mainHeader">
+      <div style="color: #605E5C; font-size:13px;">← Selecciona un equipo</div>
+    </div>
+    <div class="channel-content" id="channelContent"></div>
+  </div>
+
+</div>
+
+<script>
+const TEAMS_DATA = [
+  {
+    id: "gestion_cambio",
+    name: "Gestión del Cambio",
+    emoji: "🔄",
+    color: "#0078D4",
+    fase: 1,
+    badge: "NUEVO",
+    badgeClass: "badge-new",
+    usuarios: 0,
+    tipo: "Privado",
+    desc: "Las personas primero — adopción, acompañamiento y los datos que garantizan que la transformación no se quede en papel.",
+    nota: "Definir miembros del comité de cambio. KPIs conecta con el seguimiento ADKAR semanal. Comité concentra decisiones y acuerdos del comité ejecutivo de cambio.",
+    antes: "Equipo nuevo — no existía antes",
+    owners: ["Karla Lara", "Tamara Guzmán", "Cintya López", "Anthony Mandujano"],
+    channels: [
+      {
+        name: "KPI's ADKAR",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Karla Lara · Tamara Guzmán · Cintya López · Anthony Mandujano",
+        notificaciones: "Todas las actividades",
+        objetivo: "Centralizar el seguimiento semanal de indicadores ADKAR y de adopción por área, permitiendo al comité tomar decisiones basadas en datos reales de la transformación.",
+        sustituye: "Canal nuevo — no existía antes",
+        uso: "KPIs ADKAR, adopción por semana y área, y alertas de riesgo de cambio.",
+        protocolo: "Un post por semana. Formato Tipo 2: PLAN | GESTION DEL CAMBIO | SEMANA N | YYYY-MM-DD. Incluir: semáforo por área, métrica ADKAR dominante, riesgo identificado y acción sugerida.",
+        formato_tipo: 2,
+        formato_ej: "PLAN | GESTION DEL CAMBIO | SEMANA 6 | 2026-04-07",
+        alerta: null
+      },
+      {
+        name: "Comité",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Karla Lara · Tamara Guzmán · Cintya López · Anthony Mandujano",
+        notificaciones: "Todas las actividades",
+        objetivo: "Registrar las decisiones, acuerdos y compromisos del comité ejecutivo de gestión del cambio, garantizando trazabilidad y seguimiento de cada resolución tomada.",
+        uso: "Acuerdos, decisiones y compromisos del comité de cambio organizacional.",
+        protocolo: "Un post por sesión de comité. Formato Tipo 2: COMITE | GESTION DEL CAMBIO | SESION N | YYYY-MM-DD. Incluir: decisiones tomadas, responsables y fecha compromiso. Acuerdos vinculantes requieren @mención del responsable en el hilo.",
+        formato_tipo: 2,
+        formato_ej: "COMITE | GESTION DEL CAMBIO | SESION 4 | 2026-04-14",
+        alerta: null
+      }
+    ]
+  },
+  {
+    id: "implementacion",
+    name: "Transformación PRIME",
+    emoji: "🚀",
+    color: "#E91E63",
+    fase: 2,
+    badge: "F2",
+    badgeClass: "badge-f2",
+    usuarios: 18,
+    tipo: "Privado",
+    desc: "La transformación en tiempo real — sistemas, procesos y tecnología que están convirtiendo a Olfativa en la empresa que queremos ser.",
+    nota: "Consolidar de 5 a 4 canales. Crear canal Sales Dynamics en Feb 2027 al inicio de esa implementación.",
+    antes: "Implementación",
+    owners: ["Karla Lara", "Anthony Mandujano", "Tamara Guzmán"],
+    channels: [
+      {
+        name: "KPI's Adopción",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara · Cintya López · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Dar visibilidad semanal del avance de la transformación PRIME — hitos cumplidos, porcentaje de adopción por sistema y alertas de riesgo — para que el equipo directivo tome decisiones con datos actualizados.",
+        uso: "Seguimiento semanal de hitos, adopción por sistema y alertas de riesgo del proyecto PRIME.",
+        protocolo: "Un post por semana. Formato Tipo 2: KPI | PRIME | SEMANA N + SISTEMA | YYYY-MM-DD. Incluir: hitos cumplidos, % adopción, semáforo por sistema y riesgo identificado.",
+        formato_tipo: 2,
+        formato_ej: "KPI | PRIME | SEMANA 6 - ZENDESK | 2026-04-07",
+        sustituye: "Canal nuevo",
+        alerta: null
+      },
+      {
+        name: "Prospección PRIME",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara · Cintya López · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Canal dedicado al proyecto de prospección estratégica de cuentas Key y Enterprise mediante campañas de contacto personalizadas.",
+        uso: "Prospección y seguimiento de cuentas Key Account y Enterprise.",
+        protocolo: "Un post por prospecto. Formato Tipo 1: EMPRESA | CIUDAD | ETAPA | YYYY-MM-DD. Actualizar en el mismo hilo hasta convertir o descartar.",
+        formato_tipo: 1,
+        formato_ej: "GRUPO FINANCIERO BANORTE | CDMX | PRIMER CONTACTO | 2026-04-20",
+        sustituye: "Canal nuevo",
+        alerta: null
+      },
+      {
+        name: "Automatización M365 Prime",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara · Cintya López · Tamara Guzmán",
+        notificaciones: "@menciones del canal",
+        objetivo: "Canal del proyecto de automatizaciones — conectar Business Central, Zendesk, CRM y Field Service con agentes de IA a través de M365 y Power Automate.",
+        uso: "Coordinación de implementación M365 y CRM.",
+        protocolo: "Un hilo por módulo o sprint. Asunto: [M365/CRM] Módulo · Semana. Incluir: responsable Clouzzy, BPO/Key User, estado. Documentar decisiones en hilo, no por correo. Bugs → enlace a incidencia en Gobernanza/Prime.",
+        sustituye: "Implementación M365",
+        alerta: null
+      },
+      {
+        name: "Zendesk Prime",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara · Cintya López · Tamara Guzmán",
+        notificaciones: "@menciones del canal",
+        objetivo: "Canal de seguimiento a la implementación de Zendesk — decisiones de configuración, avances por sprint e incidencias del proceso de implementación.",
+        uso: "Incidencias, avances y decisiones de implementación Zendesk.",
+        protocolo: "Un hilo por sprint o incidencia. Formato: [ZENDESK] Tema · Fecha. Incluir: responsable, impacto, solución propuesta. Piloto activo — prioridad alta. Documentar cada decisión de configuración aquí antes de aplicar.",
+        sustituye: "Zendesk implementación",
+        alerta: null
+      },
+      {
+        name: "BC y FSM Prime",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara · Cintya López · Tamara Guzmán",
+        notificaciones: "@menciones del canal",
+        objetivo: "Coordinar la implementación de Business Central y Field Service con BPOs y Key Users, documentando cada decisión de configuración antes de aplicarla para el arranque de agosto y octubre 2026.",
+        uso: "Business Central + Field Service. Incluye BPOs y Key Users.",
+        protocolo: "Un hilo por módulo en implementación. Formato: [BC/FS] Módulo · Sprint. Incluir: BPO responsable, Key User, Clouzzy contacto. Decisiones de configuración documentadas antes de aplicar. Arranque BC: Agosto 2026. FS: Octubre 2026.",
+        sustituye: "Implementación BC y FSM",
+        alerta: null
+      },
+      {
+        name: "Proyecto Prime Olfativa-Clouzzy",
+        tipo: "Compartido",
+        acceso: "Externo · Solo Clouzzy",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara · Cintya López · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Canal de colaboración oficial con Clouzzy — concentrar entregables, avances de sprint, acuerdos y documentación compartida con el socio implementador en un solo espacio trazable.",
+        uso: "Compartir entregables, avances y acuerdos con Clouzzy.",
+        protocolo: "Un post por entregable o acuerdo formal. Formato Tipo 2: ENTREGABLE | MODULO | DESCRIPCION | YYYY-MM-DD. Solo documentos como enlace SharePoint. Decisiones tomadas aquí quedan como registro oficial. @mencionar a contacto Clouzzy en cada post relevante.",
+        formato_tipo: 2,
+        formato_ej: "ENTREGABLE | ZENDESK | CONFIGURACION FLUJOS CUSTOMER | 2026-04-15",
+        sustituye: "M365 Prime - Si no está en el Sistema no Existe",
+        alerta: "Canal COMPARTIDO: no soporta Apps 365 ni Power Automate. Usar exclusivamente para colaboración con Clouzzy — sin conversación interna aquí."
+      },
+      {
+        name: "Champions M365 (Teams)",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara · Cintya López · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Concentrar a los referentes de adopción M365 por área — los Champions son el puente entre el equipo de transformación y el resto de la organización, resolviendo dudas, impulsando buenas prácticas y midiendo adopción real.",
+        uso: "Coordinación de Champions por área, avances de adopción y buenas prácticas M365.",
+        protocolo: "Un post por semana de adopción o hito de área. Formato Tipo 2: ADOPCION | AREA | AVANCE O BLOQUEADOR | YYYY-MM-DD. Champions comparten aprendizajes y casos de uso aquí. Dudas operativas en hilo del mismo post.",
+        formato_tipo: 2,
+        formato_ej: "ADOPCION | OPERACION | SEMANA 6 - 80% USO TEAMS CHANNELS | 2026-04-07",
+        sustituye: "Champions del Cambio – M365",
+        alerta: null
+      },
+      {
+        name: "BPO y Key User Business Central",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara · Cintya López · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Concentrar en un solo canal la gobernanza de la arquitectura Teams y todas las iniciativas de inteligencia artificial — cambios estructurales, agentes, automatizaciones y casos de uso — para que el conocimiento y las decisiones queden trazables en un solo lugar.",
+        uso: "Gobernanza de la arquitectura Teams + iniciativas de IA, agentes y automatizaciones.",
+        protocolo: "Post para cambios estructurales de Teams: CAMBIO | EQUIPO AFECTADO | DESCRIPCION | YYYY-MM-DD. Requiere aprobación de 2 owners antes de ejecutar. Hilo para iniciativas IA: [AREA] Nombre del agente o automatización — documentar objetivo, herramienta, responsable y estado. Avances semanales de IA con @Tamara Guzmán.",
+        formato_tipo: 2,
+        formato_ej: "CAMBIO | COMERCIAL B2B | AGREGAR CANAL EXPANSION CANCUN | 2026-04-15",
+        sustituye: "BPO y Key User Business Central (MD365)",
+        alerta: null
+      },
+      {
+        name: "Coordinación Prime",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara · Cintya López · Tamara Guzmán",
+        notificaciones: "Actividad personalizada",
+        objetivo: "Ser el espacio de comunicación y coordinación cotidiana del equipo de implementación — dudas rápidas, alineación del día y conversaciones que no ameritan un canal dedicado.",
+        uso: "Comunicación cotidiana del equipo de implementación.",
+        protocolo: "Un hilo = un tema. Si es entre dos personas → usar @mención directa en el canal correspondiente. Temas formales o decisiones → canal correspondiente (KPIs, Zendesk, BC, etc.).",
+        sustituye: "General Implementación",
+        alerta: null
+      }
+    ]
+  },
+  {
+    id: "enterprise",
+    name: "Clientes Enterprise Olfativa",
+    emoji: "🏆",
+    color: "#0078D4",
+    fase: 1,
+    badge: "NUEVO",
+    badgeClass: "badge-new",
+    usuarios: 0,
+    tipo: "Privado",
+    desc: "Gestión dedicada de cuentas enterprise — los clientes más estratégicos de Olfativa con atención personalizada y proyectos a medida.",
+    nota: "Equipo nuevo. Crear un canal por cuenta enterprise activa.",
+    antes: "Clientes Enterprise Olfativa (mismo nombre)",
+    owners: ["Anthony Mandujano", "Cintya López", "Tamara Guzmán"],
+    channels: [
+      {
+        name: "General",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: null,
+        moderador: "Anthony Mandujano · Cintya López · Tamara Guzmán",
+        notificaciones: "Actividad personalizada",
+        objetivo: "Coordinación cotidiana del equipo de cuentas enterprise — el espacio donde se alinean prioridades y se comparte contexto de cada cuenta estratégica.",
+        uso: "Comunicación cotidiana del equipo de cuentas enterprise.",
+        protocolo: "Un hilo por tema o cuenta. Novedades relevantes de cuentas enterprise aquí antes de escalar a otros equipos.",
+        alerta: null
+      },
+      {
+        name: "Volvo Car México",
+        tipo: "Compartido",
+        acceso: "Externo · Solo Volvo Car México",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Cintya López · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Canal dedicado de colaboración con Volvo Car México — centralizar todos los acuerdos, entregables y comunicación oficial con esta cuenta enterprise en un solo espacio trazable.",
+        uso: "Colaboración oficial y seguimiento de proyectos con Volvo Car México.",
+        protocolo: "Un post por entregable o acuerdo. Formato Tipo 1: VOLVO CAR MEXICO | CIUDAD | PROYECTO | YYYY-MM-DD. Solo documentos como enlace SharePoint.",
+        formato_tipo: 1,
+        formato_ej: "VOLVO CAR MEXICO | CDMX | INSTALACION SHOWROOM POLANCO | 2026-04-20",
+        alerta: "Canal COMPARTIDO: no soporta Apps 365 ni Power Automate."
+      }
+    ]
+  },
+  {
+    id: "olfativa",
+    name: "Olfativa",
+    emoji: "🏢",
+    color: "#6264A7",
+    fase: 1,
+    badge: "F1",
+    badgeClass: "badge-f1",
+    usuarios: 52,
+    tipo: "Privado",
+    desc: "El corazón de Olfativa late aquí — comunicados, cultura, reconocimientos y el soporte que mantiene a todos en sintonía.",
+        antes: "Olfativa (mismo nombre)",
+    owners: ["Karla Lara", "Anthony Mandujano", "Tamara Guzmán"],
+    channels: [
+      {
+        name: "Anuncios Olfativa",
+        formato_tipo: 3,
+        formato_ej: "COMUNICADO | CAMBIO DE HORARIO OFICINAS MERIDA | 2026-04",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Karla Lara · Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Solo @menciones del canal",
+        objetivo: "Ser el canal oficial de comunicación institucional para toda la empresa — el único lugar donde se publican comunicados de RRHH, liderazgo y políticas internas, garantizando que todos los colaboradores reciban la misma información al mismo tiempo.",
+        sustituye: "Olfativa · Anuncios",
+        uso: "Comunicados oficiales, RRHH y liderazgo. Solo moderador puede iniciar posts.",
+        protocolo: "Un post por comunicado. Formato: [ÁREA] + ASUNTO EN MAYÚSCULAS. Sin respuestas de equipo — dudas al moderador por chat. Usar @canal solo para urgencias. Moderación activada."
+      },
+      {
+        name: "Solicitudes Administrativas",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: null,
+        moderador: "Karla Lara · Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Actividad personalizada",
+        objetivo: "Ser el espacio de comunicación y coordinación cotidiana del equipo — dudas rápidas, alineación del día y conversaciones que no ameritan un canal dedicado, manteniendo el flujo operativo sin ruido.",
+        uso: "Conversación libre. Reconocimientos, cultura, noticias internas.",
+        protocolo: "Un hilo = un tema. Reconocimientos con @Nombre. Noticias culturales como hilo nuevo. Prohibido: temas operativos, proyectos o clientes — si aplica a un área, va en ese canal."
+      },
+      {
+        name: "Soporte Interno",
+        formato_tipo: 3,
+        formato_ej: "INCIDENCIA | IMPRESORA ALMACEN CANCUN SIN CONEXION | 2026-04-01",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: "Power Automate · Forms",
+        moderador: "Karla Lara · Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Centralizar la gestión de incidencias internas de tecnología y soporte, con trazabilidad de cada solicitud desde apertura hasta resolución, cumpliendo un SLA de 24 horas.",
+        sustituye: "Helpdesk · Soporte TD",
+        uso: "Incidencias internas. SLA 24 hrs. Estados: EN ANÁLISIS › EN PROCESO › RESUELTO.",
+        protocolo: "Un hilo por incidencia. Asunto: [ÁREA] Descripción breve. Actualizar estado en el mismo hilo. Cierre obligatorio en Teams, NO por Outlook. Forms conectado para apertura automática. SLA visible en hilo.",
+        alerta: "Automatización via Power Automate + Forms. Canal DEBE ser Estándar para soportar conectores."
+      }
+    ]
+  },
+  {
+    id: "mkt",
+    name: "Generación de Demanda",
+    emoji: "📣",
+    color: "#E91E8C",
+    fase: 1,
+    badge: "F1",
+    badgeClass: "badge-f1",
+    usuarios: 8,
+    tipo: "Privado",
+    desc: "Construye la marca, genera demanda y activa campañas — desde el posicionamiento hasta la experiencia que vive el cliente con Olfativa.",
+        antes: "Mercadotecnia",
+    owners: ["Anthony Mandujano", "Tamara Guzmán"],
+    channels: [
+      {
+        name: "Reportes y KPIs",
+        formato_tipo: 2,
+        formato_ej: "KPI | SEMANA 14 | PIPELINE ACTIVO + CLIENTES NUEVOS | 2026-04-07",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Solo @menciones del canal",
+        objetivo: "Centralizar el seguimiento semanal de métricas de marketing — alcance, conversión, leads y presupuesto — para que todo el equipo tenga visibilidad del desempeño real vs. objetivo en un solo lugar.",
+        objetivo: "Publicar automáticamente desde Business Central los KPIs operativos diarios, dando al equipo y liderazgo visibilidad inmediata del desempeño sin depender de reportes manuales.",
+        sustituye: "SEO y GEO (fusionado) · Performance - KPIs Marketing",
+        uso: "Canal ancla. Métricas y seguimiento de objetivos.",
+        protocolo: "Un post semanal por métrica/objetivo. Estructura: KPI | Resultado | Semáforo 🟢🟡🔴 | Siguiente acción. Sin conversación operativa en este canal. Comentarios → hilo del mismo post."
+      },
+      {
+        name: "Coordinación MKT",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: null,
+        moderador: "Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Actividad personalizada",
+        objetivo: "Ser el espacio de coordinación cotidiana del equipo MKT — dudas rápidas, alineación de prioridades del día y comunicación informal que no amerita un canal dedicado.",
+        sustituye: "Mercadotecnia General (General del equipo Mercadotecnia)",
+        uso: "Comunicación cotidiana del equipo.",
+        protocolo: "Un hilo = un tema o campaña. Mencionar a persona específica, no @equipo. Si el tema aplica a más de 3 personas → hilo en General. Si es entre dos personas → usar @mención directa en el canal correspondiente."
+      },
+      {
+        name: "Campañas",
+        formato_tipo: 2,
+        formato_ej: "CAMPAÑA | AROMAS PRIMAVERA | META + GOOGLE | 2026-04-01",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "@menciones del canal",
+        objetivo: "Gestionar el ciclo completo de cada campaña activa — desde el brief hasta el cierre — con trazabilidad de decisiones, responsables y materiales en un solo hilo por campaña.",
+        sustituye: "Campañas y Marca",
+        uso: "Coordinación y seguimiento de campañas activas.",
+        protocolo: "Un hilo por campaña activa. Incluir en el asunto: nombre + fecha inicio-fin. Actualizar avances en el mismo hilo, NO crear uno nuevo. Adjuntar brief siempre como enlace SharePoint."
+      },
+      {
+        name: "Proyectos",
+        formato_tipo: 2,
+        formato_ej: "PROYECTO | REVISTAS REAL ESTATE & AMURA | LANZAMIENTO PRIMAVERA | 2026-Q2",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "@menciones del canal",
+        objetivo: "Concentrar iniciativas especiales de marketing que van más allá de una campaña — lanzamientos de marca, rediseños, alianzas estratégicas — con seguimiento estructurado de hitos y entregables.",
+        sustituye: "PMO Marketing · MKT Leadership",
+        uso: "Proyectos especiales de marketing.",
+        protocolo: "Un hilo por proyecto. Incluir: objetivo, responsable, fecha límite, enlace a brief en SharePoint. Cerrar hilo con resumen al finalizar. Entregables solo como enlaces, nunca adjuntos."
+      }
+    ]
+  },
+  {
+    id: "adquisicion",
+    name: "Adquisición de Clientes",
+    emoji: "💼",
+    color: "#0078D4",
+    fase: 1,
+    badge: "F1",
+    badgeClass: "badge-f1",
+    usuarios: 18,
+    tipo: "Privado",
+    desc: "Donde los aromas se convierten en contratos — prospección, pipeline, licitaciones y el arte de abrir puertas nuevas.",
+        antes: "Comercial",
+    owners: ["Karla Lara", "Anthony Mandujano", "Cintya López", "Tamara Guzmán"],
+    channels: [
+      {
+        name: "KPIs - Reportes - Alta Cliente",
+        formato_tipo: 2,
+        formato_ej: "KPI | SEMANA 14 | PIPELINE ACTIVO + ALTA CLIENTE | 2026-04-07",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Cintya López · Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Solo @menciones del canal",
+        objetivo: "Dar visibilidad semanal al equipo comercial sobre el desempeño del pipeline y el proceso de alta de clientes nuevos, facilitando decisiones rápidas de priorización.",
+        uso: "Canal ancla. Métricas y proceso de alta de cliente nuevo.",
+        protocolo: "Post semanal de pipeline + clientes nuevos. Estructura: Cliente | Etapa | Responsable | Fecha estimada cierre. Una sola publicación por semana con tabla resumen. Respuestas solo si se requiere acción urgente.",
+        sustituye: "KPIs / Reportes / Alta Cliente (equipo Comercial)",
+        alerta: null
+      },
+      {
+        name: "Coordinación Comercial",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: null,
+        moderador: "Cintya López · Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Actividad personalizada",
+        objetivo: "Ser el espacio de comunicación y coordinación cotidiana del equipo — dudas rápidas, alineación del día y conversaciones que no ameritan un canal dedicado, manteniendo el flujo operativo sin ruido.",
+        uso: "Comunicación cotidiana del equipo.",
+        protocolo: "Regla de oro: si la duda aplica a más de 3 personas → hilo en General. Si es entre dos personas → usar @mención directa en el canal correspondiente de Teams. Mencionar siempre a persona específica, nunca @Comercial B2B para dudas operativas.",
+        sustituye: "General (equipo Comercial)",
+        alerta: null
+      },
+      {
+        name: "Funnel",
+        formato_tipo: 1,
+        formato_ej: "HOTEL HANGAR SELECT | GUADALAJARA | MKT | 2026-04-18",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Cintya López · Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "@menciones del canal",
+        objetivo: "Concentrar el seguimiento activo de todos los prospectos en proceso, permitiendo que cada ejecutivo y el liderazgo comercial vean el estado real del pipeline en tiempo real.",
+        uso: "Seguimiento de pipeline y prospectos activos.",
+        protocolo: "Un hilo por prospecto activo. Formato obligatorio en asunto: Empresa | Contacto | Fase | Próximo paso | Fecha. Actualizar en el mismo hilo — no abrir nuevo por cada actualización. Cierre del hilo al convertir o descartar.",
+        sustituye: "Funnel (equipo Comercial)",
+        alerta: null
+      },
+      {
+        name: "Licitaciones",
+        formato_tipo: 2,
+        formato_ej: "LICITACION | GOBIERNO ESTADO YUCATAN | FECHA LIMITE | 2026-05-15",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Cintya López · Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Coordinar de forma estructurada cada licitación o propuesta formal, asegurando que documentos, fechas límite y responsables estén siempre visibles y trazables.",
+        uso: "Coordinación de licitaciones y propuestas formales.",
+        protocolo: "Un post por licitación. Estructura: Nombre | Fecha límite | Documentos (enlace SharePoint) | Responsable. Responder en el mismo hilo con avances y decisiones. Notificación completa por la criticidad de fechas.",
+        sustituye: "Licitaciones (equipo Comercial)",
+        alerta: null
+      }
+    ]
+  },
+  {
+    id: "customer",
+    name: "Experiencia de Cliente",
+    emoji: "🤝",
+    color: "#00BCF2",
+    fase: 1,
+    badge: "NUEVO",
+    badgeClass: "badge-new",
+    usuarios: 17,
+    tipo: "Privado",
+    desc: "Donde el cliente se queda, crece y se enamora — retención, upsell, experiencia y cada conversación que convierte una compra en una relación.",
+    nota: "Equipo nuevo. Incluye Híbridos (venta recurrente) y equipo CXP. CXP = operación diaria. CXP Proyectos = instalaciones especiales.",
+    antes: "Equipo nuevo — no existía antes",
+    owners: ["Anthony Mandujano", "Tamara Guzmán"],
+    channels: [,
+      {
+        name: "KPI's CX",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Tamara Guzmán · Ivonne Huerta · Luis Miguel Ávila",
+        notificaciones: "Todas las actividades",
+        objetivo: "Centralizar el seguimiento semanal de métricas de retención, NPS y experiencia del cliente para que el equipo tome decisiones basadas en datos reales.",
+        uso: "KPIs semanales de retención, NPS, churn y experiencia de cliente.",
+        protocolo: "Un post por semana. Formato Tipo 2: KPI | EXPERIENCIA CLIENTE | SEMANA N | YYYY-MM-DD. Incluir: semáforo por métrica, alerta de riesgo y acción sugerida.",
+        formato_tipo: 2,
+        formato_ej: "KPI | EXPERIENCIA CLIENTE | SEMANA 14 | 2026-04-07",
+        alerta: null
+      },
+      {
+        name: "Tickets Zendesk CXP",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: "Zendesk",
+        moderador: "Tamara Guzmán · Ivonne Huerta · Luis Miguel Ávila",
+        notificaciones: "Todas las actividades",
+        objetivo: "Gestionar y dar seguimiento a los tickets de experiencia de cliente en Zendesk, asegurando que cada interacción quede resuelta dentro del SLA y con trazabilidad completa.",
+        uso: "Tickets de experiencia de cliente sincronizados con Zendesk.",
+        protocolo: "Un post por ticket. Formato Tipo 1: CLIENTE | CIUDAD | TIPO | YYYY-MM-DD. Actualizar estado en el mismo post. Cierre con confirmación del cliente. SLA visible en cada ticket.",
+        formato_tipo: 1,
+        formato_ej: "HOTEL WESTIN CANCUN | CANCUN | SOLICITUD ATENCION XP | 2026-04-01",
+        alerta: "Conector Zendesk activo. Canal DEBE ser Estándar para sincronización bidireccional."
+      },
+      {
+        name: "Coordinación CX",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: null,
+        moderador: "Tamara Guzmán · Ivonne Huerta · Luis Miguel Ávila",
+        notificaciones: "Actividad personalizada",
+        objetivo: "Ser el espacio de comunicación y coordinación cotidiana del equipo — dudas rápidas, alineación del día y conversaciones que no ameritan un canal dedicado, manteniendo el flujo operativo sin ruido.",
+        sustituye: "Canal nuevo",
+        uso: "Comunicación cotidiana del equipo.",
+        protocolo: "Un hilo = un tema. Si es entre dos personas → usar @mención directa en el canal correspondiente."
+      },
+      {
+        name: "Cartera",
+        formato_tipo: 1,
+        formato_ej: "GRUPO VEQ DESARROLLO ALANA | PUERTO VALLARTA | EXPANSION | 2026-Q2",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: null,
+        moderador: "Rashit Burgos · Geraldine Zapata · Abraham Almanza · Tamara Guzmán",
+        notificaciones: "@menciones del canal",
+        objetivo: "Identificar y gestionar proactivamente los clientes en riesgo de churn o con renovación próxima, concentrando la atención del equipo en quienes más lo necesitan.",
+        uso: "Gestión y seguimiento de cartera de clientes activos.",
+        protocolo: "Un hilo por cliente en riesgo o renovación. Formato: Cliente | Contrato | Fecha venc. | Acción requerida. Clientes sanos → sin hilo. Solo escalar cuando hay riesgo de churn o vencimiento próximo."
+      },
+      {
+        name: "Gestión de Cuentas",
+        formato_tipo: 1,
+        formato_ej: "HOKA ILUSIONES JOYERIA CASCO | CANCUN | SOLICITUD COMPLEMENTO PAGO | 2026-03-31",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Luis Miguel Ávila · Ivonne Huerta · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Operar el día a día de la experiencia del cliente con trazabilidad de cada interacción relevante, garantizando tiempos de respuesta menores a 2 horas en horario laboral.",
+        sustituye: "CXP",
+        uso: "Operación diaria de experiencia del cliente.",
+        protocolo: "Un hilo por interacción CXP relevante. Mencionar @técnico + @cliente-responsable. Escalar a Operación si requiere servicio en campo. Documentar decisiones en el mismo hilo. Respuesta esperada < 2 hrs en horario laboral."
+      }
+    ]
+  },
+  {
+    id: "operacion",
+    name: "Flujo Operativo",
+    emoji: "⚙️",
+    color: "#107C10",
+    fase: 1,
+    badge: "F1",
+    badgeClass: "badge-f1",
+    usuarios: 20,
+    tipo: "Privado",
+    desc: "La promesa que se cumple en campo — cada servicio entregado, cada ticket resuelto, cada instalación que transforma un espacio.",
+    nota: "Fusionar Técnicos Zona Centro. Ticket reemplaza Solicitudes + Ticket previos (mismo flujo).",
+    antes: "Operaciones + Técnicos Zona Centro",
+    owners: ["Anthony Mandujano", "Tamara Guzmán"],
+    channels: [
+      {
+        name: "Métricas de Campo",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: "Business Central",
+        moderador: "Tamara Guzmán · Anthony Mandujano · Armando Jaramillo · Christian Martínez · Armando Canul · Ivonne Huerta",
+        notificaciones: "Solo @menciones del canal",
+        objetivo: "Publicar automáticamente desde Business Central los KPIs operativos diarios, dando al equipo y liderazgo visibilidad inmediata del desempeño sin depender de reportes manuales.",
+        sustituye: "Reportes / KPIs",
+        uso: "Canal ancla. KPIs operativos conectados a Business Central.",
+        protocolo: "Post automático diario desde BC. No responder salvo excepción aprobada. Si hay alerta de KPI → @mencionar a responsable en hilo nuevo separado. Canal de lectura y referencia, no de conversación.",
+        alerta: "Conector Business Central. Canal DEBE ser Estándar."
+      },
+      {
+        name: "Coordinación diaria",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: null,
+        moderador: "Karla Lara · Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Actividad personalizada",
+        objetivo: "Ser el espacio de comunicación y coordinación cotidiana del equipo — dudas rápidas, alineación del día y conversaciones que no ameritan un canal dedicado, manteniendo el flujo operativo sin ruido.",
+        sustituye: "General Operaciones",
+        uso: "Comunicación cotidiana entre técnicos y jefes de operaciones.",
+        protocolo: "Un hilo = un turno o incidencia. Mencionar zona/área en el asunto. No usar para escalar tickets (ir a canal Ticket). Coordinar traslados y asignaciones aquí."
+      },
+      {
+        name: "Zendesk Tickets Operativos",
+        formato_tipo: 2,
+        formato_ej: "TICKET | #10234 HOTEL WESTIN CANCUN | SOLICITUD MANTENIMIENTO | 2026-04-01",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: "Zendesk",
+        moderador: "Christian Martínez · Nancy Uc · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Gestionar el ciclo completo de tickets de servicio sincronizados con Zendesk, asegurando que ninguna solicitud quede sin atender y que el estado sea visible para operación y cliente.",
+        sustituye: "Ticket · Solicitudes",
+        uso: "Gestión de tickets. Reemplaza Solicitudes + Ticket previos.",
+        protocolo: "Un hilo por ticket Zendesk, sincronizado automáticamente. Formato: #Ticket | Cliente | Prioridad 🔴🟡🟢 | Estado. No cerrar hilo hasta confirmación del cliente. Toda actualización en el mismo hilo, no crear duplicados.",
+        alerta: "Conector Zendesk activo. Canal DEBE ser Estándar para sincronización bidireccional."
+      },
+      {
+        name: "Servicios e Incidencias",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: "Field Service",
+        moderador: "Armando Canul · Ivonne Huerta · Armando Jaramillo · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Dar seguimiento en tiempo real a los servicios en campo conectados a Field Service, con trazabilidad de técnico, ubicación, ETA y cierre de cada servicio.",
+        sustituye: "Servicios / Incidencias",
+        uso: "Seguimiento de servicios en campo.",
+        protocolo: "Un hilo por servicio en campo. Formato: Técnico | Cliente | Ubicación | ETA | Status. Field Service sincronizado automáticamente. Actualizar ETA en tiempo real. Cierre con foto de entrega o firma digital.",
+        alerta: "Conector Field Service. Canal DEBE ser Estándar."
+      },
+      {
+        name: "Inventario Operativo",
+        formato_tipo: 2,
+        formato_ej: "INVENTARIO | MERIDA + CANCUN | SIN ALERTA | 2026-04-07",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: "Business Central",
+        moderador: "Eisly García / Tamara Guzmán",
+        notificaciones: "Solo @menciones del canal",
+        objetivo: "Mantener actualizado el control de inventario por zona conectado a Business Central, con alertas automáticas de stock bajo para evitar quiebres en la operación.",
+        uso: "Control de inventario conectado a Business Central.",
+        protocolo: "Post diario desde BC con niveles de inventario por zona. Si alerta de stock bajo → @canal con urgente. Sin conversación operativa salvo solicitudes de ajuste aprobadas por Eisly García. Ajustes documentados en hilo.",
+        alerta: "Conector Business Central. Canal DEBE ser Estándar. Eisly García: key-person de riesgo — documentar proceso."
+      }
+    ]
+  },
+  {
+    id: "olfativa_home",
+    name: "Olfativa Home",
+    emoji: "🛒",
+    color: "#E91E8C",
+    fase: 1,
+    badge: "F1",
+    badgeClass: "badge-f1",
+    usuarios: 0,
+    tipo: "Privado",
+    desc: "El canal D2C de Olfativa — de la venta al despacho en un solo flujo, sin duplicar pedidos entre canales.",
+    nota: "Un pedido = un solo #Pedido (ticket). El ticket avanza por canales según la etapa.",
+    antes: "Olfativa Home (mismo nombre)",
+    owners: ["Anthony Mandujano", "Tamara Guzmán"],
+    channels: [
+      {
+        name: "Coordinación OH",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: null,
+        moderador: "Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Actividad personalizada",
+        objetivo: "Canal de triage para temas que no tienen flujo definido — dudas operativas, cruces entre áreas y excepciones. No se ejecutan pedidos aquí, solo se redirigen al canal correcto.",
+        uso: "Triage, ordenamiento y excepciones.",
+        protocolo: "Si no sabes dónde va algo, ponlo aquí. El moderador redirige al canal correcto.",
+        sustituye: "Coordinación OH (mismo nombre)",
+        alerta: null
+      },
+      {
+        name: "Generación de la Demanda",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Concentra todo el origen comercial y preventa: leads Home y B2B, ventas de campo, Home Store (Marina), Showroom Mérida, laboratorio de ventas y solicitudes de ligas de pago. Ningún pedido pasa a operación si antes no nació aquí.",
+        uso: "Origen comercial y preventa — todo sin dividir por tienda, marca o plataforma.",
+        protocolo: "Un post por lead o solicitud. No se crean canales por tienda ni sistema.",
+        formato_tipo: 2,
+        formato_ej: "VENTA | SHOPIFY | SUSCRIPCION TRIMESTRAL NUEVO CLIENTE | 2026-04-20",
+        sustituye: "Generación de la Demanda · Intercambios comerciales · Eventos · Material Comercial Oficial · Funnel (OH) · Laboratorio de ventas",
+        alerta: null
+      },
+      {
+        name: "Control Tower",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Canal de decisión y liberación: valida que el pedido esté completo (pago confirmado, datos correctos, stock validado) y autoriza proceder a facturar, retener o reembolsar. Aquí no se ejecuta — se decide y se libera.",
+        uso: "Gestión y liberación operativa del pedido.",
+        protocolo: "Un post por pedido a liberar. No se genera factura ni se despacha aquí.",
+        formato_tipo: 2,
+        formato_ej: "CONTROL | #12345 | PAGO CONFIRMADO - LIBERADO PARA FACTURA | 2026-04-20",
+        sustituye: "OH Control Tower (era privado)",
+        alerta: null
+      },
+      {
+        name: "Facturas & Guías",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Generación y envío de factura CFDI, guía de envío y documentación a almacenes (CAN / CDMX). Cada pedido se trabaja por #Pedido en hilo. Al concluir documentación, el pedido pasa a Despacho.",
+        uso: "Ejecución documental — factura, guía y documentación de almacén.",
+        protocolo: "Un hilo por #Pedido. Al concluir, @mencionar a almacén para pasar a Despacho.",
+        formato_tipo: 2,
+        formato_ej: "FACTURA | #12345 CLIENTE NOMBRE | CFDI + GUIA DHL GENERADOS | 2026-04-20",
+        sustituye: "Facturas y Guías · CAN-FACTURA · CDMX-FACTURA",
+        alerta: null
+      },
+      {
+        name: "Despacho de Pedidos",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Ejecución física del pedido: empaque, validación de contenido, evidencia fotográfica y entrega a DHL. Se continúa el mismo #Pedido iniciado en Facturas & Guías. Aquí no se decide — se ejecuta lo ya aprobado.",
+        uso: "Ejecución física — empaque, validación y entrega a paquetería.",
+        protocolo: "Responder siempre sobre el hilo del mismo #Pedido iniciado en Facturas & Guías.",
+        formato_tipo: 2,
+        formato_ej: "DESPACHO | #12345 | EMPACADO - ENTREGADO DHL - FOTO ADJUNTA | 2026-04-20",
+        sustituye: "Despacho de pedidos · Surtido de pedidos",
+        alerta: null
+      },
+      {
+        name: "Customer Care",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: null,
+        moderador: "Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Canal centralizado de relación post-compra: onboarding del cliente (24h, 7 días, 30 días), seguimiento de recurrencias, garantías, mantenimiento de difusores y contacto con técnicos. Todo el historial del cliente vive aquí.",
+        uso: "Relación post-compra, soporte y seguimiento de recurrencias.",
+        protocolo: "Un hilo por cliente. Incluir: nombre, #Pedido, tipo de caso. Contacto con técnicos aquí, reemplaza correos.",
+        sustituye: "Customer Care · Customer Care OH",
+        alerta: null
+      }
+    ]
+  },
+  {
+    id: "finanzas",
+    name: "Flujo de Efectivo",
+    emoji: "💰",
+    color: "#8B5CF6",
+    fase: 2,
+    badge: "F2",
+    badgeClass: "badge-f2",
+    usuarios: 0,
+    tipo: "Privado",
+    desc: "El sistema circulatorio de Olfativa — contabilidad, compras, cobranza, RRHH y todo lo que mantiene la operación financiera y administrativa en orden.",
+    nota: "Fusiona Finanzas y Administración. Canales privados: Contabilidad y RRHH.",
+    antes: "Finanzas + Administración (fusionados)",
+    owners: ["Anthony Mandujano", "Karla Lara"],
+    channels: [
+      {
+        name: "Coordinación Flujo de Efectivo",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara",
+        notificaciones: "Actividad personalizada",
+        objetivo: "Ser el espacio de coordinación cotidiana del equipo financiero y administrativo — alineación del día, dudas rápidas y temas que no ameritan un canal dedicado.",
+        uso: "Comunicación cotidiana del equipo de finanzas y administración.",
+        protocolo: "Un hilo = un tema. Temas formales o decisiones → canal correspondiente.",
+        sustituye: "General (Finanzas) · General (Administración)",
+        alerta: null
+      },
+      {
+        name: "Administración General",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara",
+        notificaciones: "@menciones del canal",
+        objetivo: "Centralizar decisiones y comunicados administrativos generales — contratos, proveedores, infraestructura y gestión interna que afecta a toda la empresa.",
+        uso: "Decisiones y comunicados administrativos generales.",
+        protocolo: "Un post por decisión o comunicado. Formato Tipo 3: ADMIN | ASUNTO | YYYY-MM-DD.",
+        formato_tipo: 3,
+        formato_ej: "ADMIN | RENOVACION CONTRATO ARRENDAMIENTO CDMX | 2026-04-01",
+        sustituye: "Canal nuevo",
+        alerta: null
+      },
+      {
+        name: "Aprovisionamiento Compras",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara · Eisly García",
+        notificaciones: "Todas las actividades",
+        objetivo: "Gestionar solicitudes de compra, proveedores e infraestructura con aprobaciones trazables, eliminando la dependencia del correo para autorizaciones.",
+        uso: "Solicitudes de compra, proveedores e infraestructura.",
+        protocolo: "Un post por solicitud. Formato Tipo 2: COMPRAS | CONCEPTO | PROVEEDOR + MONTO | YYYY-MM-DD. Aprobación de Karla o Anthony en el mismo hilo antes de proceder.",
+        formato_tipo: 2,
+        formato_ej: "COMPRAS | CONSUMIBLES ALMACEN MERIDA | PAPELERIA BRAVO $3500 | 2026-04-01",
+        sustituye: "Compras (archivado)",
+        alerta: null
+      },
+      {
+        name: "Contabilidad",
+        tipo: "Privado",
+        acceso: "Solo miembros autorizados",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara",
+        notificaciones: "Todas las actividades",
+        objetivo: "Concentrar en un canal seguro toda la información contable sensible — cierres mensuales, conciliaciones, auditorías y estados financieros.",
+        uso: "Información contable sensible, cierres y conciliaciones.",
+        protocolo: "Canal Privado. Un post por cierre o conciliación. Documentos solo como enlace SharePoint con permisos restringidos.",
+        sustituye: "Finanzas (archivado)",
+        alerta: "Canal PRIVADO: no acepta Power Automate ni conectores."
+      },
+      {
+        name: "Cuentas x Pagar",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara",
+        notificaciones: "@menciones del canal",
+        objetivo: "Dar seguimiento a pagos a proveedores y compromisos financieros pendientes, asegurando que ninguna cuenta quede sin atender dentro del plazo acordado.",
+        uso: "Seguimiento de pagos a proveedores y compromisos pendientes.",
+        protocolo: "Un post por proveedor o compromiso. Formato Tipo 2: PAGO | PROVEEDOR | CONCEPTO | YYYY-MM-DD. Actualizar estado en el mismo hilo al pagar.",
+        formato_tipo: 2,
+        formato_ej: "PAGO | PROVEEDOR AROMAS SA | FACTURA 4521 | 2026-04-05",
+        sustituye: "Cartera · Tesorería (archivados)",
+        alerta: null
+      },
+      {
+        name: "RRHH",
+        tipo: "Privado",
+        acceso: "Solo miembros autorizados",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara",
+        notificaciones: "Todas las actividades",
+        objetivo: "Canal privado y seguro para todas las decisiones y comunicaciones de recursos humanos — contrataciones, bajas, evaluaciones y datos personales.",
+        uso: "Decisiones y comunicaciones sensibles de recursos humanos.",
+        protocolo: "Canal Privado. Un post por decisión de RH. Documentos en SharePoint con permisos restringidos. Toda comunicación de RH fluye aquí, no por correo.",
+        sustituye: "RRHH (mismo nombre, era de Administración)",
+        alerta: "Canal PRIVADO: no acepta Power Automate ni conectores."
+      }
+    ]
+  },
+  {
+    id: "surtido",
+    name: "Surtido",
+    emoji: "📦",
+    color: "#E53935",
+    fase: 1,
+    badge: "F1",
+    badgeClass: "badge-f1",
+    usuarios: 0,
+    tipo: "Privado",
+    desc: "El almacén en acción — preparación, control y despacho de todo lo que sale de Olfativa hacia el cliente.",
+    nota: "Equipo de almacén. Coordinación diaria de surtido y control de inventario general.",
+    antes: "Equipo nuevo — no existía antes",
+    owners: ["Anthony Mandujano", "Tamara Guzmán"],
+    channels: [
+      {
+        name: "Coordinación diaria de almacén",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: null,
+        moderador: "Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Canal conversacional del equipo de almacén — coordinación diaria, dudas operativas y todo lo que no encaja en un canal específico. Si no sabes dónde va algo, empieza aquí.",
+        uso: "Coordinación cotidiana del equipo de almacén.",
+        protocolo: "Hilo por tema. Si la duda es de un pedido específico, referencia el #Pedido.",
+        sustituye: "Canal nuevo",
+        alerta: null
+      },
+      {
+        name: "Almacén General",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Tamara Guzmán",
+        notificaciones: "Todas las actividades",
+        objetivo: "Registrar el movimiento de inventario, entradas, salidas, ajustes y cualquier incidencia del almacén que requiera trazabilidad.",
+        uso: "Control de inventario y movimientos de almacén.",
+        protocolo: "Un post por movimiento o incidencia. Formato Tipo 1: ALMACEN | TIPO MOVIMIENTO | PRODUCTO | YYYY-MM-DD.",
+        formato_tipo: 1,
+        formato_ej: "CANCUN | ENTRADA | DIFUSOR MODELO X 20 UNIDADES | 2026-04-20",
+        sustituye: "Canal nuevo",
+        alerta: null
+      }
+    ]
+  },
+  {
+    id: "direccion",
+    name: "Estrategia",
+    emoji: "🎯",
+    color: "#5C2D91",
+    fase: 2,
+    badge: "F2",
+    badgeClass: "badge-f2",
+    usuarios: 6,
+    tipo: "Privado",
+    desc: "Donde se traza el rumbo — decisiones de alto impacto, visión a largo plazo y los acuerdos que definen el futuro de Olfativa.",
+    nota: "Baja actividad (14 msgs/30 días). Reforzar adopción antes de añadir canales. Canal Estrategia: MAYÚSCULAS sin acentos para asuntos críticos.",
+    antes: "Dirección",
+    owners: ["Karla Lara", "Anthony Mandujano", "Cintya López", "Tamara Guzmán"],
+    channels: [
+      {
+        name: "Estrategia",
+        formato_tipo: 2,
+        formato_ej: "DECISION | OPERACION | APERTURA ZONA BAJIO | 2026-04-01",
+        tipo: "Privado",
+        acceso: "Solo directivos",
+        formato: "Post",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara",
+        notificaciones: "Todas las actividades",
+        objetivo: "Ser el repositorio oficial de decisiones ejecutivas y autorizaciones de alto impacto, garantizando que toda resolución directiva quede documentada y vinculada a su contexto antes de ejecutarse.",
+        sustituye: "Estratégia (con acento incorrecto)",
+        uso: "Decisiones ejecutivas y autorizaciones de alto impacto. Solo directivos.",
+        protocolo: "Canal Privado — NO soporta automatizaciones. Regla de oro: si no está aquí, no existe. Asuntos críticos en MAYÚSCULAS SIN ACENTOS. Un post por decisión ejecutiva con contexto, opciones y resolución. Documentar en SharePoint vinculado en el mismo hilo.",
+        alerta: "Canal PRIVADO por datos sensibles. Baja actividad actual — reforzar hábito antes de Fase 2."
+      },
+      {
+        name: "General",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: null,
+        moderador: "Anthony Mandujano · Karla Lara",
+        notificaciones: "Actividad personalizada",
+        objetivo: "Ser el espacio de comunicación y coordinación cotidiana del equipo — dudas rápidas, alineación del día y conversaciones que no ameritan un canal dedicado, manteniendo el flujo operativo sin ruido.",
+        uso: "Comunicación cotidiana del equipo directivo.",
+        protocolo: "Un hilo = un tema de coordinación directiva. Agenda, seguimiento de compromisos, alineación de prioridades. Decisiones formales → canal Estrategia. Mencionar con @nombre específico, no @Dirección."
+      }
+    ]
+  },
+
+];
+
+const avatarColors = {
+  "olfativa": "#6264A7",
+  "mkt": "#E91E8C",
+  "comercial": "#0078D4",
+  "operacion": "#107C10",
+  "customer": "#00BCF2",
+  "finanzas": "#8B5CF6",
+  "administracion": "#C55A11",
+  "direccion": "#5C2D91",
+  "implementacion": "#E91E63",
+  "champions": "#FFB900"
+};
+
+let selectedTeam = null;
+
+function renderSidebar() {
+  const list = document.getElementById('teamsList');
+  let html = '';
+  TEAMS_DATA.forEach(team => { html += renderTeamItem(team); });
+  list.innerHTML = html;
+  list.querySelectorAll('.team-item').forEach(el => {
+    el.addEventListener('click', () => {
+      list.querySelectorAll('.team-item').forEach(e => e.classList.remove('active'));
+      el.classList.add('active');
+      showTeam(el.dataset.id);
+    });
+  });
+}
+
+function renderTeamItem(team) {
+  return `
+    <div class="team-item" data-id="${team.id}">
+      <div class="team-avatar" style="background:${team.color}">${team.emoji}</div>
+      <div class="team-info">
+        <div class="team-name">${team.name}</div>
+        <div class="team-meta">${team.channels.length} canales</div>
+      </div>
+
+    </div>
+  `;
+}
+
+function getTipoIcon(tipo) {
+  if (tipo === 'Estándar') return '🔓';
+  if (tipo === 'Privado') return '🔒';
+  return '🔗';
+}
+
+function getFormatoIcon(fmt) {
+  return fmt === 'Post' ? '📌' : '🧵';
+}
+
+function getNotifIcon(notif) {
+  if (notif.includes('Todas')) return '🔔';
+  if (notif.includes('@menciones')) return '🔕';
+  if (notif.includes('personalizada')) return '🔔';
+  return '🔕';
+}
+
+function getNotifShort(notif) {
+  if (notif.includes('Todas las')) return 'Toda la actividad';
+  if (notif.includes('Solo @menciones')) return 'Solo @menciones';
+  if (notif.includes('@menciones del canal')) return '@menciones';
+  if (notif.includes('personalizada')) return 'Personalizada';
+  return notif;
+}
+
+function showTeam(teamId) {
+  const team = TEAMS_DATA.find(t => t.id === teamId);
+  if (!team) return;
+  selectedTeam = team;
+
+  // Header
+  const header = document.getElementById('mainHeader');
+  const initials = team.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const faseLabel = team.badge === 'NUEVO' ? 'Equipo Nuevo' : team.badge === 'TEMP' ? 'Temporal · Feb 2027' : `Fase ${team.fase}`;
+  const faseColor = team.fase === 1 ? '#0078D4' : '#5C2D91';
+  const faseLight = team.fase === 1 ? '#EFF6FC' : '#F4EDF9';
+
+  header.innerHTML = `
+    <div class="header-avatar" style="background:${team.color}">${team.emoji}</div>
+    <div class="header-info">
+      <div class="header-name">
+        ${team.name}
+        
+        <span class="header-tag" style="background:#F3F2F1;color:#605E5C">${team.tipo}</span>
+      </div>
+      <div class="header-meta">${team.channels.length} canales · ${team.desc}</div>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" title="Miembros">👥</button>
+      <button class="header-btn" title="Configuración">⚙️</button>
+      <button class="header-btn" title="Más opciones">···</button>
+    </div>
+  `;
+
+  // Content
+  const content = document.getElementById('channelContent');
+
+  const hasConnectors = team.channels.some(c => c.connector && !c.connector.includes('Crear:'));
+  const connectors = [...new Set(team.channels.filter(c => c.connector && !c.connector.includes('Crear:')).map(c => c.connector))];
+
+  const stdCount = team.channels.filter(c => c.tipo === 'Estándar').length;
+  const privCount = team.channels.filter(c => c.tipo === 'Privado').length;
+  const futCount = team.channels.filter(c => c.tipo !== 'Estándar' && c.tipo !== 'Privado').length || 0;
+  const postCount = team.channels.filter(c => c.formato === 'Post').length;
+  const hiloCount = team.channels.filter(c => c.formato === 'Hilo').length;
+
+  let connectorsHtml = connectors.length > 0 ? connectors.map(c => `<span class="badge badge-connector">⚡ ${c}</span>`).join('') : '<span style="color:#A19F9D;font-size:11px;">Sin conectores</span>';
+
+  let notaHtml = team.nota ? `<div class="alert-box"><span>⚑</span><span>${team.nota}</span></div>` : '';
+
+  let channelsHtml = '';
+  team.channels.forEach((ch, i) => {
+    const isFut = ch.connector && ch.connector.includes('Crear:');
+    const tipoClass = isFut ? 'fut' : ch.tipo === 'Estándar' ? 'std' : 'priv';
+    const iconClass = isFut ? 'icon-fut' : ch.tipo === 'Estándar' ? 'icon-std' : 'icon-priv';
+    const tipoIcon = isFut ? '🔮' : getTipoIcon(ch.tipo);
+    const tipoLabel = isFut ? 'Futuro' : ch.tipo;
+    const badgeTypoClass = isFut ? 'badge-fut' : ch.tipo === 'Estándar' ? 'badge-std' : 'badge-priv';
+
+    const connHtml = ch.connector && !ch.connector.includes('Crear:') ? `<span class="badge badge-connector">⚡ ${ch.connector}</span>` : '';
+    const alertHtml = ch.alerta ? `<div class="matrix-alert">⚠️ ${ch.alerta}</div>` : '';
+
+    // Determine row icon
+    const isCoord = ch.name.toLowerCase().includes('coordinaci') || ch.name.toLowerCase().includes('general') || ch.name.toLowerCase().includes('diaria') || ch.name.toLowerCase().includes('cotidian');
+    const rowIcon = isCoord ? '💬' : ch.formato === 'Post' ? '📌' : '🧵';
+
+    const tipoColor = ch.tipo === 'Estándar' ? '#0078D4' : ch.tipo === 'Privado' ? '#A4262C' : '#797775';
+    const fmtColor = ch.formato === 'Post' ? '#107C10' : '#C55A11';
+    const fmtLabel = ch.formato === 'Post' ? 'Post' : 'Hilo';
+    const sustHtml = ch.sustituye && ch.sustituye !== 'Canal nuevo'
+      ? ch.sustituye
+      : ch.sustituye === 'Canal nuevo'
+        ? '<span style="color:#107C10;font-style:normal;font-size:10px;font-weight:600">Nuevo</span>'
+        : '—';
+    channelsHtml += `
+      <div class="matrix-row">
+        <div class="matrix-row-canal">
+          <div class="matrix-canal-name">
+            <span class="matrix-canal-icon">${rowIcon}</span>
+            ${ch.name}
+          </div>
+          <div class="matrix-canal-meta">
+            <span style="color:${tipoColor};font-weight:600">${ch.tipo}</span>
+            <span class="meta-dot">·</span>
+            <span style="color:${fmtColor};font-weight:600">${fmtLabel}</span>
+            ${ch.connector && !ch.connector.includes('Crear:') ? `<span class="meta-dot">·</span><span style="color:#2563EB;font-size:10px">⚡ ${ch.connector}</span>` : ''}
+          </div>
+        </div>
+        <div class="matrix-obj">
+          ${ch.objetivo || ch.uso || '—'}
+          ${alertHtml}
+        </div>
+        <div class="matrix-ant">${sustHtml}</div>
+      </div>
+    `;
+  });
+
+  content.innerHTML = `
+    <div class="overview">
+      <div class="overview-stat">
+        <div class="stat-num">${team.channels.length}</div>
+        <div class="stat-label">Canales</div>
+      </div>
+      <div class="overview-divider"></div>
+      <div class="overview-note">
+        <strong>Antes se llamaba:</strong> ${team.antes || '—'}
+      </div>
+    </div>
+    ${notaHtml ? `<div style="margin-bottom:14px">${notaHtml}</div>` : ''}
+    <div class="section-header">
+      <div class="section-title">Canales · ${team.name}</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#0078D4"></div>Estándar</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#A4262C"></div>Privado</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#107C10"></div>Post</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#C55A11"></div>Hilo</div>
+      </div>
+    </div>
+    <div class="channels-matrix">
+      <div class="matrix-header">
+        <div class="matrix-header-canal">Canal</div>
+        <div class="matrix-header-obj">Objetivo</div>
+        <div class="matrix-header-ant">Sustituye a</div>
+      </div>
+      ${channelsHtml}
+    </div>
+  `;
+}
+
+
+
+function showEquipos() {
+  document.querySelectorAll('.rail-item').forEach(e => e.classList.remove('active'));
+  document.getElementById('railEquipos').classList.add('active');
+  if (selectedTeam) {
+    showTeam(selectedTeam.id);
+    document.querySelectorAll('.team-item').forEach(el => {
+      if (el.dataset.id === selectedTeam.id) el.classList.add('active');
+    });
+  } else {
+    showGuia(); return;
+  }
+}
+
+
+function showDashboard() {
+  document.querySelectorAll('.rail-item').forEach(e => e.classList.remove('active'));
+  document.getElementById('railDashboard').classList.add('active');
+
+  document.getElementById('mainHeader').innerHTML = `
+    <div class="header-avatar" style="background:#6264A7">🏠</div>
+    <div class="header-info">
+      <div class="header-name">Nueva Arquitectura Teams · Olfativa 2026</div>
+      <div class="header-meta">De 116 canales sin control a un sistema claro, ordenado y con propósito</div>
+    </div>`;
+
+  document.getElementById('channelContent').innerHTML = `
+  <div style="padding:20px 24px 40px;max-width:960px">
+
+    <!-- HERO STAT ROW -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px">
+      ${[
+        { num:'116', label:'Canales antes', sub:'Crecieron sin una arquitectura definida', color:'#A4262C', bg:'#FDE7E9', icon:'📊' },
+        { num:'45', label:'Canales de uso general', sub:'Con flujo, protocolo y propósito claro', color:'#107C10', bg:'#DFF6DD', icon:'✅' },
+        { num:'11', label:'Equipos activos', sub:'Organizados por flujo de trabajo', color:'#0078D4', bg:'#EFF6FC', icon:'⊞' },
+        { num:'61%', label:'Reducción', sub:'De 116 a 45 canales de uso general', color:'#5C2D91', bg:'#F4EDF9', icon:'📉' },
+      ].map(s => `
+        <div style="background:${s.bg};border:1px solid ${s.color}25;border-radius:12px;padding:18px 16px;text-align:center">
+          <div style="font-size:24px;margin-bottom:4px">${s.icon}</div>
+          <div style="font-size:32px;font-weight:800;color:${s.color};line-height:1">${s.num}</div>
+          <div style="font-size:12px;font-weight:700;color:${s.color};margin-top:4px">${s.label}</div>
+          <div style="font-size:10.5px;color:${s.color};opacity:.7;margin-top:3px;line-height:1.4">${s.sub}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- EL PROBLEMA -->
+    <div style="background:white;border:1px solid #E1DFDD;border-radius:12px;padding:20px 22px;margin-bottom:20px">
+      <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:14px">📋 Cómo estábamos y qué pedía el equipo</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#A4262C;margin-bottom:8px">El diagnóstico (As Is)</div>
+          ${[
+            'Comercial tenía 46 canales — uno por cada necesidad que fue surgiendo',
+            'Operaciones tenía 46 canales — por zona, técnico y tipo',
+            'Muchos canales privados limitaban las posibilidades de automatización',
+            'Canales organizados por departamento, no por flujo de trabajo',
+            'La información se dispersaba entre chats, correos y canales sin conexión',
+            'Sin una guía clara de uso, cada quien publicaba donde le parecía mejor',
+          ].map(i => `<div style="display:flex;gap:7px;margin-bottom:7px;font-size:12px;color:#605E5C"><span style="color:#A4262C;flex-shrink:0">✗</span>${i}</div>`).join('')}
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#107C10;margin-bottom:8px">Lo que pedía el equipo</div>
+          ${[
+            'Menos canales — más fácil encontrar dónde publicar',
+            'Saber exactamente qué va en cada canal',
+            'Que alguien sea responsable de cada canal',
+            'Dejar de buscar información en múltiples lugares',
+            'Que los documentos estén donde se discutieron',
+            'Un sistema que escale sin fragmentarse',
+          ].map(i => `<div style="display:flex;gap:7px;margin-bottom:7px;font-size:12px;color:#605E5C"><span style="color:#107C10;flex-shrink:0">→</span>${i}</div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- PRINCIPIOS -->
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:12px">🏗️ Cómo está diseñado el nuevo modelo</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      ${[
+        { icon:'🔄', color:'#6264A7', title:'Flujo sobre departamento', desc:'Los equipos ya no se organizan por área — se organizan por proceso de negocio completo. Cada equipo agrupa todo lo que sucede en ese flujo, de principio a fin.' },
+        { icon:'⚡', color:'#0078D4', title:'Canales estándar = Copilot listo', desc:'Todos los canales son de tipo Estándar. Esto significa que Copilot puede leerlos, resumirlos y buscar en ellos. Cuanto mejor estructurado esté el canal, mejor funciona Copilot.' },
+        { icon:'🤖', color:'#5C2D91', title:'Preparados para automatizaciones', desc:'La arquitectura actual está diseñada para la siguiente fase: flujos de Power Automate, conectores con Zendesk, Business Central y Field Service ya pueden activarse sin rediseñar nada.' },
+        { icon:'🗣️', color:'#107C10', title:'Canal conversacional en cada equipo', desc:'Todos los equipos tienen un canal tipo chat marcado con 🗣️ — ahí van las dudas rápidas, la coordinación del día y todo lo que no encaja en un canal específico. Es el punto de entrada: si no sabes dónde va algo, empieza aquí.' },
+      ].map(p => `
+        <div style="background:white;border:1px solid #E1DFDD;border-left:4px solid ${p.color};border-radius:8px;padding:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:20px">${p.icon}</span>
+            <div style="font-size:13px;font-weight:700;color:#252423">${p.title}</div>
+          </div>
+          <div style="font-size:12px;color:#605E5C;line-height:1.65">${p.desc}</div>
+        </div>
+      `).join('')}
+    </div>
+
+  </div>`;
+}
+
+function showGuia() {
+  document.querySelectorAll('.rail-item').forEach(e => e.classList.remove('active'));
+  document.getElementById('railGuia').classList.add('active');
+
+  const header = document.getElementById('mainHeader');
+  header.innerHTML = `
+    <div class="header-avatar" style="background:#107C10">💡</div>
+    <div class="header-info">
+      <div class="header-name">Guía de uso · Post, Hilo, Menciones y Etiquetas</div>
+      <div class="header-meta">Cómo comunicarse correctamente en Teams · Olfativa</div>
+    </div>
+  `;
+
+  document.getElementById('channelContent').innerHTML = `
+  <div style="padding:20px 24px 40px;max-width:860px">
+
+    <!-- INTRO -->
+    <div style="background:linear-gradient(135deg,#6264A7,#464775);border-radius:12px;padding:20px 24px;color:white;margin-bottom:24px">
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">Teams no es WhatsApp</div>
+      <div style="font-size:13px;opacity:0.9;line-height:1.6">Aquí cada mensaje tiene un lugar. Cuando usas el canal y el formato correcto, cualquier persona puede encontrar lo que necesita sin preguntar. Esta guía te explica cómo hacerlo.</div>
+    </div>
+
+    <!-- POST vs HILO -->
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:12px">📌 Post vs 🧵 Hilo — ¿cuál usar?</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px">
+      <!-- POST -->
+      <div style="background:white;border:1px solid #E1DFDD;border-radius:10px;overflow:hidden">
+        <div style="background:#DFF6DD;padding:12px 16px;border-bottom:1px solid #C3E6C3;display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">📌</span>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#107C10">Post</div>
+            <div style="font-size:11px;color:#0F6E56">Anuncio · Decisión · Reporte</div>
+          </div>
+        </div>
+        <div style="padding:14px 16px">
+          <div style="font-size:12px;color:#252423;line-height:1.7;margin-bottom:10px">
+            Úsalo cuando tienes algo <strong>nuevo que comunicar</strong> al canal. Es el primer mensaje de un tema.
+          </div>
+          <div style="font-size:11px;font-weight:700;color:#107C10;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Cuándo usarlo</div>
+          <div style="font-size:11.5px;color:#605E5C;line-height:1.8">
+            ✅ Publicar un reporte semanal<br>
+            ✅ Comunicar una decisión<br>
+            ✅ Registrar un ticket nuevo<br>
+            ✅ Lanzar una campaña<br>
+            ✅ Un comunicado a todo el equipo
+          </div>
+          <div style="margin-top:12px;background:#F3F2F1;border-radius:8px;padding:10px 12px">
+            <div style="font-size:10px;font-weight:700;color:#605E5C;text-transform:uppercase;margin-bottom:4px">Ejemplo real</div>
+            <div style="font-family:monospace;font-size:11px;color:#252423;line-height:1.6">KPI | SEMANA 14 | PIPELINE<br>ACTIVO + CLIENTES NUEVOS<br>| 2026-04-07</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HILO -->
+      <div style="background:white;border:1px solid #E1DFDD;border-radius:10px;overflow:hidden">
+        <div style="background:#FFF4CE;padding:12px 16px;border-bottom:1px solid #FFD675;display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">🧵</span>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#7A4F00">Hilo</div>
+            <div style="font-size:11px;color:#C55A11">Respuesta · Seguimiento · Duda</div>
+          </div>
+        </div>
+        <div style="padding:14px 16px">
+          <div style="font-size:12px;color:#252423;line-height:1.7;margin-bottom:10px">
+            Úsalo para <strong>responder dentro de un Post</strong>. Todo lo relacionado con ese tema vive ahí, sin abrir mensajes nuevos.
+          </div>
+          <div style="font-size:11px;font-weight:700;color:#7A4F00;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Cuándo usarlo</div>
+          <div style="font-size:11.5px;color:#605E5C;line-height:1.8">
+            ✅ Actualizar el estado de un ticket<br>
+            ✅ Responder una duda sobre el reporte<br>
+            ✅ Agregar info a una campaña activa<br>
+            ✅ Confirmar que un pedido fue despachado<br>
+            ✅ Coordinación cotidiana del equipo
+          </div>
+          <div style="margin-top:12px;background:#F3F2F1;border-radius:8px;padding:10px 12px">
+            <div style="font-size:10px;font-weight:700;color:#605E5C;text-transform:uppercase;margin-bottom:4px">Regla de oro</div>
+            <div style="font-size:11.5px;color:#252423;line-height:1.6">Un hilo = un tema.<br>Nunca abras uno nuevo para el mismo asunto.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEMO VISUAL POST + HILO -->
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:12px">🖥️ Así se ve en Teams</div>
+
+    <div style="background:white;border:1px solid #E1DFDD;border-radius:10px;overflow:hidden;margin-bottom:28px">
+      <!-- Canal header -->
+      <div style="background:#F3F2F1;padding:10px 16px;border-bottom:1px solid #E1DFDD;display:flex;align-items:center;gap:8px">
+        <span style="font-size:13px;font-weight:600;color:#252423"># Funnel</span>
+        <span style="font-size:11px;color:#A19F9D">· Adquisición de Clientes</span>
+      </div>
+
+      <!-- Post -->
+      <div style="padding:14px 16px;border-bottom:1px solid #F3F2F1">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="width:32px;height:32px;border-radius:50%;background:#0078D4;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">CM</div>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="font-size:13px;font-weight:600;color:#252423">Cintya López</span>
+              <span style="font-size:11px;color:#A19F9D">hoy 10:30 a.m.</span>
+              <span style="font-size:10px;background:#DFF6DD;color:#107C10;padding:1px 6px;border-radius:8px;font-weight:600">📌 Post</span>
+            </div>
+            <div style="font-size:13px;font-weight:700;color:#252423;margin-bottom:4px">HOTEL HANGAR SELECT | GUADALAJARA | MKT | 2026-04-18</div>
+            <div style="font-size:12px;color:#605E5C;line-height:1.6">Primer contacto realizado. Interés en servicio para lobby y restaurante. Cita agendada para el 22/04. @Jenny Sosa dar seguimiento.</div>
+            <!-- Reply button -->
+            <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
+              <div style="font-size:11px;color:#6264A7;font-weight:600;cursor:pointer;padding:3px 8px;border:1px solid #6264A7;border-radius:4px;display:inline-block">💬 Responder en hilo</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Replies / Hilo -->
+        <div style="margin-left:42px;margin-top:10px;border-left:3px solid #E1DFDD;padding-left:12px">
+          <div style="font-size:11px;font-weight:600;color:#A19F9D;margin-bottom:8px">🧵 2 respuestas en el hilo</div>
+
+          <!-- Reply 1 -->
+          <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:10px">
+            <div style="width:26px;height:26px;border-radius:50%;background:#E91E8C;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">JS</div>
+            <div>
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+                <span style="font-size:12px;font-weight:600;color:#252423">Jenny Sosa</span>
+                <span style="font-size:10px;color:#A19F9D">10:45 a.m.</span>
+              </div>
+              <div style="font-size:12px;color:#605E5C">Confirmado, tengo la cita en agenda. Les comparto propuesta antes de la reunión.</div>
+            </div>
+          </div>
+
+          <!-- Reply 2 -->
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <div style="width:26px;height:26px;border-radius:50%;background:#107C10;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">CL</div>
+            <div>
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+                <span style="font-size:12px;font-weight:600;color:#252423">Cintya López</span>
+                <span style="font-size:10px;color:#A19F9D">11:02 a.m.</span>
+              </div>
+              <div style="font-size:12px;color:#605E5C">✅ Actualizado en Funnel. Etapa: Propuesta enviada. Fecha estimada de cierre: 30/04.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Canal general hilo -->
+      <div style="padding:14px 16px;background:#FAFAF9">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="width:32px;height:32px;border-radius:50%;background:#5C2D91;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">AM</div>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="font-size:13px;font-weight:600;color:#252423">Anthony Mandujano</span>
+              <span style="font-size:11px;color:#A19F9D">hoy 9:15 a.m.</span>
+              <span style="font-size:10px;background:#FFF4CE;color:#7A4F00;padding:1px 6px;border-radius:8px;font-weight:600">🧵 Hilo</span>
+            </div>
+            <div style="font-size:12px;color:#605E5C;line-height:1.6">@Cintya López ¿cómo vamos con la cita de Guadalajara? ¿confirmaron?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMATO EN HILOS (canal General) -->
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:12px">💬 Cómo poner asunto en canales de Coordinación</div>
+
+    <div style="background:white;border:1px solid #E1DFDD;border-radius:10px;overflow:hidden;margin-bottom:28px">
+      <div style="background:#F3F2F1;padding:10px 16px;border-bottom:1px solid #E1DFDD">
+        <span style="font-size:13px;font-weight:600;color:#252423"># Coordinación Comercial</span>
+        <span style="font-size:11px;color:#A19F9D"> · canal de conversación diaria</span>
+      </div>
+      <div style="padding:16px">
+        <div style="font-size:12px;color:#605E5C;line-height:1.7;margin-bottom:14px">En los canales de coordinación no hay formato de asunto obligatorio — pero sí hay una regla: <strong>@menciona a la persona específica</strong>, no al canal completo. Así solo le llega notificación a quien corresponde.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:#A4262C;text-transform:uppercase;margin-bottom:6px">❌ Así no</div>
+            <div style="background:#FDE7E9;border-radius:8px;padding:10px 12px;font-size:12px;color:#605E5C;line-height:1.6">
+              <strong>@Adquisición de Clientes</strong> ¿alguien sabe cómo quedó lo de Guadalajara?
+              <div style="margin-top:6px;font-size:10.5px;color:#A4262C">→ Notifica a todos los miembros innecesariamente</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:#107C10;text-transform:uppercase;margin-bottom:6px">✅ Así sí</div>
+            <div style="background:#DFF6DD;border-radius:8px;padding:10px 12px;font-size:12px;color:#605E5C;line-height:1.6">
+              <strong>@Cintya López</strong> ¿cómo quedó la cita de Guadalajara del Hotel Hangar?
+              <div style="margin-top:6px;font-size:10.5px;color:#107C10">→ Solo le llega a quien puede responder</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>`;
+}
+
+
+function showReglas() {
+  document.querySelectorAll('.rail-item').forEach(e => e.classList.remove('active'));
+  document.getElementById('railReglas').classList.add('active');
+
+  document.getElementById('mainHeader').innerHTML = `
+    <div class="header-avatar" style="background:#F9A825">⭐</div>
+    <div class="header-info">
+      <div class="header-name">Reglas de Oro</div>
+      <div class="header-meta">8 reglas no negociables para trabajar en Teams en Olfativa</div>
+    </div>`;
+
+  const reglas = [
+    { num:'1', color:'#6264A7', icon:'📌', titulo:'Oficina de cristal', desc:'Todo lo que impacta al negocio debe comunicarse en canales, no en privado. Decisiones, avances, bloqueos y cambios deben ser visibles para el equipo. Si no está en un canal, no cuenta como información oficial.' },
+    { num:'2', color:'#A4262C', icon:'🚫', titulo:'WhatsApp no es trabajo', desc:'WhatsApp no se usa para temas laborales. No decisiones, no acuerdos, no archivos, no seguimientos. Si algo llega por WhatsApp, debe pasarse a Teams o se pierde.' },
+    { num:'3', color:'#0078D4', icon:'🧵', titulo:'Un post = un tema', desc:'Cada post debe tratar un solo tema. Nunca mezcles asuntos distintos en el mismo mensaje. Si es otro tema, abre otro post.' },
+    { num:'4', color:'#107C10', icon:'🔁', titulo:'Responde siempre en el hilo', desc:'Si ya existe un post sobre un tema, responde dentro de ese mismo hilo. No abras nuevos mensajes ni lleves la conversación al chat. El hilo es el historial oficial del tema.' },
+    { num:'5', color:'#C55A11', icon:'🏷️', titulo:'Menciones y etiquetas', desc:'Usa menciones solo cuando esperes una acción. @Persona para alguien específico, @Etiqueta para un grupo (Ventas, Operaciones). Evita @Canal si no aplica para todos.' },
+    { num:'6', color:'#5C2D91', icon:'🎥', titulo:'Reunión sin registro = reunión perdida', desc:'Toda reunión debe dejar rastro. Grabación activa y acuerdos publicados en el canal correspondiente. Si no quedó registrado, no se puede dar seguimiento.' },
+    { num:'7', color:'#605E5C', icon:'💬', titulo:'Menos chat, más proceso', desc:'El chat sirve para coordinar, no para documentar. Los procesos, decisiones y referencias viven en canales o sistemas, no en chats privados. Lo importante debe poder consultarse después.' },
+    { num:'8', color:'#0078D4', icon:'📧', titulo:'El correo interno ya no existe', desc:'Los temas entre colaboradores se resuelven en Teams. El correo queda para comunicaciones externas con clientes y proveedores. Si le mandas un correo a alguien de Olfativa, lo estás haciendo mal.' },
+  ];
+
+  document.getElementById('channelContent').innerHTML = `
+  <div style="padding:20px 24px 40px;max-width:860px">
+    <div style="background:linear-gradient(135deg,#F9A825,#F57F17);border-radius:12px;padding:20px 24px;color:white;margin-bottom:24px">
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">Las reglas que hacen que Teams funcione</div>
+      <div style="font-size:13px;opacity:0.9;line-height:1.6">Estas 6 reglas no son opcionales. Son la diferencia entre un Teams que da claridad y uno que genera más ruido que el WhatsApp que queremos reemplazar.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px">
+      ${reglas.map(r => `
+        <div style="background:white;border:1px solid #E1DFDD;border-left:4px solid ${r.color};border-radius:8px;padding:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="font-size:20px">${r.icon}</span>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:${r.color};text-transform:uppercase;letter-spacing:.06em">Regla ${r.num}</div>
+              <div style="font-size:13px;font-weight:700;color:#252423">${r.titulo}</div>
+            </div>
+          </div>
+          <div style="font-size:12px;color:#605E5C;line-height:1.65">${r.desc}</div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+function showCopilot() {
+  document.querySelectorAll('.rail-item').forEach(e => e.classList.remove('active'));
+  document.getElementById('railCopilot').classList.add('active');
+
+  document.getElementById('mainHeader').innerHTML = `
+    <div class="header-avatar" style="background:#5C2D91">🤖</div>
+    <div class="header-info">
+      <div class="header-name">Copilot · Prompts por área</div>
+      <div class="header-meta">Cómo sacarle el máximo a Copilot en cada canal de Olfativa</div>
+    </div>`;
+
+  const areas = [
+    { area:'Funnel · Adquisición', icon:'🎯', color:'#0078D4', prompts:[
+      'Resume los posts de esta semana en el canal Funnel',
+      'Lista las empresas con cita pendiente mencionadas en Funnel este mes',
+      'Busca todos los hilos donde se mencione propuesta enviada en Adquisición de Clientes'
+    ]},
+    { area:'Transformación PRIME', icon:'🚀', color:'#5C2D91', prompts:[
+      'Resume las decisiones tomadas en BC y FSM Prime esta semana',
+      'Lista los hitos completados en el último mes en Transformación Prime',
+      'Busca todos los posts donde se mencione Clouzzy este mes'
+    ]},
+    { area:'Olfativa Home', icon:'🛒', color:'#E91E8C', prompts:[
+      'Resume los pedidos despachados hoy en Despacho de Pedidos',
+      'Lista los casos abiertos en Customer Care de esta semana',
+      'Busca todos los posts de Control Tower con estado pendiente'
+    ]},
+    { area:'Flujo Operativo', icon:'⚙️', color:'#107C10', prompts:[
+      'Resume las incidencias reportadas esta semana en Servicios e Incidencias',
+      'Lista los tickets con prioridad alta en Zendesk Tickets Operativos',
+      'Busca menciones de falla de difusor en los últimos 30 días'
+    ]},
+    { area:'Experiencia de Cliente', icon:'🤝', color:'#00BCF2', prompts:[
+      'Resume las interacciones de Gestión de Cuentas de esta semana',
+      'Lista los clientes en riesgo mencionados en el canal Cartera',
+      'Busca todos los hilos con renovación pendiente en Experiencia de Cliente'
+    ]},
+    { area:'Gestión del Cambio', icon:'🔄', color:'#E91E8C', prompts:[
+      'Resume los KPIs ADKAR de las últimas 4 semanas',
+      'Lista los acuerdos del último Comité de Gestión del Cambio',
+      'Busca los equipos con semáforo rojo en los posts de KPIs ADKAR'
+    ]},
+  ];
+
+  document.getElementById('channelContent').innerHTML = `
+  <div style="padding:20px 24px 40px;max-width:860px">
+    <div style="background:linear-gradient(135deg,#5C2D91,#3D1F6B);border-radius:12px;padding:20px 24px;color:white;margin-bottom:24px">
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">Copilot funciona mejor cuando Teams está bien organizado</div>
+      <div style="font-size:13px;opacity:0.9;line-height:1.6">Cuanto mejor sea el asunto del post y más estructurado esté el canal, más precisa será la respuesta de Copilot. Estos prompts están diseñados para los canales de Olfativa.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      ${areas.map(a => `
+        <div style="background:white;border:1px solid #E1DFDD;border-radius:10px;overflow:hidden">
+          <div style="background:${a.color}15;padding:10px 14px;border-bottom:1px solid ${a.color}25;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">${a.icon}</span>
+            <span style="font-size:12px;font-weight:700;color:${a.color}">${a.area}</span>
+          </div>
+          <div style="padding:12px 14px">
+            ${a.prompts.map(p => `
+              <div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px;padding:8px 10px;background:#F8F7FF;border-radius:6px;border-left:3px solid ${a.color}">
+                <span style="color:${a.color};font-size:12px;margin-top:1px;flex-shrink:0">✦</span>
+                <span style="font-size:11.5px;color:#252423;line-height:1.5;font-style:italic">"${p}"</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="background:#F8F7FF;border:1px solid #E8E6FF;border-radius:8px;padding:12px 16px;font-size:12px;color:#3D3B54;line-height:1.6;margin-top:16px">
+      💡 <strong>Tip:</strong> En Teams, abre Copilot con el ícono del robot en la esquina superior derecha de cualquier canal. Puedes copiar estos prompts directamente ahí.
+    </div>
+  </div>`;
+}
+
+
+function showNotif() {
+  document.querySelectorAll('.rail-item').forEach(e => e.classList.remove('active'));
+  document.getElementById('railNotif').classList.add('active');
+
+  document.getElementById('mainHeader').innerHTML = `
+    <div class="header-avatar" style="background:#C55A11">🔔</div>
+    <div class="header-info">
+      <div class="header-name">Notificaciones · Cómo configurarlas</div>
+      <div class="header-meta">Para no saturarte sin perderte nada importante · Olfativa Teams</div>
+    </div>`;
+
+  document.getElementById('channelContent').innerHTML = `
+  <div style="padding:20px 24px 40px;max-width:860px">
+
+    <div style="background:linear-gradient(135deg,#C55A11,#8B3A00);border-radius:12px;padding:20px 24px;color:white;margin-bottom:24px">
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">Notificaciones bien configuradas = Teams que funciona</div>
+      <div style="font-size:13px;opacity:0.9;line-height:1.6">Silenciar todo es tan malo como recibir todo. La clave es configurar cada canal según tu rol: seguir los que te impactan directamente y ocultar los que solo son referencia.</div>
+    </div>
+
+    <!-- LOS 3 NIVELES -->
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:12px">🎚️ Los 3 niveles de notificación por canal</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px">
+      ${[
+        { nivel:'Todas las actividades', icon:'🔔', color:'#107C10', bg:'#DFF6DD', cuando:'Canales donde trabajas activamente todos los días. Te llega notificación por cada mensaje nuevo.', canales:'Coordinación de tu equipo · Canal de tu proceso principal', advertencia:'Máx. 2-3 canales así o te saturas.' },
+        { nivel:'Solo @menciones', icon:'🔕', color:'#0078D4', bg:'#EFF6FC', cuando:'Canales que debes monitorear pero no requieren respuesta inmediata. Solo te avisa si alguien te menciona.', canales:'Canales de otros equipos relevantes · KPIs de tu área · Reportes', advertencia:'El nivel recomendado para la mayoría de los canales.' },
+        { nivel:'Oculto / Sin seguimiento', icon:'🚫', color:'#605E5C', bg:'#F3F2F1', cuando:'Canales donde no participas regularmente. Puedes consultarlos cuando quieras pero no generan ruido.', canales:'Canales de equipos que no impactan tu trabajo diario · Referencia', advertencia:'Ocultar no es salirse — sigues viendo el historial.' },
+      ].map(n => `
+        <div style="background:${n.bg};border:1px solid ${n.color}25;border-radius:10px;padding:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="font-size:20px">${n.icon}</span>
+            <div style="font-size:12px;font-weight:700;color:${n.color}">${n.nivel}</div>
+          </div>
+          <div style="font-size:11.5px;color:#252423;line-height:1.6;margin-bottom:8px">${n.cuando}</div>
+          <div style="font-size:10.5px;color:${n.color};font-weight:600;margin-bottom:6px">Úsalo en:</div>
+          <div style="font-size:11px;color:#605E5C;font-style:italic;margin-bottom:8px">${n.canales}</div>
+          <div style="font-size:10.5px;background:white;border-radius:6px;padding:6px 8px;color:${n.color}">⚡ ${n.advertencia}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- CÓMO CONFIGURARLO -->
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:12px">⚙️ Paso a paso · Cómo configurar un canal</div>
+
+    <div style="background:white;border:1px solid #E1DFDD;border-radius:10px;padding:16px 18px;margin-bottom:20px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#252423;margin-bottom:10px">Cambiar nivel de notificación</div>
+          ${[
+            'Haz clic derecho sobre el canal en el sidebar',
+            'Selecciona "Notificaciones del canal"',
+            'Elige: Todas las actividades · Solo @menciones · Desactivadas',
+            'El cambio aplica solo para ti — no afecta a otros',
+          ].map((s,i) => `
+            <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">
+              <div style="width:20px;height:20px;border-radius:50%;background:#C55A11;color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+              <div style="font-size:12px;color:#605E5C;line-height:1.5;padding-top:2px">${s}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#252423;margin-bottom:10px">Ocultar un canal</div>
+          ${[
+            'Haz clic derecho sobre el canal',
+            'Selecciona "Ocultar"',
+            'El canal desaparece del sidebar pero sigue activo',
+            'Para verlo de nuevo: "Más canales" → "Mostrar"',
+          ].map((s,i) => `
+            <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">
+              <div style="width:20px;height:20px;border-radius:50%;background:#0078D4;color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+              <div style="font-size:12px;color:#605E5C;line-height:1.5;padding-top:2px">${s}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- RECOMENDACIÓN POR ROL -->
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:12px">👤 Configuración recomendada por perfil</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      ${[
+        { perfil:'Dirección / Liderazgo', icon:'🎯', color:'#5C2D91', activos:['Coordinación de tu equipo','KPIs · Adopción · Reportes de tu área'], referencia:['Canales operativos de otros equipos','Flujos de ejecución que no requieren tu acción'] },
+        { perfil:'Operaciones / Campo', icon:'⚙️', color:'#107C10', activos:['Coordinación Flujo Operativo','Servicios e Incidencias · tu zona'], referencia:['Canales de otras zonas','Canales comerciales o financieros'] },
+        { perfil:'Comercial / Ventas', icon:'🎯', color:'#0078D4', activos:['Coordinación Comercial','Funnel · KPIs Adquisición'], referencia:['Canales de operación y finanzas','Canales de otros equipos'] },
+        { perfil:'Back Office / Admin', icon:'💼', color:'#C55A11', activos:['Coordinación Flujo de Efectivo','Aprovisionamiento · tu proceso principal'], referencia:['Canales comerciales y operativos','Canales de otros equipos'] },
+      ].map(p => `
+        <div style="background:white;border:1px solid #E1DFDD;border-left:3px solid ${p.color};border-radius:8px;padding:14px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+            <span style="font-size:14px">${p.icon}</span>
+            <div style="font-size:12px;font-weight:700;color:${p.color}">${p.perfil}</div>
+          </div>
+          <div style="font-size:10.5px;font-weight:700;color:#107C10;text-transform:uppercase;margin-bottom:4px">🔔 Activos (todas las actividades)</div>
+          ${p.activos.map(a => `<div style="font-size:11px;color:#605E5C;margin-bottom:2px">· ${a}</div>`).join('')}
+          <div style="font-size:10.5px;font-weight:700;color:#0078D4;text-transform:uppercase;margin:8px 0 4px">🔕 Solo @menciones o Oculto</div>
+          ${p.referencia.map(r => `<div style="font-size:11px;color:#605E5C;margin-bottom:2px">· ${r}</div>`).join('')}
+        </div>
+      `).join('')}
+    </div>
+
+    <div style="background:#F8F7FF;border:1px solid #E8E6FF;border-radius:8px;padding:12px 16px;font-size:12px;color:#3D3B54;line-height:1.6">
+      💡 <strong>Regla práctica:</strong> Si un canal te genera más de 10 notificaciones al día sin que ninguna requiera tu acción directa, cámbialo a "Solo @menciones". Si en una semana no participaste ni una vez, ocúltalo.
+    </div>
+
+  </div>`;
+}
+
+
+
+function showRoadmap() {
+  document.querySelectorAll('.rail-item').forEach(e => e.classList.remove('active'));
+  document.getElementById('railRoadmap').classList.add('active');
+
+  document.getElementById('mainHeader').innerHTML = `
+    <div class="header-avatar" style="background:linear-gradient(135deg,#6264A7,#464775)">🗺️</div>
+    <div class="header-info">
+      <div class="header-name">Ruta PRIME · Feb 2026 → Jun 2027</div>
+      <div class="header-meta">La transformación completa — sistemas, valles y el camino al compromiso</div>
+    </div>`;
+
+  const sistemas = [
+    { id:'fintoc',  nombre:'Fintoc',           fecha:'Feb 2026', color:'#107C10', estado:'active',  mes:0,  valle:1,  durValle:3, etapa:2, desc:'Integración de pagos digitales. Primer sistema del stack PRIME. En proceso de adopción — aún en el valle.' },
+    { id:'teams',   nombre:'Teams · M365',      fecha:'Mar 2026', color:'#0078D4', estado:'done',    mes:1,  valle:1,  durValle:2, etapa:4, desc:'Nueva arquitectura de comunicación y colaboración. 45 canales, 11 equipos. Valle superado.' },
+    { id:'zendesk', nombre:'Zendesk',           fecha:'Abr 2026', color:'#E91E8C', estado:'active',  mes:2,  valle:2,  durValle:3, etapa:2, desc:'Plataforma de experiencia de cliente y tickets operativos. Piloto activo en Mérida — en el valle de adopción.' },
+    { id:'bc',      nombre:'Business Central',  fecha:'Ago 2026', color:'#C55A11', estado:'future',  mes:6,  valle:7,  durValle:6, etapa:1, desc:'ERP central — finanzas, inventario, compras, operaciones. El de mayor impacto y duración de valle.' },
+    { id:'fsm',     nombre:'Field Service',     fecha:'Oct 2026', color:'#5C2D91', estado:'future',  mes:8,  valle:9,  durValle:4, etapa:1, desc:'Gestión de técnicos, rutas y servicio en campo. Se traslapa con el valle de BC — período de mayor riesgo.' },
+    { id:'crm',     nombre:'CRM · Sales',       fecha:'Mar 2027', color:'#A4262C', estado:'future',  mes:13, valle:14, durValle:3, etapa:1, desc:'Dynamics Sales — pipeline, forecast y gestión comercial. Cierra el stack PRIME completo.' },
+  ];
+
+  const etapas = [
+    { num:1, nombre:'Optimismo no informado', color:'#E8F4FD', textColor:'#0078D4', desc:'El inicio — todo parece posible. Entusiasmo alto, expectativas altas.' },
+    { num:2, nombre:'Valle de la desesperación', color:'#FDE7E9', textColor:'#A4262C', desc:'La realidad del cambio golpea. Productividad cae, frustración sube.' },
+    { num:3, nombre:'Pesimismo informado', color:'#FFF4CE', textColor:'#7A4F00', desc:'Se entiende el esfuerzo real. Escepticismo activo pero constructivo.' },
+    { num:4, nombre:'Optimismo informado', color:'#DFF6DD', textColor:'#107C10', desc:'El sistema empieza a hacer sentido. Confianza creciente con base real.' },
+    { num:5, nombre:'Compromiso', color:'#F4EDF9', textColor:'#5C2D91', desc:'Adopción plena. El nuevo sistema es el sistema. No hay vuelta atrás.' },
+  ];
+
+  document.getElementById('channelContent').innerHTML = `
+  <div style="padding:20px 24px 40px;max-width:960px">
+
+    <!-- HERO -->
+    <div style="background:linear-gradient(135deg,#6264A7,#2D2C5E);border-radius:12px;padding:22px 26px;color:white;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:6px">De 0 sistemas integrados a un stack completo de 6</div>
+        <div style="font-size:13px;opacity:0.85;line-height:1.6;max-width:560px">16 meses de transformación estructurada. Cada sistema tiene su proceso, su valle y su momento de compromiso. Esta es la ruta completa de Olfativa hacia junio 2027.</div>
+      </div>
+      <div style="text-align:center;flex-shrink:0;padding-left:24px">
+        <div style="font-size:42px;font-weight:800;line-height:1">6</div>
+        <div style="font-size:12px;opacity:0.8;margin-top:2px">sistemas<br>integrados</div>
+      </div>
+    </div>
+
+    <!-- TIMELINE DE SISTEMAS -->
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:14px">📅 Timeline · Feb 2026 — Jun 2027</div>
+
+    <!-- MESES HEADER -->
+    <div style="background:white;border:1px solid #E1DFDD;border-radius:10px;overflow:hidden;margin-bottom:20px">
+      <div style="display:grid;grid-template-columns:140px repeat(17,1fr);background:#F3F2F1;border-bottom:2px solid #E1DFDD">
+        <div style="padding:8px 12px;font-size:10px;font-weight:700;color:#605E5C"></div>
+        ${['F','M','A','M','J','J','A','S','O','N','D','E','F','M','A','M','J'].map((m,i) => `
+          <div style="padding:8px 4px;font-size:9px;font-weight:700;color:${i<3?'#0078D4':i===3||i===4?'#E91E8C':i>=6&&i<=8?'#A4262C':'#605E5C'};text-align:center;border-left:1px solid #E1DFDD">${m}<div style="font-size:8px;opacity:.6">${i<11?'26':'27'}</div></div>
+        `).join('')}
+      </div>
+
+      ${sistemas.map(s => {
+        const cells = Array(17).fill('');
+        // Go-live marker at mes
+        cells[s.mes] = 'golive';
+        // Valle cells
+        for(let v = s.valle; v < Math.min(s.valle + s.durValle, 17); v++) {
+          cells[v] = 'valle';
+        }
+        // Post-valle (adopción) cells
+        for(let p = s.valle + s.durValle; p < Math.min(s.valle + s.durValle + 2, 17); p++) {
+          if(cells[p] === '') cells[p] = 'adopt';
+        }
+        return `
+          <div style="display:grid;grid-template-columns:140px repeat(17,1fr);border-top:1px solid #F3F2F1;align-items:center">
+            <div style="padding:10px 12px;border-right:1px solid #F3F2F1">
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
+                <div>
+                  <div style="font-size:11px;font-weight:700;color:#252423">${s.nombre}</div>
+                  <div style="font-size:9px;color:${s.estado==='done'?'#107C10':s.estado==='active'?'#E91E8C':'#A19F9D'};font-weight:600">${s.estado==='done'?'✅ Completado':s.estado==='active'?'🔄 Activo':'⏳ Próximo'}</div>
+                </div>
+              </div>
+            </div>
+            ${cells.map((cell, i) => `
+              <div style="height:36px;border-left:1px solid #F3F2F1;position:relative;${
+                cell==='golive' ? `background:${s.color};display:flex;align-items:center;justify-content:center;` :
+                cell==='valle' ? `background:${s.color}25;` :
+                cell==='adopt' ? `background:${s.color}12;` : ''
+              }">
+                ${cell==='golive' ? `<span style="color:white;font-size:10px;font-weight:700">${s.fecha.split(' ')[0]}</span>` : ''}
+                ${cell==='valle' && i===s.valle ? `<div style="position:absolute;top:50%;left:4px;transform:translateY(-50%);font-size:8px;color:${s.color};font-weight:600;white-space:nowrap">▼ valle</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }).join('')}
+
+      <!-- RIESGO SOLAPAMIENTO -->
+      <div style="display:grid;grid-template-columns:140px repeat(17,1fr);border-top:2px solid #FDE7E9;background:#FFF5F5">
+        <div style="padding:8px 12px;font-size:10px;font-weight:700;color:#A4262C">⚠️ Zona crítica</div>
+        ${Array(17).fill('').map((_,i) => `
+          <div style="height:20px;border-left:1px solid #F3F2F1;${i>=7&&i<=10?`background:#A4262C25;` : ''}">
+            ${i===8?'<div style="font-size:7px;color:#A4262C;padding:2px 1px;font-weight:700;text-align:center">BC+FSM</div>':''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- CURVA KELLEY CONNOR -->
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:14px">📈 Ciclo emocional del cambio · Kelley & Connor</div>
+
+    <div style="background:white;border:1px solid #E1DFDD;border-radius:10px;padding:20px;margin-bottom:20px">
+      <!-- SVG Curve -->
+      <svg viewBox="0 0 800 240" style="width:100%;height:auto;margin-bottom:16px">
+        <defs>
+          <linearGradient id="curveGrad2" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#0078D4"/>
+            <stop offset="35%" stop-color="#A4262C"/>
+            <stop offset="60%" stop-color="#107C10"/>
+            <stop offset="100%" stop-color="#5C2D91"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Stage background zones -->
+        <rect x="0" y="0" width="130" height="210" fill="#EFF6FC" opacity="0.5" rx="4"/>
+        <rect x="130" y="0" width="170" height="210" fill="#FDE7E9" opacity="0.4" rx="0"/>
+        <rect x="300" y="0" width="130" height="210" fill="#FFF4CE" opacity="0.5" rx="0"/>
+        <rect x="430" y="0" width="180" height="210" fill="#DFF6DD" opacity="0.4" rx="0"/>
+        <rect x="610" y="0" width="190" height="210" fill="#F4EDF9" opacity="0.5" rx="4"/>
+
+        <!-- Stage labels at TOP - clean and readable -->
+        <text x="65"  y="16" font-size="9.5" fill="#0078D4" font-weight="700" text-anchor="middle">Etapa 1</text>
+        <text x="65"  y="28" font-size="9"   fill="#0078D4" text-anchor="middle">Optimismo</text>
+        <text x="65"  y="38" font-size="9"   fill="#0078D4" text-anchor="middle">no informado</text>
+
+        <text x="215" y="16" font-size="9.5" fill="#A4262C" font-weight="700" text-anchor="middle">Etapa 2</text>
+        <text x="215" y="28" font-size="9"   fill="#A4262C" text-anchor="middle">Valle de la</text>
+        <text x="215" y="38" font-size="9"   fill="#A4262C" text-anchor="middle">desesperación</text>
+
+        <text x="365" y="16" font-size="9.5" fill="#7A4F00" font-weight="700" text-anchor="middle">Etapa 3</text>
+        <text x="365" y="28" font-size="9"   fill="#7A4F00" text-anchor="middle">Pesimismo</text>
+        <text x="365" y="38" font-size="9"   fill="#7A4F00" text-anchor="middle">informado</text>
+
+        <text x="520" y="16" font-size="9.5" fill="#107C10" font-weight="700" text-anchor="middle">Etapa 4</text>
+        <text x="520" y="28" font-size="9"   fill="#107C10" text-anchor="middle">Optimismo</text>
+        <text x="520" y="38" font-size="9"   fill="#107C10" text-anchor="middle">informado</text>
+
+        <text x="705" y="16" font-size="9.5" fill="#5C2D91" font-weight="700" text-anchor="middle">Etapa 5</text>
+        <text x="705" y="28" font-size="9"   fill="#5C2D91" text-anchor="middle">Compromiso</text>
+        <text x="720" y="40" font-size="11"  fill="#5C2D91" text-anchor="middle">★ Jun 2027</text>
+
+        <!-- Divider lines between stages -->
+        <line x1="130" y1="0" x2="130" y2="210" stroke="#E1DFDD" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="300" y1="0" x2="300" y2="210" stroke="#E1DFDD" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="430" y1="0" x2="430" y2="210" stroke="#E1DFDD" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="610" y1="0" x2="610" y2="210" stroke="#E1DFDD" stroke-width="1" stroke-dasharray="3,3"/>
+
+        <!-- Curve path -->
+        <path d="M 0,90 C 60,88 100,88 130,100 C 165,115 190,170 230,185 C 265,198 290,185 330,165 C 370,145 410,115 460,98 C 510,82 560,76 800,72"
+              fill="none" stroke="#6264A7" stroke-width="3" stroke-linecap="round"/>
+        <!-- Shaded area -->
+        <path d="M 0,90 C 60,88 100,88 130,100 C 165,115 190,170 230,185 C 265,198 290,185 330,165 C 370,145 410,115 460,98 C 510,82 560,76 800,72 L 800,210 L 0,210 Z"
+              fill="url(#curveGrad2)" opacity="0.12"/>
+
+        <!-- System markers - spaced out clearly -->
+        <!-- CRM Mar 2027 - E1 -->
+        <circle cx="20" cy="90" r="7" fill="#A4262C" stroke="white" stroke-width="2"/>
+        <rect x="28" y="78" width="52" height="14" rx="3" fill="#A4262C" opacity="0.9"/>
+        <text x="54" y="88" font-size="8" fill="white" font-weight="700" text-anchor="middle">CRM Mar27</text>
+
+        <!-- FSM Oct - E1 -->
+        <circle cx="55" cy="90" r="7" fill="#5C2D91" stroke="white" stroke-width="2"/>
+        <rect x="63" y="100" width="48" height="14" rx="3" fill="#5C2D91" opacity="0.9"/>
+        <text x="87" y="110" font-size="8" fill="white" font-weight="700" text-anchor="middle">FSM Oct26</text>
+
+        <!-- BC Aug - E1 -->
+        <circle cx="100" cy="91" r="7" fill="#C55A11" stroke="white" stroke-width="2"/>
+        <rect x="108" y="78" width="46" height="14" rx="3" fill="#C55A11" opacity="0.9"/>
+        <text x="131" y="88" font-size="8" fill="white" font-weight="700" text-anchor="middle">BC Ago26</text>
+
+        <!-- Zendesk - bajando, entre E1 y E2 -->
+        <circle cx="165" cy="112" r="7" fill="#E91E8C" stroke="white" stroke-width="2"/>
+        <rect x="173" y="100" width="58" height="14" rx="3" fill="#E91E8C" opacity="0.9"/>
+        <text x="202" y="110" font-size="8" fill="white" font-weight="700" text-anchor="middle">🔴 Zendesk</text>
+
+        <!-- Fintoc - fondo del valle, E2 -->
+        <circle cx="230" cy="185" r="7" fill="#107C10" stroke="white" stroke-width="2"/>
+        <rect x="238" y="173" width="46" height="14" rx="3" fill="#107C10" opacity="0.9"/>
+        <text x="261" y="183" font-size="8" fill="white" font-weight="700" text-anchor="middle">🟢 Fintoc</text>
+
+        <!-- Teams - E4 -->
+        <circle cx="500" cy="96" r="7" fill="#0078D4" stroke="white" stroke-width="2"/>
+        <rect x="508" y="83" width="56" height="14" rx="3" fill="#0078D4" opacity="0.9"/>
+        <text x="536" y="93" font-size="8" fill="white" font-weight="700" text-anchor="middle">🔵 Teams</text>
+      </svg>
+
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+        ${etapas.map(e => `
+          <div style="background:${e.color};border-radius:8px;padding:10px 10px;text-align:center">
+            <div style="font-size:11px;font-weight:700;color:${e.textColor};margin-bottom:4px">Etapa ${e.num}</div>
+            <div style="font-size:10px;font-weight:600;color:${e.textColor};margin-bottom:6px;white-space:normal">${e.nombre}</div>
+            <div style="font-size:10px;color:#605E5C;line-height:1.4">${e.desc}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- SISTEMAS CARDS -->
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:14px">🔧 Estado por sistema</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
+      ${sistemas.map(s => `
+        <div style="background:white;border:1px solid #E1DFDD;border-left:4px solid ${s.color};border-radius:8px;padding:14px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#252423">${s.nombre}</div>
+              <div style="font-size:11px;color:${s.color};font-weight:600">${s.fecha}</div>
+            </div>
+            <div style="font-size:10px;padding:3px 7px;border-radius:8px;background:${s.color}15;color:${s.color};font-weight:700;white-space:nowrap">
+              ${s.estado==='done'?'✅ Listo':s.estado==='active'?'🔄 Activo':'⏳ Próximo'}
+            </div>
+          </div>
+          <div style="font-size:11px;color:#605E5C;line-height:1.5;margin-bottom:8px">${s.desc}</div>
+          <div style="font-size:10px;background:${etapas[s.etapa-1].color};border-radius:5px;padding:5px 8px;color:${etapas[s.etapa-1].textColor};font-weight:600">
+            Etapa ${s.etapa}: ${etapas[s.etapa-1].nombre.replace('\n',' ')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- ALERTA SOLAPAMIENTO -->
+    <div style="background:#FFF4CE;border:1px solid #FFD675;border-radius:10px;padding:16px 18px;margin-bottom:16px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:22px;flex-shrink:0">📌</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#7A4F00;margin-bottom:6px">Período de mayor exigencia · Sep–Dic 2026</div>
+          <div style="font-size:12px;color:#605E5C;line-height:1.6">Business Central (arranque agosto) y Field Service (arranque octubre) tienen sus procesos de adopción superpuestos. Es el período más intenso del proyecto — no porque algo esté mal, sino porque es el corazón de la transformación. La preparación está contemplada desde ahora: acompañamiento reforzado, Champions activados en cada área y soporte dedicado en las primeras semanas de cada sistema.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:linear-gradient(135deg,#6264A7,#2D2C5E);border-radius:12px;padding:20px 22px;color:white">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px">🏆 La meta · Junio 2027</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+        <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:14px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:8px">🌍 Ventaja competitiva global</div>
+          <div style="font-size:11.5px;opacity:.9;line-height:1.65">Menos del 5% de las PyMEs de servicios B2B en el mundo tiene un stack tecnológico completamente integrado. La mayoría opera con sistemas desconectados, datos en hojas de cálculo y procesos manuales. Olfativa, con 6 sistemas integrados y agentes de IA conectados, estará entre el top 1-3% mundial de su categoría — no por tamaño, sino por madurez operativa. En el mundo de la aromatización comercial, ningún competidor latinoamericano conocido está ejecutando una transformación de esta profundidad.</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:14px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:8px">⚡ Lo que cambia operativamente</div>
+          <div style="font-size:11.5px;opacity:.9;line-height:1.65">En junio 2027, Olfativa tendrá visibilidad en tiempo real de cada pedido, cada cliente, cada técnico y cada peso. Las decisiones que hoy tardan días se tomarán con datos del mismo día. Los procesos manuales que hoy consumen horas se ejecutarán solos. El equipo podrá enfocarse en lo que genera valor — no en perseguir información que debería estar disponible siempre.</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:14px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:8px">👥 El impacto en las personas</div>
+          <div style="font-size:11.5px;opacity:.9;line-height:1.65">Quien completa una transformación de esta magnitud no sale igual. Cada persona que llegue a la Etapa 5 habrá demostrado — a sí misma y al mercado — que puede adaptarse, aprender y operar en un entorno de clase mundial. Eso tiene valor curricular, emocional y profesional que no desaparece. El equipo de Olfativa en 2027 será, individualmente, más valioso que el de hoy.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>`;
+}
+
+function showGlosario() {
+  document.querySelectorAll('.rail-item').forEach(e => e.classList.remove('active'));
+  document.getElementById('railGlosario').classList.add('active');
+
+  document.getElementById('mainHeader').innerHTML = `
+    <div class="header-avatar" style="background:#0078D4">📖</div>
+    <div class="header-info">
+      <div class="header-name">Glosario · Términos de Teams en Olfativa</div>
+      <div class="header-meta">Lo que significa cada cosa — sin tecnicismos</div>
+    </div>`;
+
+  const terminos = [
+    { term:'Post', icon:'📌', color:'#107C10', def:'Un mensaje nuevo que abre un tema en un canal. Es como publicar algo en un tablero — todos los del canal pueden verlo. Cada post debe tratar un solo tema.' , ej:'Publicar el reporte semanal de KPIs en el canal Métricas de Campo.' },
+    { term:'Hilo', icon:'🧵', color:'#C55A11', def:'Una respuesta dentro de un Post. El hilo mantiene toda la conversación de un tema en un solo lugar. Siempre responde en el hilo del post original — nunca abras uno nuevo para el mismo tema.', ej:'Responder "Confirmado, pedido despachado" dentro del hilo de un post de Control Tower.' },
+    { term:'Canal', icon:'#️⃣', color:'#0078D4', def:'Un espacio dentro de un equipo dedicado a un proceso o tema específico. Cada canal tiene un objetivo, un protocolo y un responsable. Es donde vive la información oficial de ese proceso.', ej:'El canal "Funnel" en Adquisición de Clientes — ahí van todos los prospectos activos.' },
+    { term:'Equipo', icon:'⊞', color:'#5C2D91', def:'Un grupo de personas y canales organizados alrededor de un flujo de trabajo. En Olfativa cada equipo representa un proceso de negocio completo, no un departamento.', ej:'El equipo "Olfativa Home" agrupa todo el flujo desde la venta hasta el despacho.' },
+    { term:'@Mención', icon:'@', color:'#6264A7', def:'Una forma de notificar a alguien específico dentro de un mensaje. Al escribir @Nombre, esa persona recibe una notificación. Úsala solo cuando esperas que alguien actúe o responda.', ej:'@Cintya López ¿ya confirmaste la cita de Guadalajara?' },
+    { term:'Etiqueta (Tag)', icon:'🏷️', color:'#C55A11', def:'Un grupo de personas con un rol específico al que puedes mencionar con @NombreEtiqueta. Por ejemplo @Ventas, @CX, @Operaciones. Más preciso que @Canal pero más amplio que @Persona.', ej:'@Ventas recordatorio: actualicen su pipeline antes del viernes.' },
+    { term:'Canal conversacional 🗣️', icon:'🗣️', color:'#107C10', def:'El canal de entrada de cada equipo, marcado con 🗣️. Funciona como un chat de coordinación diaria — para dudas rápidas, avisos y todo lo que no tiene un canal específico. Si no sabes dónde va algo, empieza aquí.', ej:'Coordinación Comercial, Coordinación OH, Coordinación Flujo de Efectivo.' },
+    { term:'Copilot', icon:'🤖', color:'#5C2D91', def:'La inteligencia artificial de Microsoft integrada en Teams. Puede resumir conversaciones, buscar información en canales, redactar mensajes y tomar notas en reuniones. Funciona mejor en canales Estándar bien estructurados.', ej:'"Resume lo que se discutió en BC y FSM Prime esta semana."' },
+    { term:'Conector', icon:'⚡', color:'#0078D4', def:'Una integración que conecta un canal de Teams con otro sistema (Zendesk, Business Central, Power Automate). Solo funciona en canales Estándar. Permite que los sistemas publiquen automáticamente en Teams.', ej:'Un flujo de Power Automate que publica en Teams cuando se crea un ticket en Zendesk.' },
+    { term:'Ocultar canal', icon:'👁️', color:'#605E5C', def:'Hacer que un canal desaparezca de tu sidebar sin salirte de él. Sigues siendo miembro y puedes consultarlo cuando quieras, pero no genera ruido en tu vista diaria. No afecta a los demás.', ej:'Ocultar canales de otros equipos que no impactan tu trabajo diario.' },
+    { term:'SharePoint', icon:'📁', color:'#0078D4', def:'El sistema de archivos de Microsoft 365 que vive detrás de Teams. Todos los archivos que subes a un canal se guardan aquí. Siempre comparte documentos como enlace de SharePoint — nunca como adjunto por correo.', ej:'Compartir la propuesta comercial como enlace desde SharePoint en el canal Funnel.' },
+    { term:'Grabación de reunión', icon:'⏺️', color:'#A4262C', def:'La función que graba video, audio y transcripción de una reunión de Teams. La grabación se guarda automáticamente en SharePoint y queda disponible para todos los invitados. Activarla es una Regla de Oro en Olfativa.', ej:'Grabar la sesión de BC y FSM Prime para que los ausentes puedan ponerse al día.' },
+  ];
+
+  document.getElementById('channelContent').innerHTML = `
+  <div style="padding:20px 24px 40px;max-width:860px">
+    <div style="background:linear-gradient(135deg,#0078D4,#005A9E);border-radius:12px;padding:20px 24px;color:white;margin-bottom:24px">
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">Los términos que todos usamos — y lo que realmente significan</div>
+      <div style="font-size:13px;opacity:0.9;line-height:1.6">Glosario en el lenguaje de Olfativa. Sin tecnicismos de Microsoft.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${terminos.map(t => `
+        <div style="background:white;border:1px solid #E1DFDD;border-left:4px solid ${t.color};border-radius:8px;padding:14px 16px;display:grid;grid-template-columns:140px 1fr 1fr;gap:16px;align-items:start">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:18px">${t.icon}</span>
+            <span style="font-size:13px;font-weight:700;color:${t.color}">${t.term}</span>
+          </div>
+          <div style="font-size:12px;color:#252423;line-height:1.6">${t.def}</div>
+          <div style="background:#F3F2F1;border-radius:6px;padding:8px 10px">
+            <div style="font-size:10px;font-weight:700;color:#A19F9D;text-transform:uppercase;margin-bottom:3px">Ejemplo en Olfativa</div>
+            <div style="font-size:11.5px;color:#605E5C;font-style:italic;line-height:1.5">${t.ej}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+function showReuniones() {
+  document.querySelectorAll('.rail-item').forEach(e => e.classList.remove('active'));
+  document.getElementById('railReuniones').classList.add('active');
+
+  document.getElementById('mainHeader').innerHTML = `
+    <div class="header-avatar" style="background:#A4262C">🎥</div>
+    <div class="header-info">
+      <div class="header-name">Reuniones · Grabación · Copilot</div>
+      <div class="header-meta">Cómo sacarle el máximo a cada reunión de Teams · Olfativa</div>
+    </div>`;
+
+  document.getElementById('channelContent').innerHTML = `
+  <div style="padding:20px 24px 40px;max-width:860px">
+
+    <div style="background:linear-gradient(135deg,#A4262C,#6B1010);border-radius:12px;padding:20px 24px;color:white;margin-bottom:24px">
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">Reunión sin registro = reunión perdida</div>
+      <div style="font-size:13px;opacity:0.9;line-height:1.6">Grabar, transcribir y dejar acuerdos en el canal no es burocracia — es la diferencia entre una decisión que se ejecuta y una que se olvida.</div>
+    </div>
+
+    <!-- VOZ Y CARA -->
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:12px">🎙️ Configura tu voz y tu cara — hazlo una sola vez</div>
+    <div style="background:white;border:1px solid #E1DFDD;border-radius:10px;padding:16px 18px;margin-bottom:20px">
+      <div style="font-size:12px;color:#605E5C;line-height:1.7;margin-bottom:14px">Teams puede reconocer tu voz y tu cara para atribuirte correctamente en la transcripción y el resumen de Copilot. Configúralo una sola vez y todas tus reuniones quedan identificadas.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#5C2D91;text-transform:uppercase;margin-bottom:8px">🎙️ Reconocimiento de voz</div>
+          ${['Ve a tu foto de perfil → Configuración', 'Selecciona "Reconocimiento de voz y cara"', 'Haz clic en "Registrar voz"', 'Lee las frases que aparecen en pantalla (tarda ~2 min)', 'Listo — Teams te reconocerá en todas las reuniones'].map((s,i) => `
+            <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px">
+              <div style="width:18px;height:18px;border-radius:50%;background:#5C2D91;color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
+              <div style="font-size:11.5px;color:#605E5C;line-height:1.5">${s}</div>
+            </div>`).join('')}
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:'#0078D4';text-transform:uppercase;margin-bottom:8px" style="color:#0078D4">📷 Reconocimiento de cara</div>
+          ${['Ve a tu foto de perfil → Configuración', 'Selecciona "Reconocimiento de voz y cara"', 'Haz clic en "Registrar cara"', 'Sigue las instrucciones: mueve la cabeza lentamente', 'Listo — Teams te identificará cuando enciendes cámara'].map((s,i) => `
+            <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px">
+              <div style="width:18px;height:18px;border-radius:50%;background:#0078D4;color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
+              <div style="font-size:11.5px;color:#605E5C;line-height:1.5">${s}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div style="margin-top:12px;background:#F4EDF9;border-radius:6px;padding:8px 12px;font-size:11.5px;color:#5C2D91">
+        💡 <strong>Por qué importa:</strong> Cuando Copilot genera el resumen de la reunión, atribuye correctamente quién dijo qué. Sin esto, las notas dicen "Participante 1 dijo..." en lugar de tu nombre.
+      </div>
+    </div>
+
+    <!-- CÓMO GRABAR -->
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:12px">⏺️ Cómo grabar una reunión</div>
+    <div style="background:white;border:1px solid #E1DFDD;border-radius:10px;padding:16px 18px;margin-bottom:20px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#A4262C;text-transform:uppercase;margin-bottom:8px">Durante la reunión</div>
+          ${[
+            'En la barra de controles, haz clic en "···" (Más opciones)',
+            'Selecciona "Iniciar grabación"',
+            'Todos los participantes verán un aviso de que se está grabando',
+            'Para detener: "···" → "Detener grabación"',
+            'La grabación termina automáticamente cuando cierra la reunión',
+          ].map((s,i) => `
+            <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px">
+              <div style="width:18px;height:18px;border-radius:50%;background:#A4262C;color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
+              <div style="font-size:11.5px;color:#605E5C;line-height:1.5">${s}</div>
+            </div>`).join('')}
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#107C10;text-transform:uppercase;margin-bottom:8px">Después de la reunión</div>
+          ${[
+            'La grabación se guarda automáticamente en SharePoint del canal',
+            'Aparece en el chat de la reunión como enlace',
+            'La transcripción queda disponible en la pestaña "Notas"',
+            'Comparte el enlace en el canal correspondiente con los acuerdos',
+            'Formato sugerido: "Acuerdos reunión [tema] [fecha] → [enlace]"',
+          ].map((s,i) => `
+            <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px">
+              <div style="width:18px;height:18px;border-radius:50%;background:#107C10;color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
+              <div style="font-size:11.5px;color:#605E5C;line-height:1.5">${s}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- FACILITADOR -->
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:12px">🎛️ Modo Facilitador — para quien dirige la reunión</div>
+    <div style="background:white;border:1px solid #E1DFDD;border-radius:10px;padding:16px 18px;margin-bottom:20px">
+      <div style="font-size:12px;color:#605E5C;line-height:1.7;margin-bottom:14px">El modo facilitador te da control total de la reunión: quién comparte pantalla, quién puede hablar y qué se muestra. Ideal para sesiones de implementación, Boot Camps y presentaciones de directivos.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#C55A11;text-transform:uppercase;margin-bottom:8px">Cómo activarlo</div>
+          ${[
+            'En la reunión, ve a "···" → "Administrar reunión"',
+            'Activa "Rol de presentador" para los participantes que necesiten compartir',
+            'Activa "Silenciar a todos" para eliminar el ruido de fondo',
+            'Desactiva "Permitir que los participantes quiten el silencio" si necesitas control total',
+          ].map((s,i) => `
+            <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px">
+              <div style="width:18px;height:18px;border-radius:50%;background:#C55A11;color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
+              <div style="font-size:11.5px;color:#605E5C;line-height:1.5">${s}</div>
+            </div>`).join('')}
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#C55A11;text-transform:uppercase;margin-bottom:8px">Controles útiles</div>
+          ${[
+            '✋ Manos levantadas — gestiona el turno de palabra en el panel de participantes',
+            '🔇 Silenciar/activar mic de un participante específico',
+            '📌 Fijar video de alguien para que todos lo vean en primer plano',
+            '🚪 Sala de espera — controla quién entra y cuándo',
+          ].map(s => `
+            <div style="font-size:11.5px;color:#605E5C;line-height:1.6;margin-bottom:6px;padding-left:4px">${s}</div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- COPILOT EN REUNIONES -->
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:12px">🤖 Copilot en la reunión — en tiempo real</div>
+    <div style="background:white;border:1px solid #E1DFDD;border-radius:10px;padding:16px 18px;margin-bottom:16px">
+      <div style="font-size:12px;color:#605E5C;line-height:1.7;margin-bottom:14px">Copilot puede participar activamente en la reunión: toma notas, resume lo discutido hasta el momento y responde preguntas sobre la conversación. Solo funciona si la grabación está activa.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#5C2D91;text-transform:uppercase;margin-bottom:8px">Cómo activar Copilot</div>
+          ${[
+            'En la barra de controles, busca el ícono de Copilot (estrella/robot)',
+            'Haz clic — se abre un panel lateral',
+            'Copilot empieza a escuchar y transcribir en tiempo real',
+            'Puedes hacerle preguntas sobre lo que se ha dicho',
+          ].map((s,i) => `
+            <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px">
+              <div style="width:18px;height:18px;border-radius:50%;background:#5C2D91;color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
+              <div style="font-size:11.5px;color:#605E5C;line-height:1.5">${s}</div>
+            </div>`).join('')}
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#5C2D91;text-transform:uppercase;margin-bottom:8px">Prompts útiles durante la reunión</div>
+          ${[
+            '"Resume lo que se ha discutido hasta ahora"',
+            '"¿Cuáles son los acuerdos que se han tomado?"',
+            '"¿Quién está a cargo de cada acción?"',
+            '"¿Hay puntos sin resolver antes de cerrar?"',
+            '"Genera un resumen ejecutivo para compartir en el canal"',
+          ].map(p => `
+            <div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px;padding:5px 8px;background:#F8F7FF;border-radius:5px;border-left:3px solid #5C2D91">
+              <span style="color:#5C2D91;font-size:10px;flex-shrink:0;margin-top:2px">✦</span>
+              <span style="font-size:11px;color:#252423;font-style:italic">${p}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div style="background:#F4EDF9;border-radius:6px;padding:10px 12px;font-size:11.5px;color:#5C2D91;line-height:1.6">
+        🏆 <strong>Flujo ideal:</strong> Activa grabación → Activa Copilot → Al terminar pregunta "¿Cuáles son los acuerdos?" → Copia el resumen → Pégalo en el canal correspondiente con el enlace a la grabación.
+      </div>
+    </div>
+
+    <div style="background:#F8F7FF;border:1px solid #E8E6FF;border-radius:8px;padding:12px 16px;font-size:12px;color:#3D3B54;line-height:1.6">
+      💡 <strong>Recuerda:</strong> La Regla de Oro 6 aplica siempre — si la reunión no quedó grabada y los acuerdos no se publicaron en el canal, la reunión no cuenta como información oficial en Olfativa.
+    </div>
+
+  </div>`;
+}
+
+function showFormatos() {
+  // Update rail active state
+  document.querySelectorAll('.rail-item').forEach(e => e.classList.remove('active'));
+  document.getElementById('railFormatos').classList.add('active');
+
+  // Update sidebar
+  document.getElementById('teamsList').querySelectorAll('.team-item').forEach(e => e.classList.remove('active'));
+
+  const header = document.getElementById('mainHeader');
+  header.innerHTML = `
+    <div class="header-avatar" style="background:#6264A7">📐</div>
+    <div class="header-info">
+      <div class="header-name">Formatos Post · Sistema de Nomenclatura</div>
+      <div class="header-meta">3 tipos · máximo 4 campos · fecha siempre al final</div>
+    </div>
+  `;
+
+  const tipoColors = {
+    1: { bg: '#FCE8E8', border: '#F7C1C1', text: '#A32D2D', dark: '#791F1F', label: 'ENTIDAD | UBICACION | CLASIFICACION | FECHA' },
+    2: { bg: '#E1F5EE', border: '#9FE1CB', text: '#0F6E56', dark: '#085041', label: 'TIPO | ENTIDAD | ASUNTO | FECHA' },
+    3: { bg: '#FFF4CE', border: '#FAC775', text: '#7A4F00', dark: '#633806', label: 'TIPO | ASUNTO | FECHA' },
+  };
+
+  const tipos = [
+    {
+      num: 1,
+      title: 'Entidad',
+      subtitle: 'El cliente es el sujeto principal',
+      campos: [
+        { name: 'ENTIDAD', desc: 'Nombre del cliente o empresa', vals: 'HOTEL HANGAR SELECT · HOKA ILUSIONES · GRUPO VEQ' },
+        { name: 'UBICACION', desc: 'Ciudad o zona donde opera', vals: 'GUADALAJARA · CANCUN · PUERTO VALLARTA · CDMX' },
+        { name: 'CLASIFICACION', desc: 'Tipo de servicio o estado', vals: 'MKT · EXPANSION · SOLICITUD PAGO · RENOVACION' },
+        { name: 'FECHA', desc: 'Granularidad según urgencia', vals: 'YYYY-MM-DD · YYYY-MM · YYYY-QN' },
+      ],
+      ejemplos: [
+        { txt: 'HOTEL HANGAR SELECT | GUADALAJARA | MKT | 2026-04-18', canal: '# Funnel' },
+        { txt: 'HOKA ILUSIONES JOYERIA CASCO | CANCUN | SOLICITUD COMPLEMENTO PAGO | 2026-03-31', canal: '# Customer XP' },
+        { txt: 'GRUPO VEQ DESARROLLO ALANA | PUERTO VALLARTA | EXPANSION | 2026-Q2', canal: '# Cartera' },
+      ],
+      canales: ['# Funnel', '# Customer XP', '# Cartera'],
+    },
+    {
+      num: 2,
+      title: 'Proceso',
+      subtitle: 'El proceso o categoría lidera el asunto',
+      campos: [
+        { name: 'TIPO', desc: 'Categoría fija del canal', vals: 'KPI · PROYECTO · CAMPAÑA · HITO · EVENTO · LICITACION · TICKET · TESORERIA' },
+        { name: 'ENTIDAD', desc: 'Equipo, zona, sistema o nombre', vals: 'SEMANA 14 · MERIDA + CANCUN · #10234 · REVISTAS REAL ESTATE' },
+        { name: 'ASUNTO', desc: 'Acción, métrica o descripción', vals: 'PIPELINE ACTIVO · LANZAMIENTO PRIMAVERA · GO LIVE PILOTO' },
+        { name: 'FECHA', desc: 'Granularidad según canal', vals: 'YYYY-MM-DD · YYYY-MM · YYYY-QN' },
+      ],
+      ejemplos: [
+        { txt: 'PROYECTO | REVISTAS REAL ESTATE & AMURA | LANZAMIENTO PRIMAVERA | 2026-Q2', canal: '# Proyectos MKT' },
+        { txt: 'KPI | SEMANA 14 | PIPELINE ACTIVO + CLIENTES NUEVOS | 2026-04-07', canal: '# KPIs Comercial' },
+        { txt: 'HITO | ZENDESK | GO LIVE PILOTO CUSTOMER | 2026-04-30', canal: '# Gobernanza / Prime' },
+        { txt: 'TICKET | #10234 HOTEL WESTIN CANCUN | SOLICITUD MANTENIMIENTO | 2026-04-01', canal: '# Zendesk Tickets' },
+      ],
+      canales: ['# Proyectos MKT', '# Campañas', '# Eventos', '# Licitaciones', '# KPIs (todos)', '# Zendesk Tickets', '# Tesorería', '# Inventario', '# Gobernanza / Prime', '# Estrategia'],
+    },
+    {
+      num: 3,
+      title: 'Simple',
+      subtitle: 'El tipo ya lo dice casi todo',
+      campos: [
+        { name: 'TIPO', desc: 'Categoría fija del canal', vals: 'COMUNICADO · INCIDENCIA · RRHH · COBRANZA' },
+        { name: 'ASUNTO', desc: 'Descripción autoexplicativa y completa', vals: 'CAMBIO HORARIO OFICINAS MERIDA · IMPRESORA ALMACEN CANCUN SIN CONEXION' },
+        { name: 'FECHA', desc: 'Granularidad según urgencia', vals: 'YYYY-MM-DD · YYYY-MM · YYYY-QN' },
+      ],
+      ejemplos: [
+        { txt: 'COMUNICADO | CAMBIO DE HORARIO OFICINAS MERIDA | 2026-04', canal: '# Anuncios' },
+        { txt: 'INCIDENCIA | IMPRESORA ALMACEN CANCUN SIN CONEXION | 2026-04-01', canal: '# Helpdesk' },
+        { txt: 'COBRANZA | SALDOS VENCIDOS CANCUN SEMANA 14 | 2026-04-07', canal: '# Cobranza' },
+      ],
+      canales: ['# Anuncios', '# Helpdesk', '# Recursos Humanos', '# Cobranza'],
+    },
+  ];
+
+  const fechas = [
+    { fmt: 'YYYY-MM-DD', desc: 'Día exacto — tickets, incidencias, eventos' },
+    { fmt: 'YYYY-MM', desc: 'Mes — reportes, campañas, proyectos' },
+    { fmt: 'YYYY-QN', desc: 'Trimestre — estrategia, hitos, licitaciones' },
+  ];
+
+  let html = '';
+
+  tipos.forEach(t => {
+    const c = tipoColors[t.num];
+    const camposHtml = t.campos.map(f => `
+      <tr>
+        <td style="font-family:monospace;font-size:11px;font-weight:600;color:${c.text};white-space:nowrap;padding:6px 10px;border-bottom:1px solid ${c.border}40;vertical-align:top">${f.name}</td>
+        <td style="font-size:11.5px;color:#252423;padding:6px 10px;border-bottom:1px solid ${c.border}40;vertical-align:top">${f.desc}</td>
+        <td style="font-size:11px;color:#605E5C;font-style:italic;padding:6px 10px;border-bottom:1px solid ${c.border}40;vertical-align:top">${f.vals}</td>
+      </tr>`).join('');
+
+    const ejsHtml = t.ejemplos.map(e => `
+      <div style="font-family:monospace;font-size:11px;color:${c.dark};line-height:1.7;padding:2px 0">
+        ${e.txt} <span style="color:#A19F9D;font-size:10px;font-family:sans-serif">← ${e.canal}</span>
+      </div>`).join('');
+
+    const canalesHtml = t.canales.map(ch =>
+      `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:white;border:1px solid #E1DFDD;color:#605E5C">${ch}</span>`
+    ).join('');
+
+    const formulaHtml = t.campos.map((f, i) => {
+      const isDate = f.name === 'FECHA';
+      const isFixed = f.name === 'TIPO' || (t.num === 1 && i === 0);
+      const bg = isDate ? '#EFF6FC' : isFixed ? c.bg : 'white';
+      const border = isDate ? '1px solid #BAE0F7' : isFixed ? `1px solid ${c.border}` : '1px solid #E1DFDD';
+      const color = isDate ? '#0C447C' : isFixed ? c.text : '#252423';
+      return `<span style="background:${bg};border:${border};color:${color};padding:4px 10px;border-radius:6px;font-family:monospace;font-size:11px;font-weight:600">${f.name}</span>${i < t.campos.length - 1 ? '<span style="color:#A19F9D;padding:0 6px;font-size:13px">|</span>' : ''}`;
+    }).join('');
+
+    html += `
+    <div style="background:white;border:1px solid #E1DFDD;border-radius:10px;overflow:hidden;margin-bottom:16px">
+      <div style="background:${c.bg};padding:12px 16px;border-bottom:1px solid ${c.border}60;display:flex;align-items:center;gap:10px">
+        <span style="background:${c.text};color:white;font-size:12px;font-weight:700;padding:3px 11px;border-radius:20px">${t.num}</span>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:${c.dark}">${t.title}</div>
+          <div style="font-size:11px;color:${c.text};margin-top:1px">${t.subtitle}</div>
+        </div>
+        <div style="margin-left:auto;font-size:11px;color:${c.text};font-weight:500">${t.campos.length} campos</div>
+      </div>
+      <div style="padding:14px 16px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:0;margin-bottom:14px;line-height:2.4">${formulaHtml}</div>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:14px">
+          <tr>
+            <th style="text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#605E5C;padding:4px 10px;border-bottom:1px solid #E1DFDD">Campo</th>
+            <th style="text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#605E5C;padding:4px 10px;border-bottom:1px solid #E1DFDD">Qué va aquí</th>
+            <th style="text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#605E5C;padding:4px 10px;border-bottom:1px solid #E1DFDD">Valores posibles</th>
+          </tr>
+          ${camposHtml}
+        </table>
+        <div style="background:#FAFAF9;border:1px solid #E1DFDD;border-radius:8px;padding:10px 14px;margin-bottom:12px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:6px">Ejemplos reales</div>
+          ${ejsHtml}
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">${canalesHtml}</div>
+      </div>
+    </div>`;
+  });
+
+  // Fecha rule
+  const fechaHtml = fechas.map(f => `
+    <div style="flex:1;min-width:130px;background:white;border:1px solid #BAE0F7;border-radius:8px;padding:8px 12px">
+      <div style="font-family:monospace;font-size:12px;color:#0C447C;font-weight:600">${f.fmt}</div>
+      <div style="font-size:10.5px;color:#605E5C;margin-top:3px">${f.desc}</div>
+    </div>`).join('');
+
+  html += `
+    <div style="border:1px solid #E1DFDD;border-radius:10px;padding:13px 16px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:10px">📅 Fecha — siempre al final, elige una granularidad</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${fechaHtml}</div>
+    </div>`;
+
+  document.getElementById('channelContent').innerHTML = `<div style="padding:20px 24px 28px">${html}</div>`;
+}
+
+
+renderSidebar();
+showDashboard();
+</script>
+</body>
+</html>
