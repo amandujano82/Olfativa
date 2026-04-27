@@ -848,6 +848,20 @@ const TEAMS_DATA = [
     owners: ["Karla Lara", "Tamara Guzmán", "Cintya López", "Anthony Mandujano"],
     channels: [
       {
+        name: "Coordinación Gestión del Cambio",
+        tipo: "Estándar",
+        acceso: "Abierto",
+        formato: "Hilo",
+        connector: null,
+        moderador: "Kriscia López · Anthony Mandujano",
+        notificaciones: "Todas las actividades",
+        objetivo: "Canal conversacional del equipo de gestión del cambio — coordinación diaria, dudas operativas y todo lo que no encaja en un canal específico. Si no sabes dónde va algo relacionado con el cambio, empieza aquí.",
+        uso: "Coordinación cotidiana del equipo de gestión del cambio.",
+        protocolo: "Hilo por tema. Temas formales o decisiones → canal KPIs ADKAR o Comité.",
+        sustituye: "Canal nuevo",
+        alerta: null
+      },
+      {
         name: "KPI's ADKAR",
         tipo: "Estándar",
         acceso: "Abierto",
@@ -963,8 +977,8 @@ const TEAMS_DATA = [
         connector: null,
         moderador: "Anthony Mandujano · Karla Lara · Cintya López · Tamara Guzmán",
         notificaciones: "@menciones del canal",
-        objetivo: "Coordinar la implementación de Business Central y Field Service con BPOs y Key Users, documentando cada decisión de configuración antes de aplicarla para el arranque de agosto y octubre 2026.",
-        uso: "Business Central + Field Service. Incluye BPOs y Key Users.",
+        objetivo: "Canal del comité de implementación de Business Central y Field Service — seguimiento de sprints, decisiones de configuración y coordinación entre Clouzzy, BPOs y Key Users rumbo al arranque de agosto y octubre 2026.",
+        uso: "Comité BC y FSM. Seguimiento de sprints y decisiones de configuración.",
         protocolo: "Un hilo por módulo en implementación. Formato: [BC/FS] Módulo · Sprint. Incluir: BPO responsable, Key User, Clouzzy contacto. Decisiones de configuración documentadas antes de aplicar. Arranque BC: Agosto 2026. FS: Octubre 2026.",
         sustituye: "Implementación BC y FSM",
         alerta: null
@@ -1009,8 +1023,8 @@ const TEAMS_DATA = [
         connector: null,
         moderador: "Anthony Mandujano · Karla Lara · Cintya López · Tamara Guzmán",
         notificaciones: "Todas las actividades",
-        objetivo: "Concentrar en un solo canal la gobernanza de la arquitectura Teams y todas las iniciativas de inteligencia artificial — cambios estructurales, agentes, automatizaciones y casos de uso — para que el conocimiento y las decisiones queden trazables en un solo lugar.",
-        uso: "Gobernanza de la arquitectura Teams + iniciativas de IA, agentes y automatizaciones.",
+        objetivo: "Coordinar la implementación de Business Central y Field Service con BPOs y Key Users, documentando cada decisión de configuración antes de aplicarla para el arranque de agosto y octubre 2026.",
+        uso: "Capacitación e implementación de BC y FSM con BPOs y Key Users.",
         protocolo: "Post para cambios estructurales de Teams: CAMBIO | EQUIPO AFECTADO | DESCRIPCION | YYYY-MM-DD. Requiere aprobación de 2 owners antes de ejecutar. Hilo para iniciativas IA: [AREA] Nombre del agente o automatización — documentar objetivo, herramienta, responsable y estado. Avances semanales de IA con @Tamara Guzmán.",
         formato_tipo: 2,
         formato_ej: "CAMBIO | COMERCIAL B2B | AGREGAR CANAL EXPANSION CANCUN | 2026-04-15",
@@ -2878,7 +2892,8 @@ function showReuniones() {
     <!-- FACILITADOR -->
     <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#605E5C;margin-bottom:12px">🎛️ Modo Facilitador — para quien dirige la reunión</div>
     <div style="background:white;border:1px solid #E1DFDD;border-radius:10px;padding:16px 18px;margin-bottom:20px">
-      <div style="font-size:12px;color:#605E5C;line-height:1.7;margin-bottom:14px">El modo facilitador te da control total de la reunión: quién comparte pantalla, quién puede hablar y qué se muestra. Ideal para sesiones de implementación, Boot Camps y presentaciones de directivos.</div>
+      <div style="font-size:12px;color:#605E5C;line-height:1.7;margin-bottom:10px">El modo facilitador te da control total de la reunión: quién comparte pantalla, quién puede hablar y qué se muestra. Ideal para sesiones de implementación, Boot Camps y presentaciones de directivos.</div>
+      <div style="background:#F4EDF9;border:1px solid #D9C8F0;border-radius:6px;padding:8px 12px;font-size:11.5px;color:#5C2D91;margin-bottom:12px">⚠️ <strong>Nota:</strong> Las funciones avanzadas de facilitador con Copilot — transcripción en tiempo real, resumen por participante y atribución de voz — solo están disponibles para usuarios con licencia de <strong>Microsoft 365 Copilot</strong> activa.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
         <div>
           <div style="font-size:11px;font-weight:700;color:#C55A11;text-transform:uppercase;margin-bottom:8px">Cómo activarlo</div>
