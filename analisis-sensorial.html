@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0e0b08" />
+<title>Olfativa · Análisis Sensorial</title>
+<style>
+  :root {
+    --bg: #0e0b08;
+    --bg-soft: #16110d;
+    --ink: #f4ece1;
+    --ink-dim: #b9ac9a;
+    --line: rgba(244,236,225,0.08);
+    --accent: #c8a877;
+    --accent-soft: rgba(200,168,119,0.12);
+    --radius: 18px;
+    --radius-lg: 28px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 100svh;
+    padding: max(env(safe-area-inset-top), 16px) 16px max(env(safe-area-inset-bottom), 16px);
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  h1, h2, h3 { font-family: "Cormorant Garamond", "Times New Roman", Georgia, serif; font-weight: 500; letter-spacing: 0.01em; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  .eyebrow { color: var(--accent); font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; margin: 0 0 6px; }
+  .sub { color: var(--ink-dim); font-size: 14px; margin: 0; }
+
+  header { padding: 8px 4px 24px; }
+
+  .stage {
+    position: relative;
+    border-radius: var(--radius-lg);
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    aspect-ratio: 4 / 5;
+    display: grid;
+    place-items: center;
+  }
+  .stage .placeholder {
+    text-align: center;
+    color: var(--ink-dim);
+    padding: 24px;
+  }
+  .stage .placeholder svg { width: 36px; height: 36px; margin-bottom: 10px; opacity: 0.7; }
+  .stage img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .stage .scan {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(200,168,119,0.18) 50%, transparent 100%);
+    transform: translateY(-100%);
+    pointer-events: none;
+  }
+  .stage[data-state="loading"] .scan { animation: scan 1.6s ease-in-out infinite; }
+  @keyframes scan {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .btn {
+    appearance: none; border: 1px solid var(--line); background: var(--bg-soft); color: var(--ink);
+    font: inherit; font-size: 14px; letter-spacing: 0.04em;
+    padding: 14px 16px; border-radius: 14px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform .08s ease, background .2s ease, border-color .2s ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn svg { width: 18px; height: 18px; }
+  .btn.primary {
+    grid-column: 1 / -1;
+    background: var(--accent); color: #1a1208; border-color: transparent;
+    font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; font-size: 12px;
+    padding: 16px;
+  }
+  .btn.primary[disabled] { opacity: 0.4; cursor: not-allowed; }
+  .btn.ghost { background: transparent; }
+
+  input[type=file] { display: none; }
+
+  .report { margin-top: 28px; opacity: 0; transform: translateY(8px); transition: opacity .4s ease, transform .4s ease; }
+  .report.visible { opacity: 1; transform: none; }
+
+  .report .lead {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 22px; line-height: 1.35; color: var(--ink);
+    border-left: 2px solid var(--accent); padding: 4px 0 4px 14px; margin: 0 0 22px;
+    font-style: italic;
+  }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card {
+    background: var(--bg-soft); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 14px; min-height: 96px;
+  }
+  .card .label { color: var(--accent); font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; }
+  .card .value { font-family: "Cormorant Garamond", Georgia, serif; font-size: 20px; margin-top: 6px; line-height: 1.2; }
+  .card .meta  { color: var(--ink-dim); font-size: 12px; margin-top: 6px; }
+
+  .palette { display: flex; gap: 8px; margin-top: 10px; }
+  .swatch { flex: 1; aspect-ratio: 1 / 1; border-radius: 10px; border: 1px solid var(--line); }
+
+  .bars { margin-top: 10px; display: grid; gap: 8px; }
+  .bar { display: grid; grid-template-columns: 78px 1fr 28px; gap: 10px; align-items: center; font-size: 12px; color: var(--ink-dim); }
+  .bar .track { height: 4px; background: var(--accent-soft); border-radius: 99px; overflow: hidden; }
+  .bar .fill { height: 100%; background: var(--accent); border-radius: 99px; width: 0; transition: width .8s ease; }
+  .bar .num { text-align: right; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  .section-title { font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ink-dim); margin: 22px 4px 10px; }
+
+  footer { color: var(--ink-dim); font-size: 11px; text-align: center; margin: 36px 0 8px; letter-spacing: 0.08em; }
+  footer span { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Olfativa</p>
+  <h1>Lectura sensorial del espacio</h1>
+  <p class="sub">Captura o sube una foto del lugar. Devolvemos una lectura de materiales, luz, geometría y mood.</p>
+</header>
+
+<section>
+  <div class="stage" id="stage" data-state="empty">
+    <div class="placeholder" id="placeholder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+        <path d="M3 7h4l2-3h6l2 3h4v12H3z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+      <div>Sin imagen todavía</div>
+    </div>
+    <img id="preview" alt="" hidden />
+    <div class="scan"></div>
+  </div>
+
+  <div class="actions">
+    <label class="btn" for="camera">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/></svg>
+      Cámara
+    </label>
+    <label class="btn ghost" for="gallery">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg>
+      Galería
+    </label>
+    <input id="camera" type="file" accept="image/*" capture="environment" />
+    <input id="gallery" type="file" accept="image/*" />
+    <button id="analyze" class="btn primary" disabled>Analizar espacio</button>
+  </div>
+</section>
+
+<section id="report" class="report" aria-live="polite">
+  <p class="lead" id="lead"></p>
+
+  <div class="section-title">Lectura</div>
+  <div class="grid">
+    <div class="card"><div class="label">Estilo</div><div class="value" id="r-style">—</div><div class="meta" id="r-style-meta"></div></div>
+    <div class="card"><div class="label">Mood</div><div class="value" id="r-mood">—</div><div class="meta" id="r-mood-meta"></div></div>
+    <div class="card"><div class="label">Luz</div><div class="value" id="r-light">—</div><div class="meta" id="r-light-meta"></div></div>
+    <div class="card"><div class="label">Geometría</div><div class="value" id="r-geom">—</div><div class="meta" id="r-geom-meta"></div></div>
+  </div>
+
+  <div class="section-title">Materiales dominantes</div>
+  <div class="card">
+    <div id="r-materials" class="value" style="font-size:18px">—</div>
+    <div class="palette" id="r-palette"></div>
+  </div>
+
+  <div class="section-title">Atmósfera</div>
+  <div class="card">
+    <div class="bars" id="r-bars"></div>
+  </div>
+</section>
+
+<footer><span>Olfativa</span> · prototipo UI</footer>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage');
+  const preview = $('preview');
+  const placeholder = $('placeholder');
+  const analyze = $('analyze');
+  const report = $('report');
+
+  function loadImage(file) {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    preview.src = url;
+    preview.hidden = false;
+    placeholder.style.display = 'none';
+    stage.dataset.state = 'ready';
+    analyze.disabled = false;
+    report.classList.remove('visible');
+    sampleColors(url).then(setPalettePreview).catch(() => {});
+  }
+
+  $('camera').addEventListener('change', (e) => loadImage(e.target.files[0]));
+  $('gallery').addEventListener('change', (e) => loadImage(e.target.files[0]));
+
+  let lastPalette = [];
+  function setPalettePreview(palette) { lastPalette = palette; }
+
+  // Pull a small color palette + average brightness from the image, for a more "real" mock reading.
+  function sampleColors(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const w = 60, h = 60;
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const data = ctx.getImageData(0, 0, w, h).data;
+        const buckets = {};
+        let totalL = 0, totalSat = 0, n = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i], g = data[i+1], b = data[i+2];
+          const key = `${r>>5},${g>>5},${b>>5}`;
+          buckets[key] = (buckets[key] || { r:0,g:0,b:0,n:0 });
+          buckets[key].r += r; buckets[key].g += g; buckets[key].b += b; buckets[key].n++;
+          const max = Math.max(r,g,b), min = Math.min(r,g,b);
+          totalL += (max + min) / 2;
+          totalSat += max === 0 ? 0 : (max - min) / max * 255;
+          n++;
+        }
+        const top = Object.values(buckets).sort((a,b)=>b.n-a.n).slice(0,5)
+          .map(o => `rgb(${Math.round(o.r/o.n)}, ${Math.round(o.g/o.n)}, ${Math.round(o.b/o.n)})`);
+        resolve({ palette: top, brightness: totalL / n / 255, saturation: totalSat / n / 255 });
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+
+  // Mock reading derived loosely from brightness + saturation so the UI feels alive.
+  function buildReading(stats) {
+    const { brightness: b, saturation: s, palette } = stats;
+    const warm = palette.some(c => {
+      const m = c.match(/\d+/g).map(Number);
+      return m[0] > m[2] + 15;
+    });
+
+    const styles = b > 0.6
+      ? ['Minimalista contemporáneo', 'Nórdico cálido', 'Mediterráneo sereno']
+      : b > 0.35
+      ? ['Contemporáneo orgánico', 'Wabi-sabi', 'Japandi']
+      : ['Industrial sobrio', 'Dark academia', 'Brutalista táctil'];
+
+    const moods = warm
+      ? ['Acogedor, envolvente', 'Íntimo, ámbar', 'Crepuscular']
+      : ['Sereno, mineral', 'Limpio, aireado', 'Contemplativo'];
+
+    const lights = b > 0.6 ? 'Difusa, luminosa' : b > 0.35 ? 'Cálida, lateral' : 'Tenue, dirigida';
+    const lightMeta = b > 0.6 ? 'Predomina luz natural' : b > 0.35 ? 'Mezcla natural + cálida' : 'Iluminación puntual';
+
+    const geometry = s > 0.25 ? 'Líneas suaves, contrastes' : 'Líneas rectas, planos limpios';
+    const geometryMeta = s > 0.25 ? 'Composición orgánica' : 'Composición ortogonal';
+
+    const materials = warm
+      ? 'Madera, lino, latón, terracota'
+      : b > 0.5
+      ? 'Piedra clara, lino, vidrio, cerámica'
+      : 'Concreto, acero, cuero, madera oscura';
+
+    const bars = [
+      { label: 'Calidez',     v: warm ? 0.78 : 0.32 },
+      { label: 'Luminosidad', v: Math.min(1, Math.max(0.1, b)) },
+      { label: 'Densidad',    v: 1 - Math.min(1, Math.max(0.1, b)) * 0.7 },
+      { label: 'Tactilidad',  v: 0.45 + s * 0.6 },
+      { label: 'Quietud',     v: 0.6 - s * 0.4 + (b > 0.6 ? 0.15 : 0) },
+    ];
+
+    const lead = warm
+      ? 'Un espacio que abraza: maderas tibias, luz baja y materiales que invitan a permanecer.'
+      : b > 0.6
+      ? 'Un espacio que respira: superficies claras, aire sereno y geometría calmada.'
+      : 'Un espacio de contención: materia densa, luz medida y atmósfera contemplativa.';
+
+    return {
+      lead,
+      style: pick(styles),  styleMeta: 'Inferido del estilo visual',
+      mood:  pick(moods),   moodMeta: 'Tono emocional dominante',
+      light: lights,        lightMeta,
+      geom:  geometry,      geomMeta: geometryMeta,
+      materials, palette,
+      bars,
+    };
+  }
+
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function render(reading) {
+    $('lead').textContent = reading.lead;
+    $('r-style').textContent = reading.style;
+    $('r-style-meta').textContent = reading.styleMeta;
+    $('r-mood').textContent = reading.mood;
+    $('r-mood-meta').textContent = reading.moodMeta;
+    $('r-light').textContent = reading.light;
+    $('r-light-meta').textContent = reading.lightMeta;
+    $('r-geom').textContent = reading.geom;
+    $('r-geom-meta').textContent = reading.geomMeta;
+    $('r-materials').textContent = reading.materials;
+
+    const palette = $('r-palette');
+    palette.innerHTML = '';
+    reading.palette.forEach(c => {
+      const sw = document.createElement('div');
+      sw.className = 'swatch';
+      sw.style.background = c;
+      palette.appendChild(sw);
+    });
+
+    const bars = $('r-bars');
+    bars.innerHTML = '';
+    reading.bars.forEach(b => {
+      const row = document.createElement('div');
+      row.className = 'bar';
+      row.innerHTML = `
+        <div>${b.label}</div>
+        <div class="track"><div class="fill"></div></div>
+        <div class="num">${Math.round(b.v * 100)}</div>`;
+      bars.appendChild(row);
+      requestAnimationFrame(() => {
+        row.querySelector('.fill').style.width = `${Math.round(b.v * 100)}%`;
+      });
+    });
+
+    report.classList.add('visible');
+  }
+
+  analyze.addEventListener('click', async () => {
+    if (!preview.src) return;
+    stage.dataset.state = 'loading';
+    analyze.disabled = true;
+    analyze.textContent = 'Leyendo el espacio…';
+    try {
+      const stats = await sampleColors(preview.src);
+      await new Promise(r => setTimeout(r, 1400));
+      render(buildReading(stats));
+    } finally {
+      stage.dataset.state = 'ready';
+      analyze.disabled = false;
+      analyze.textContent = 'Analizar de nuevo';
+    }
+  });
+</script>
+
+</body>
+</html>
