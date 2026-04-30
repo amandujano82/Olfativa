@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Caballeros IA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#0b1020; --surface:#111831; --surface2:#182241; --card:#121a34; --line:#293558;
+      --text:#f4f7ff; --muted:#98a5cf; --primary:#59e1b8; --primary2:#8b7cff; --warning:#ffb454; --danger:#ff6b7a;
+      --good:#49d17d; --shadow:0 20px 50px rgba(0,0,0,.28); --radius:18px;
+    }
+    [data-theme="light"]{
+      --bg:#f5f7fb; --surface:#ffffff; --surface2:#eef3ff; --card:#ffffff; --line:#dbe3f4;
+      --text:#0f1730; --muted:#5d6b91; --primary:#008f6b; --primary2:#5c49ff; --warning:#b06a00; --danger:#cf3654;
+      --good:#17824d; --shadow:0 20px 40px rgba(26,38,79,.08);
+    }
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(180deg,var(--bg),var(--surface2));color:var(--text)}
+    h1,h2,h3{font-family:'Space Grotesk',sans-serif;margin:0 0 10px} p{color:var(--muted);line-height:1.55}
+    .app{display:grid;grid-template-columns:290px 1fr;min-height:100vh}
+    .sidebar{padding:24px;border-right:1px solid var(--line);background:rgba(255,255,255,.03);backdrop-filter:blur(10px);position:sticky;top:0;height:100vh}
+    .logo{display:flex;gap:12px;align-items:center;margin-bottom:24px}.mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary2));box-shadow:var(--shadow);display:grid;place-items:center;font-weight:800;color:#fff}
+    .nav a{display:block;color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:12px;margin:4px 0}.nav a:hover,.nav a.active{background:var(--surface2);color:var(--text)}
+    .theme{margin-top:18px;width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text)}
+    main{padding:24px 28px 60px}.hero{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:22px}
+    .hero-card,.panel,.metric,.table-wrap{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    [data-theme="light"] .hero-card,[data-theme="light"] .panel,[data-theme="light"] .metric,[data-theme="light"] .table-wrap{background:rgba(255,255,255,.86)}
+    .hero-card{padding:24px;flex:1}.hero-actions{display:flex;gap:10px;flex-wrap:wrap}.btn{padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text);cursor:pointer}.btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary2));border:none;color:#fff}
+    .grid{display:grid;gap:16px}.metrics{grid-template-columns:repeat(4,1fr);margin:18px 0}.metric{padding:18px}.metric .v{font:700 28px 'Space Grotesk',sans-serif}.metric small{color:var(--muted)}
+    .two{grid-template-columns:1.1fr .9fr}.three{grid-template-columns:repeat(3,1fr)}
+    .panel{padding:18px}.panel h3{margin-bottom:8px}.inputs{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:13px;color:var(--muted)}
+    input,select,textarea{width:100%;padding:12px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text)} textarea{min-height:130px;resize:vertical}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}.chip{padding:8px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);cursor:pointer}.chip.active{background:var(--surface2);color:var(--text)}
+    .qa{display:grid;gap:10px}.answer{padding:12px;border-radius:12px;background:var(--surface2);border:1px solid var(--line)}
+    .table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}.table th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(89,225,184,.12);color:var(--primary);font-size:12px;font-weight:700}
+    .muted{color:var(--muted)} .good{color:var(--good)} .warn{color:var(--warning)} .danger{color:var(--danger)}
+    .footer-note{margin-top:14px;font-size:13px;color:var(--muted)}
+    canvas{max-height:320px}
+    @media (max-width: 1100px){.metrics{grid-template-columns:repeat(2,1fr)}.two,.three,.inputs{grid-template-columns:1fr}}
+    @media (max-width: 860px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.hero{flex-direction:column}.metrics{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo"><div class="mark">CI</div><div><strong>Caballeros IA</strong><div class="muted">Lab de ideas de suscripción</div></div></div>
+    <nav class="nav">
+      <a href="#idea" class="active">Idea → Producto</a>
+      <a href="#metricas">Métricas</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#crecimiento">Crecimiento</a>
+      <a href="#benchmark">Benchmark</a>
+    </nav>
+    <button class="theme" id="themeBtn">Cambiar tema</button>
+    <p class="footer-note">Prototipo de profundidad media para evaluar ideas de negocio y convertirlas en productos con lógica de suscripción.</p>
+  </aside>
+  <main>
+    <section class="hero" id="idea">
+      <div class="hero-card">
+        <span class="badge">Prototipo interactivo</span>
+        <h1>Convierte una idea en una oferta de suscripción defendible.</h1>
+        <p>Escribe tu idea con tus palabras. La app la sintetiza como producto, propone modelo de negocio, hace preguntas guiadas y te deja simular precio, CAC, churn, recuperación y escenarios comerciales.</p>
+        <div class="hero-actions">
+          <button class="btn primary" id="sintetizarBtn">Sintetizar producto</button>
+          <button class="btn" id="demoBtn">Cargar demo</button>
+        </div>
+      </div>
+      <div class="hero-card" style="max-width:420px">
+        <h3>Industrias demo</h3>
+        <div class="chips" id="scenarioChips">
+          <div class="chip active" data-scenario="fragancias">Fragancias tipo Scentbird</div>
+          <div class="chip" data-scenario="saas">SaaS contable con IA</div>
+          <div class="chip" data-scenario="cursos">Cursos de crecimiento personal</div>
+        </div>
+        <p class="footer-note">Cada demo usa supuestos ficticios inspirados en patrones reales de mercado para explorar pricing, churn, conversión y payback.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="inputs">
+        <div class="field" style="grid-column:1/-1">
+          <label>Describe tu idea</label>
+          <textarea id="ideaInput">Un servicio de suscripción donde la gente descubre fragancias premium cada mes y recibe recomendaciones personalizadas con perfil olfativo, contenido y beneficios exclusivos.</textarea>
+        </div>
+        <div class="field"><label>Segmento principal</label><input id="segmentInput" value="Adultos urbanos que quieren explorar fragancias sin comprar botellas completas"></div>
+        <div class="field"><label>Objetivo principal</label><input id="goalInput" value="Validar demanda, pricing y tiempo de recuperación"></div>
+      </div>
+      <div class="grid two" style="margin-top:16px">
+        <div>
+          <h3>Síntesis del producto</h3>
+          <div class="answer" id="summaryBox"></div>
+        </div>
+        <div>
+          <h3>Preguntas guiadas</h3>
+          <div class="qa" id="questionsBox"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="metricas" class="grid metrics">
+      <div class="metric"><small>MRR estimado</small><div class="v" id="mrrVal">—</div><div class="muted" id="arrVal">ARR: —</div></div>
+      <div class="metric"><small>LTV estimado</small><div class="v" id="ltvVal">—</div><div class="muted" id="cacVal">CAC: —</div></div>
+      <div class="metric"><small>Churn / Payback</small><div class="v" id="churnVal">—</div><div class="muted" id="paybackVal">Payback: —</div></div>
+      <div class="metric"><small>Margen / Ticket</small><div class="v" id="marginVal">—</div><div class="muted" id="ticketVal">Ticket: —</div></div>
+    </section>
+
+    <section class="grid two" id="pricing">
+      <div class="panel">
+        <h3>Motor de pricing</h3>
+        <div class="inputs">
+          <div class="field"><label>Precio base mensual</label><input type="number" id="priceInput"></div>
+          <div class="field"><label>Costo variable mensual</label><input type="number" id="costInput"></div>
+          <div class="field"><label>Visitas mensuales</label><input type="number" id="trafficInput"></div>
+          <div class="field"><label>Conversión visita → cliente (%)</label><input type="number" step="0.1" id="convInput"></div>
+          <div class="field"><label>Churn mensual (%)</label><input type="number" step="0.1" id="churnInput"></div>
+          <div class="field"><label>Presupuesto marketing mensual</label><input type="number" id="marketingInput"></div>
+          <div class="field"><label>Vendedores</label><input type="number" id="salesInput"></div>
+          <div class="field"><label>Ventas por vendedor / mes</label><input type="number" step="0.1" id="prodInput"></div>
+          <div class="field"><label>Sueldo por vendedor / mes</label><input type="number" id="salaryInput"></div>
+          <div class="field"><label>Elasticidad precio (absoluta)</label><input type="number" step="0.1" id="elasticityInput"></div>
+          <div class="field"><label>Incremento de precio a testear (%)</label><input type="range" min="0" max="40" value="10" id="stretchInput"></div>
+          <div class="field"><label>Meses a proyectar</label><input type="number" id="monthsInput"></div>
+        </div>
+        <p class="footer-note" id="stretchNote"></p>
+      </div>
+      <div class="panel">
+        <h3>Arquitectura de 3 planes</h3>
+        <div class="table-wrap">
+          <table class="table" id="tiersTable"></table>
+        </div>
+        <p class="footer-note" id="pricingInsight"></p>
+      </div>
+    </section>
+
+    <section class="grid two" id="crecimiento" style="margin-top:16px">
+      <div class="panel">
+        <h3>Recuperación e inversión</h3>
+        <canvas id="paybackChart"></canvas>
+      </div>
+      <div class="panel">
+        <h3>Palancas de crecimiento</h3>
+        <canvas id="scenarioChart"></canvas>
+      </div>
+    </section>
+
+    <section class="grid two" style="margin-top:16px">
+      <div class="panel">
+        <h3>Embudo de adquisición</h3>
+        <canvas id="funnelChart"></canvas>
+      </div>
+      <div class="panel" id="benchmark">
+        <h3>Benchmark sugerido</h3>
+        <div class="table-wrap"><table class="table" id="benchmarkTable"></table></div>
+        <p class="footer-note" id="benchmarkInsight"></p>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+const data = {
+  fragancias: {
+    label:'Fragancias tipo discovery club', price:329, cost:118, traffic:18000, conv:1.9, churn:7.5, marketing:45000, sellers:1, prod:22, salary:18000, elasticity:1.6, months:24,
+    idea:'Servicio de suscripción para descubrir fragancias premium con recomendaciones personalizadas, contenido y perks.',
+    competitors:[
+      ['Scentbird','$16.95/mes','Personalización, quiz olfativo, recarga mensual','Escalar premium upsell y exclusividad'],
+      ['ScentBox','Desde $16.95/mes','Múltiples planes y catálogo amplio','Ofrecer progresión clara de tiers'],
+      ['Royalty Scents','~$19.99/mes','Enfoque directo en muestras de diseñador','Apostar por curaduría y comunidad']
+    ]
+  },
+  saas: {
+    label:'SaaS contable con IA', price:1499, cost:240, traffic:12000, conv:1.2, churn:3.8, marketing:90000, sellers:2, prod:7, salary:28000, elasticity:1.1, months:24,
+    idea:'Software contable con IA que automatiza conciliación, clasificación y hallazgos para pymes.',
+    competitors:[
+      ['Digits','$65–$100/mes base','Entrada accesible, enfoque SMB','Crear un entry plan muy simple'],
+      ['Zeni','$549+/mes','All-in finance ops con mayor soporte','Separar automation vs advisory'],
+      ['Docyt','$299–$999/mes','Escalera clara de planes','Mostrar límites y valor incremental por plan']
+    ]
+  },
+  cursos: {
+    label:'Membresía de crecimiento personal', price:499, cost:95, traffic:25000, conv:1.6, churn:5.8, marketing:70000, sellers:0, prod:0, salary:0, elasticity:1.3, months:24,
+    idea:'Membresía con cursos, retos, tips y acompañamiento de expertos en crecimiento personal.',
+    competitors:[
+      ['Mindvalley','$49/mes o $399/año','Catálogo premium y marca aspiracional','Aumentar transformación percibida'],
+      ['Skillshare','$29/mes o $165/año','Volumen y hábito de aprendizaje','Diseñar retención por rutinas'],
+      ['MasterClass','$12/mes anualizado','Prestigio de instructores y packaging','Usar autoridad y storytelling']
+    ]
+  }
+};
+let state = JSON.parse(JSON.stringify(data.fragancias));
+let charts = {};
+const $ = id => document.getElementById(id);
+function money(v){return new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:0}).format(v)}
+function pct(v){return `${v.toFixed(1)}%`}
+function setInputs(){
+  $('ideaInput').value = state.idea; $('priceInput').value=state.price; $('costInput').value=state.cost; $('trafficInput').value=state.traffic;
+  $('convInput').value=state.conv; $('churnInput').value=state.churn; $('marketingInput').value=state.marketing; $('salesInput').value=state.sellers;
+  $('prodInput').value=state.prod; $('salaryInput').value=state.salary; $('elasticityInput').value=state.elasticity; $('monthsInput').value=state.months;
+}
+function synthesize(){
+  const idea = $('ideaInput').value.trim();
+  const segment = $('segmentInput').value.trim();
+  const goal = $('goalInput').value.trim();
+  const category = state.label;
+  const summary = `Producto propuesto: ${category}. Promesa central: ${idea}. Cliente objetivo: ${segment}. Trabajo que resuelve: reducir incertidumbre al comprar y aumentar percepción de valor con una experiencia recurrente. Modelo sugerido: membresía con 3 niveles, opción anual con descuento y mecanismos de retención por personalización, hábito y perks. Objetivo analítico: ${goal}.`;
+  $('summaryBox').textContent = summary;
+  const qs = [
+    '¿Qué cambio concreto vive el cliente después de 30 días usando el producto?',
+    '¿Qué parte del valor debe ser recurrente cada mes para justificar la suscripción?',
+    '¿Qué fricción de compra o adopción se puede reducir con prueba, onboarding o garantía?',
+    '¿Qué segmento pagaría más por velocidad, personalización o exclusividad?'
+  ];
+  $('questionsBox').innerHTML = qs.map(q=>`<div class="answer">${q}</div>`).join('');
+}
+function calc(){
+  state.price=+$('priceInput').value; state.cost=+$('costInput').value; state.traffic=+$('trafficInput').value; state.conv=+$('convInput').value;
+  state.churn=+$('churnInput').value; state.marketing=+$('marketingInput').value; state.sellers=+$('salesInput').value; state.prod=+$('prodInput').value;
+  state.salary=+$('salaryInput').value; state.elasticity=+$('elasticityInput').value; state.months=+$('monthsInput').value;
+  const priceIncrease = +$('stretchInput').value / 100;
+  const marketingCustomers = state.traffic * (state.conv/100);
+  const salesCustomers = state.sellers * state.prod;
+  const newCustomers = marketingCustomers + salesCustomers;
+  const grossMargin = Math.max(0.05,(state.price-state.cost)/state.price);
+  const cac = (state.marketing + state.sellers*state.salary) / Math.max(1,newCustomers);
+  const ltv = (state.price * grossMargin) / Math.max(0.01,(state.churn/100));
+  const mrr = newCustomers * state.price;
+  const arr = mrr * 12;
+  const payback = cac / Math.max(1,(state.price-state.cost));
+  const stretchedPrice = state.price*(1+priceIncrease);
+  const demandDelta = state.elasticity * priceIncrease;
+  const stretchedConversion = state.conv * Math.max(0.35,1-demandDelta);
+  const stretchedCustomers = state.traffic*(stretchedConversion/100) + salesCustomers;
+  const stretchedMrr = stretchedCustomers * stretchedPrice;
+  const premium = Math.round(state.price*1.45/10)*10 - 1;
+  const pro = Math.round(state.price*1.18/10)*10 - 1;
+  const basic = Math.round(state.price*0.82/10)*10 - 1;
+  $('stretchNote').textContent = `Si subes precio ${Math.round(priceIncrease*100)}%, el modelo asume una caída de conversión de ${pct((state.conv-stretchedConversion))} por elasticidad y estima MRR de ${money(stretchedMrr)}.`;
+  $('mrrVal').textContent = money(mrr); $('arrVal').textContent = `ARR: ${money(arr)}`; $('ltvVal').textContent = money(ltv); $('cacVal').textContent = `CAC: ${money(cac)}`;
+  $('churnVal').textContent = pct(state.churn); $('paybackVal').textContent = `Payback: ${payback.toFixed(1)} meses`; $('marginVal').textContent = pct(grossMargin*100); $('ticketVal').textContent = `Ticket: ${money(state.price)}`;
+  $('tiersTable').innerHTML = `<tr><th>Plan</th><th>Precio</th><th>Rol psicológico</th><th>Qué incluye</th></tr>
+    <tr><td>Essential</td><td>${money(basic)}</td><td>Entry anchor</td><td>Prueba accesible, beneficio core, onboarding guiado.</td></tr>
+    <tr><td>Growth</td><td>${money(pro)}</td><td>Decoy winner</td><td>Mejor relación valor/precio, personalización, soporte y perks.</td></tr>
+    <tr><td>Elite</td><td>${money(premium)}</td><td>Premium signal</td><td>Exclusividad, prioridad, bundles y experiencias extra.</td></tr>`;
+  $('pricingInsight').textContent = `Recomendación: usar ancla alta con Elite, empujar selección al plan Growth como opción “smart default”, y reservar Essential para reducir barrera de entrada y capturar sensibilidad al precio.`;
+  $('benchmarkTable').innerHTML = `<tr><th>Competidor</th><th>Pricing</th><th>Qué hacen bien</th><th>Aprendizaje</th></tr>` + state.competitors.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+  $('benchmarkInsight').textContent = `Lectura consultiva: los referentes ganan por claridad de oferta, escalera de planes y retención por hábito; tu ventaja debería concentrarse en diferenciación, personalización y una promesa de transformación más explícita.`;
+  drawCharts({newCustomers,mrr,cac,payback,stretchedMrr,stretchedCustomers,marketingCustomers,salesCustomers});
+}
+function projection(baseCustomers, months, churnRate, monthlyAdds, contribution){
+  let active=0, cum=-((state.marketing + state.sellers*state.salary)); const labels=[], vals=[], actives=[];
+  for(let m=1;m<=months;m++){
+    active = active*(1-churnRate) + monthlyAdds;
+    const net = active*contribution - (m===1 ? (state.marketing + state.sellers*state.salary) : 0);
+    cum += active*contribution;
+    labels.push(`M${m}`); vals.push(Math.round(cum)); actives.push(Math.round(active));
+  }
+  return {labels, vals, actives};
+}
+function drawCharts(kpi){
+  Object.values(charts).forEach(c=>c.destroy && c.destroy());
+  const contrib = state.price-state.cost;
+  const proj = projection(0, state.months, state.churn/100, kpi.newCustomers, contrib);
+  charts.payback = new Chart($('paybackChart'), {type:'line',data:{labels:proj.labels,datasets:[{label:'Flujo acumulado',data:proj.vals,borderColor:'#59e1b8',backgroundColor:'rgba(89,225,184,.16)',fill:true,tension:.25} ]},options:{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>money(v)}}}}});
+  charts.scenario = new Chart($('scenarioChart'), {type:'bar',data:{labels:['Base','+20% marketing','+1 vendedor','+10% precio'],datasets:[{label:'MRR estimado',data:[kpi.mrr,kpi.mrr*1.2,kpi.mrr + state.prod*state.price,kpi.stretchedMrr],backgroundColor:['#8b7cff','#59e1b8','#49d17d','#ffb454']}]},options:{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>money(v)}}}}});
+  charts.funnel = new Chart($('funnelChart'), {type:'bar',data:{labels:['Visitas','Leads/Trials','Clientes por marketing','Clientes por ventas'],datasets:[{label:'Volumen',data:[state.traffic,Math.round(state.traffic*0.18),Math.round(kpi.marketingCustomers),Math.round(kpi.salesCustomers)],backgroundColor:['#5c49ff','#7a6bff','#59e1b8','#ffb454']}]},options:{plugins:{legend:{display:false}},indexAxis:'y'}});
+}
+function selectScenario(name){
+  state = JSON.parse(JSON.stringify(data[name]));
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.scenario===name));
+  setInputs(); synthesize(); calc();
+}
+$('themeBtn').onclick = ()=> document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='light' ? 'dark' : 'light');
+$('sintetizarBtn').onclick = ()=> { synthesize(); calc(); };
+$('demoBtn').onclick = ()=> selectScenario('fragancias');
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>selectScenario(c.dataset.scenario));
+document.querySelectorAll('input,textarea').forEach(el=>el.addEventListener('input',calc));
+setInputs(); synthesize(); calc();
+</script>
+</body>
+</html>
