@@ -255,16 +255,18 @@ function TopBar({ total, totalAvailable, client, onOpenPicker, onOpenClient, onP
         </div>
         <div className="topbar-divider" />
         <div className="topbar-meta">
-          <div className="topbar-meta-eyebrow">Cliente</div>
-          <button className="topbar-client-btn" onClick={onOpenClient} title="Editar datos del cliente">
-            {client.clientName}
+          <div className="topbar-meta-eyebrow">Cotización para</div>
+          <div className="topbar-client-display">
+            <span className="topbar-client-name">{client.clientName}</span>
             <span className="topbar-client-id">· {client.propId}</span>
-            <span className="topbar-pencil">✎</span>
-          </button>
+          </div>
         </div>
       </div>
 
       <div className="topbar-right">
+        <button className="btn-secondary btn-edit" onClick={onOpenClient} title="Editar nombre del cliente, ID, fecha y ejecutivo">
+          <span className="btn-icon">✎</span> Editar cliente
+        </button>
         <button className="btn-primary" onClick={onOpenPicker}>
           <span className="btn-icon">▦</span>
           Elegir láminas <span className="btn-counter">{total} / {totalAvailable}</span>
@@ -285,6 +287,8 @@ function TopBar({ total, totalAvailable, client, onOpenPicker, onOpenClient, onP
 // ============================================================
 function SlidePicker({ selected, onClose, onApply }) {
   const [draft, setDraft] = useState(() => selected.map(s => ({ ...s })));
+  const [dragKind, setDragKind] = useState(null);
+  const [overKind, setOverKind] = useState(null);
   const allKinds = Object.keys(SLIDE_RENDERERS);
   const getRow = (kind) => draft.find(d => d.kind === kind);
 
@@ -326,6 +330,41 @@ function SlidePicker({ selected, onClose, onApply }) {
       const [item] = next.splice(i, 1);
       next.splice(j, 0, item);
       return next;
+    });
+  };
+
+  // Drag & drop reorder
+  const onDragStart = (kind) => (e) => {
+    setDragKind(kind);
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', kind); } catch {}
+  };
+  const onDragOver = (kind) => (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (overKind !== kind) setOverKind(kind);
+  };
+  const onDragEnd = () => { setDragKind(null); setOverKind(null); };
+  const onDrop = (toKind) => (e) => {
+    e.preventDefault();
+    const fromKind = dragKind;
+    setDragKind(null); setOverKind(null);
+    if (!fromKind || fromKind === toKind) return;
+    setDraft(prev => {
+      const fromIdx = prev.findIndex(d => d.kind === fromKind);
+      const toIdx = prev.findIndex(d => d.kind === toKind);
+      if (fromIdx < 0) return prev;
+      // Si el destino no está en draft, lo agregamos primero
+      let work = prev.slice();
+      if (toIdx < 0) {
+        work.push({ uid: `s-${toKind}-${Date.now()}`, kind: toKind, segment: 'master', enabled: true });
+      }
+      const fromI = work.findIndex(d => d.kind === fromKind);
+      const toI = work.findIndex(d => d.kind === toKind);
+      const [item] = work.splice(fromI, 1);
+      const adjustedTo = fromI < toI ? toI - 1 : toI;
+      work.splice(adjustedTo, 0, item);
+      return work;
     });
   };
 
@@ -381,19 +420,29 @@ function SlidePicker({ selected, onClose, onApply }) {
             const orderIdx = inDraft ? draft.findIndex(d => d.kind === kind) : -1;
             const isFirst = orderIdx <= 0;
             const isLast = orderIdx === draft.length - 1;
+            const isDragging = dragKind === kind;
+            const isDragOver = overKind === kind && dragKind !== kind;
             return (
-              <div key={kind} className={`picker-card ${enabled ? 'is-on' : ''}`}>
+              <div key={kind}
+                   draggable={inDraft}
+                   onDragStart={inDraft ? onDragStart(kind) : undefined}
+                   onDragOver={onDragOver(kind)}
+                   onDragEnd={onDragEnd}
+                   onDrop={onDrop(kind)}
+                   className={`picker-card ${enabled ? 'is-on' : ''} ${isDragging ? 'is-dragging' : ''} ${isDragOver ? 'is-dragover' : ''}`}>
+                {inDraft && (
+                  <div className="picker-card-handle" title="Arrastra para reordenar">
+                    <span className="handle-icon">⋮⋮</span>
+                    <span className="handle-pos">#{String(orderIdx + 1).padStart(2,'0')}</span>
+                  </div>
+                )}
                 <div className="picker-card-thumb"
                      style={{ backgroundImage: thumb ? `url('${thumb}')` : 'none' }}
-                     onClick={() => toggleKind(kind)}>
+                     onClick={() => toggleKind(kind)}
+                     title={enabled ? 'Click para desactivar' : 'Click para activar'}>
                   <div className="picker-card-check">
                     {enabled ? '☑' : '☐'}
                   </div>
-                  {inDraft && enabled && (
-                    <div className="picker-card-order">
-                      {String(orderIdx + 1).padStart(2,'0')}
-                    </div>
-                  )}
                 </div>
                 <div className="picker-card-body">
                   <div className="picker-card-label">{SLIDE_LABELS[kind]}</div>
@@ -412,11 +461,11 @@ function SlidePicker({ selected, onClose, onApply }) {
                         <button onClick={() => moveKind(kind, -1)}
                                 disabled={isFirst}
                                 className="picker-card-arrow"
-                                title="Subir">▲</button>
+                                title="Subir un lugar">▲</button>
                         <button onClick={() => moveKind(kind, +1)}
                                 disabled={isLast}
                                 className="picker-card-arrow"
-                                title="Bajar">▼</button>
+                                title="Bajar un lugar">▼</button>
                       </div>
                     )}
                   </div>
