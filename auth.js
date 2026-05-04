@@ -12,7 +12,7 @@
 (function() {
   const SESSION_KEY = 'olfativa.unlock.v1';
   // Password ofuscado (base64 de la cadena invertida) — desalienta View Source casual
-  const _x = 'NjIwMmF2aXRhZm8=';
+  const _x = 'NjIwMmF2aXRhZmxv';
   const expected = atob(_x).split('').reverse().join('');
 
   // Si ya está unlocked en esta sesión, nada que hacer
