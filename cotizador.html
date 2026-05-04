@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Olfativa · Cotizador</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    background: #050505;
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    color: #F3EDE3;
+    overflow: hidden;
+  }
+  * { box-sizing: border-box; }
+  deck-stage section {
+    background: #0E0E0E;
+  }
+  /* En print, ocultar el panel de tweaks */
+  @media print {
+    .twk-panel, .twk-panel * { display: none !important; }
+  }
+</style>
+<script type="application/json" id="speaker-notes">
+[
+  "Portada. Saludo, agradezco el tiempo. Esta propuesta está hecha específicamente para el cliente.",
+  "Posicionamiento: Olfativa no es un proveedor de aromas. Somos infraestructura olfativa.",
+  "Pilares: las garantías que sostienen la propuesta. Adaptados al segmento.",
+  "Curaduría: Manuela y la dirección creativa propia.",
+  "Metodología: las fases que eliminan la incertidumbre.",
+  "Aromas: la arquitectura olfativa por tier o el aroma curado.",
+  "Catálogo: los equipos que operamos.",
+  "Cotización: alcance y términos.",
+  "Cumplimiento: certificaciones y trazabilidad documentada.",
+  "Confianza: las marcas que ya operan con nosotros.",
+  "Cierre: próximo paso es la sesión de inmersión. Vigencia 30 días."
+]
+</script>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="deck-stage.js"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="slides-master.jsx"></script>
+<script type="text/babel" src="slide-views-master.jsx"></script>
+<script type="text/babel" src="hero-difusor.jsx"></script>
+<script type="text/babel" src="catalog-min.jsx"></script>
+<script type="text/babel" src="control-olores.jsx"></script>
+<script type="text/babel" src="app-cotizador.jsx"></script>
+</body>
+</html>
