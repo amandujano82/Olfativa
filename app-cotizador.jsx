@@ -134,9 +134,9 @@ const CLIENT_DEFAULTS = {
 // ── Catálogo de precios ────────────────────────────────────
 const DIFUSORES_PRECIO = [
   { id: 'cervino',     name: 'Cervino',          precio: 1090 },
-  { id: 'fitz',        name: 'FITZ',             precio: 1620 },
+  { id: 'fitz',        name: 'Fitz',             precio: 1620 },
   { id: 'moai',        name: 'Moai',             precio: 1800 },
-  { id: 'aspen',       name: 'ASPEN',            precio: 2000 },
+  { id: 'aspen',       name: 'Aspen',            precio: 2000 },
   { id: 'montblanc',   name: 'Montblanc',        precio: 2000 },
   { id: 'montblancXl', name: 'Montblanc XL',     precio: 4500 },
   { id: 'liberty',     name: 'Liberty',          precio: 4500 },
