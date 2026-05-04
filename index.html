@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Olfativa · Herramientas de venta</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="auth.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0E0E0E;
+    --ink-soft: #1A1815;
+    --bone: #F3EDE3;
+    --bone-soft: #E8DFD0;
+    --gold: #C7A668;
+    --gold-soft: #A88A4F;
+    --rule: rgba(243, 237, 227, 0.18);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--ink);
+    color: var(--bone);
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 48px 64px;
+    background:
+      radial-gradient(ellipse 1200px 800px at 80% 20%, rgba(199,166,104,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 800px 600px at 10% 90%, rgba(199,166,104,0.05) 0%, transparent 60%),
+      var(--ink);
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .logo {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 32px;
+    letter-spacing: 0.01em;
+    color: var(--bone);
+  }
+  .logo .reg {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    vertical-align: super;
+    margin-left: 2px;
+    color: var(--gold);
+  }
+  .nav-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(243, 237, 227, 0.55);
+    font-weight: 500;
+  }
+
+  .hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 80px 0;
+  }
+  .hero-eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 32px;
+  }
+  .hero h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(56px, 9vw, 128px);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    color: var(--bone);
+    margin-bottom: 8px;
+  }
+  .hero h1 .italic {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .hero .subtitle {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(24px, 3vw, 36px);
+    color: rgba(243, 237, 227, 0.75);
+    margin-bottom: 48px;
+    line-height: 1.3;
+    max-width: 720px;
+  }
+  .hero p.lead {
+    font-size: 18px;
+    line-height: 1.55;
+    color: rgba(243, 237, 227, 0.7);
+    max-width: 600px;
+    margin-bottom: 56px;
+  }
+
+  .tools {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+    max-width: 900px;
+  }
+  .tool-card {
+    display: block;
+    text-decoration: none;
+    padding: 28px 32px;
+    background: rgba(243, 237, 227, 0.04);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    transition: all 200ms ease;
+    color: var(--bone);
+  }
+  .tool-card:hover {
+    background: rgba(199, 166, 104, 0.08);
+    border-color: rgba(199, 166, 104, 0.4);
+    transform: translateY(-2px);
+  }
+  .tool-card.primary {
+    background: linear-gradient(135deg, rgba(199,166,104,0.18), rgba(199,166,104,0.06));
+    border-color: rgba(199, 166, 104, 0.3);
+  }
+  .tool-card.primary:hover {
+    background: linear-gradient(135deg, rgba(199,166,104,0.28), rgba(199,166,104,0.12));
+    border-color: var(--gold);
+  }
+  .tool-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+  .tool-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 28px;
+    line-height: 1.05;
+    color: var(--bone);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .tool-desc {
+    font-size: 13.5px;
+    color: rgba(243, 237, 227, 0.65);
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .tool-cta {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tool-cta::after {
+    content: "→";
+    transition: transform 160ms ease;
+  }
+  .tool-card:hover .tool-cta::after {
+    transform: translateX(4px);
+  }
+
+  .footer {
+    padding-top: 32px;
+    margin-top: 48px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(243, 237, 227, 0.4);
+  }
+
+  @media (max-width: 768px) {
+    .page { padding: 32px 24px; }
+    .header { flex-direction: column; gap: 16px; align-items: flex-start; }
+    .hero { padding: 48px 0; }
+    .footer { flex-direction: column; gap: 12px; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="header">
+    <div class="logo">Olfativa<span class="reg">®</span></div>
+    <div class="nav-eyebrow">Herramientas internas · Equipo comercial</div>
+  </header>
+
+  <main class="hero">
+    <div class="hero-eyebrow">Para el equipo de ventas</div>
+    <h1>
+      Arma tu cotización<br>
+      <span class="italic">a la medida.</span>
+    </h1>
+    <div class="subtitle">
+      Selecciona láminas, mezcla segmentos, edita el cliente — y exporta.
+    </div>
+    <p class="lead">
+      Cinco machotes pre-cargados (Long Tail, Core, Key, Enterprise, Master). Cada lámina puede tomar el copy del segmento que mejor le quede al cliente. Imprime o guarda como PDF cuando termines.
+    </p>
+
+    <div class="tools">
+      <a class="tool-card primary" href="cotizador.html">
+        <div class="tool-eyebrow">Herramienta principal</div>
+        <div class="tool-title">Cotizador interactivo</div>
+        <div class="tool-desc">
+          Arma propuestas personalizadas combinando láminas de los 4 segmentos. Drag &amp; drop, edición de cliente en vivo, exportación a PDF.
+        </div>
+        <div class="tool-cta">Abrir cotizador</div>
+      </a>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span>Olfativa · Casa olfativa</span>
+    <span>2026</span>
+  </footer>
+
+</div>
+</body>
+</html>
