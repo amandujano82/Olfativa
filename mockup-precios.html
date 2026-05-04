@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Olfativa · Mockup calculadora de precios</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Public+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#1C1A18; --bone:#F5F0E8; --gold:#CC6633; --rule:rgba(245,240,232,0.18); --warn:#C2776B; --green:#7BA77B; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--ink); color: var(--bone);
+    font-family: 'Public Sans', system-ui, sans-serif;
+    min-height: 100vh; padding: 32px;
+  }
+  .header { max-width: 1300px; margin: 0 auto 32px; padding-bottom: 16px; border-bottom: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: baseline; }
+  .header h1 { font-family: 'Libre Baskerville', serif; font-style: italic; font-weight: 500; font-size: 36px; }
+  .header .badge { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); padding: 4px 10px; border: 1px solid var(--gold); border-radius: 4px; }
+
+  .layout { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  @media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: rgba(245,240,232,0.03);
+    border: 1px solid var(--rule);
+    border-radius: 8px; padding: 24px;
+  }
+  .panel-title {
+    font-family: 'Libre Baskerville', serif; font-style: italic;
+    font-weight: 400; font-size: 24px; margin-bottom: 4px;
+  }
+  .panel-eyebrow {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); font-weight: 500; margin-bottom: 16px;
+  }
+
+  /* Líneas */
+  .line {
+    display: grid; grid-template-columns: 2.2fr 0.9fr; gap: 10px;
+    align-items: end;
+    padding: 12px 14px; margin-bottom: 8px;
+    background: rgba(245,240,232,0.03); border: 1px solid var(--rule);
+    border-radius: 6px; position: relative;
+  }
+  .line label { display: flex; flex-direction: column; gap: 4px; }
+  .line label span {
+    font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: rgba(245,240,232,0.5);
+  }
+  .line select, .line input {
+    appearance: none; font-family: inherit;
+    background: rgba(245,240,232,0.08);
+    border: 1px solid rgba(245,240,232,0.2);
+    color: var(--bone); font-size: 14px;
+    padding: 8px 10px; border-radius: 4px; outline: none;
+  }
+  .line select:focus, .line input:focus { border-color: var(--gold); }
+  .line .remove {
+    position: absolute; top: 6px; right: 6px;
+    appearance: none; background: transparent; border: 0;
+    color: rgba(245,240,232,0.4); font-size: 18px;
+    cursor: pointer; padding: 4px 8px; line-height: 1;
+  }
+  .line .remove:hover { color: var(--warn); }
+
+  .line-summary {
+    grid-column: 1 / -1;
+    margin-top: 8px; padding-top: 8px;
+    border-top: 1px dashed rgba(245,240,232,0.12);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px;
+  }
+  .line-summary .info { color: rgba(245,240,232,0.55); font-variant-numeric: tabular-nums; }
+  .line-summary .v { font-weight: 600; color: var(--bone); font-variant-numeric: tabular-nums; font-size: 14px; }
+
+  .add-btn {
+    appearance: none; cursor: pointer; font-family: inherit;
+    width: 100%; padding: 10px;
+    background: transparent; color: var(--gold);
+    border: 1px dashed rgba(204,102,51,0.4); border-radius: 6px;
+    font-size: 12px; letter-spacing: 0.06em; font-weight: 500;
+    margin-top: 6px;
+  }
+  .add-btn:hover { background: rgba(204,102,51,0.06); }
+
+  .btn-apply {
+    appearance: none; cursor: pointer; font-family: inherit;
+    width: 100%; margin-top: 14px;
+    padding: 16px;
+    background: var(--gold); color: var(--ink);
+    border: 0; border-radius: 8px;
+    font-size: 14px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    transition: all 160ms;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 16px rgba(204,102,51,0.2);
+  }
+  .btn-apply:hover {
+    background: #d4b376;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 22px rgba(204,102,51,0.3);
+  }
+  .btn-apply:active { transform: translateY(0); }
+  .btn-apply.is-saved {
+    background: var(--green); color: var(--ink);
+    pointer-events: none;
+  }
+
+  /* Descuento global */
+  .global-disc {
+    margin-top: 24px; padding: 16px;
+    background: rgba(245,240,232,0.04); border-radius: 8px;
+    border: 1px solid var(--rule);
+    transition: all 200ms;
+  }
+  .global-disc.is-warn { border-color: var(--warn); background: rgba(194,119,107,0.08); }
+  .global-disc.is-ok { border-color: var(--green); background: rgba(123,167,123,0.06); }
+  .global-disc-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .global-disc-l {
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: rgba(245,240,232,0.65); font-weight: 500;
+  }
+  .global-disc-input-wrap {
+    display: flex; align-items: baseline; gap: 4px;
+    background: rgba(0,0,0,0.4); border-radius: 6px; padding: 6px 12px;
+  }
+  .global-disc-input {
+    appearance: none; background: transparent; border: 0;
+    color: var(--bone); font-family: inherit;
+    font-size: 28px; font-weight: 600; outline: none;
+    width: 72px; text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .global-disc-pct { font-size: 18px; color: rgba(245,240,232,0.5); }
+  .max-hint {
+    font-size: 11px; color: rgba(245,240,232,0.55);
+    margin-top: 8px;
+  }
+  .max-hint b { color: var(--bone); }
+  .auth-msg {
+    margin-top: 10px; padding: 9px 12px;
+    background: rgba(194,119,107,0.15);
+    border: 1px solid var(--warn); border-radius: 5px;
+    color: var(--warn); font-size: 12px; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .auth-msg::before { content: "⚠"; font-size: 14px; }
+  .auth-msg b { color: var(--bone); }
+
+  /* Totales */
+  .totals {
+    margin-top: 16px; padding: 16px;
+    background: rgba(204,102,51,0.08);
+    border: 1px solid rgba(204,102,51,0.3);
+    border-radius: 6px;
+  }
+  .totals-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 4px 0; font-size: 13px;
+  }
+  .totals-row.grand {
+    margin-top: 8px; padding-top: 12px;
+    border-top: 1px solid rgba(204,102,51,0.3);
+    font-size: 18px; font-weight: 600; color: var(--gold);
+  }
+  .totals-row.grand .lbl { font-size: 13px; }
+  .totals-row .val { font-variant-numeric: tabular-nums; }
+
+  /* Slide preview ────────────────────────────────────────── */
+  .slide-preview {
+    aspect-ratio: 16/9;
+    background: var(--ink);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 20px 26px;
+    color: var(--bone);
+    font-family: 'Public Sans', sans-serif;
+    overflow: hidden;
+    position: relative;
+    display: flex; flex-direction: column;
+    gap: 0;
+  }
+  .slide-preview .sl-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-bottom: 8px; margin-bottom: 8px;
+    border-bottom: 1px solid rgba(245,240,232,0.1);
+  }
+  .slide-preview .sl-eyebrow {
+    font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--gold); font-weight: 500;
+  }
+  .slide-preview .sl-page {
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(245,240,232,0.4); font-variant-numeric: tabular-nums;
+  }
+  .slide-preview .sl-title {
+    font-family: 'Libre Baskerville', serif; font-weight: 400;
+    font-size: 26px; line-height: 1.05; letter-spacing: -0.01em;
+    margin-bottom: 10px;
+  }
+  .slide-preview .sl-title i { font-style: italic; color: var(--gold); }
+  .slide-preview .sl-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .slide-preview .sl-table {
+    width: 100%; font-size: 10.5px; border-collapse: collapse;
+  }
+  .slide-preview .sl-table th, .slide-preview .sl-table td {
+    text-align: left; padding: 4px 4px;
+    border-bottom: 1px solid rgba(245,240,232,0.08);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+  }
+  .slide-preview .sl-table th {
+    color: rgba(245,240,232,0.5); font-weight: 500;
+    font-size: 8.5px; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .slide-preview .sl-table .num { text-align: right; }
+  .slide-preview .sl-table .strike { color: rgba(245,240,232,0.35); text-decoration: line-through; }
+  .slide-preview .sl-grand {
+    margin-top: 8px; padding-top: 6px;
+    border-top: 1px solid rgba(204,102,51,0.4);
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .slide-preview .sl-grand .l {
+    font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(245,240,232,0.6);
+  }
+  .slide-preview .sl-grand .v {
+    font-size: 22px; font-weight: 600; color: var(--gold);
+    font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+  }
+  .slide-preview .sl-foot {
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid rgba(245,240,232,0.1);
+    display: flex; justify-content: space-between;
+    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(245,240,232,0.4);
+    flex-shrink: 0;
+  }
+  .auth-stamp {
+    position: absolute; top: 24px; right: 24px;
+    transform: rotate(8deg);
+    border: 2px solid var(--warn); color: var(--warn);
+    padding: 6px 14px; border-radius: 4px;
+    font-size: 9px; letter-spacing: 0.18em; font-weight: 700;
+    text-transform: uppercase; opacity: 0.85;
+    background: rgba(194,119,107,0.05); text-align: center;
+  }
+
+  .empty {
+    text-align: center; padding: 40px 20px;
+    color: rgba(245,240,232,0.4); font-style: italic; font-size: 14px;
+  }
+
+  .note {
+    margin-top: 14px; padding: 8px 12px;
+    font-size: 11px; color: rgba(245,240,232,0.5);
+    border-left: 2px solid var(--gold); padding-left: 12px;
+  }
+
+  /* Letra chiquita: toggles */
+  .fp-toggle {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12.5px; color: rgba(245,240,232,0.85);
+    cursor: pointer; padding: 4px 0;
+  }
+  .fp-toggle input { accent-color: var(--gold); width: 14px; height: 14px; }
+  .fp-toggle b { color: var(--bone); }
+
+  /* Slide: letra chiquita al pie */
+  .slide-preview .sl-fineprint {
+    margin-top: 8px; padding-top: 6px;
+    border-top: 1px dashed rgba(245,240,232,0.12);
+    font-size: 7.5px; line-height: 1.4;
+    color: rgba(245,240,232,0.5);
+    letter-spacing: 0.02em;
+    columns: 2; column-gap: 18px;
+  }
+  .slide-preview .sl-fineprint .li {
+    display: block; margin-bottom: 1px;
+    break-inside: avoid;
+  }
+  .slide-preview .sl-fineprint .li::before { content: "· "; color: var(--gold); }
+  .slide-preview .sl-foot {
+    margin-top: 8px; padding-top: 6px;
+    border-top: 1px solid rgba(245,240,232,0.08);
+    font-size: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><i>Mockup</i> · Calculadora de precios</h1>
+  <span class="badge">Vista previa · no integrado aún</span>
+</div>
+
+<div class="layout">
+
+  <!-- ════════════ Calculator ════════════ -->
+  <div class="panel">
+    <div class="panel-eyebrow">Datos del cliente</div>
+    <div style="margin-bottom:18px">
+      <label style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(245,240,232,0.5);font-weight:500">Nombre del cliente</span>
+        <input type="text" id="clientNameInput" placeholder="Ej. El Palacio de Hierro"
+               style="appearance:none;font-family:inherit;background:rgba(245,240,232,0.08);border:1px solid rgba(245,240,232,0.2);color:var(--bone);font-size:15px;padding:10px 12px;border-radius:5px;outline:none" />
+      </label>
+    </div>
+
+    <div class="panel-eyebrow">Armado de la cotización</div>
+    <div class="panel-title">Difusores y descuento</div>
+
+    <div id="lines"></div>
+    <button class="add-btn" id="addBtn">+ Agregar difusor</button>
+
+    <div class="global-disc" id="globalDisc">
+      <div class="global-disc-row">
+        <div>
+          <div class="global-disc-l">Descuento global</div>
+          <div class="max-hint" id="maxHint">—</div>
+        </div>
+        <div class="global-disc-input-wrap">
+          <input type="number" min="0" max="50" step="5" value="0" id="discInput" class="global-disc-input" />
+          <span class="global-disc-pct">%</span>
+        </div>
+      </div>
+      <div id="authMsgWrap"></div>
+      <label class="fp-toggle" style="margin-top:12px;padding-top:10px;border-top:1px dashed rgba(245,240,232,0.12)">
+        <input type="checkbox" id="anualToggle" />
+        <span><b>+ 10% adicional</b> por pago anual <span style="color:rgba(245,240,232,0.5)">(opcional)</span></span>
+      </label>
+    </div>
+
+    <div class="totals">
+      <div class="totals-row">
+        <span class="lbl">Total mensual lista</span>
+        <span class="val" id="tListaMonthly">—</span>
+      </div>
+      <div class="totals-row">
+        <span class="lbl">Ahorro mensual</span>
+        <span class="val" id="tAhorro">—</span>
+      </div>
+      <div class="totals-row grand">
+        <span class="lbl">TOTAL MENSUAL FINAL</span>
+        <span class="val" id="tFinalMonthly">—</span>
+      </div>
+      <div class="totals-row" style="margin-top:6px;font-size:11px;color:rgba(245,240,232,0.5)">
+        <span>Anual estimado (×12)</span>
+        <span class="val" id="tAnnual">—</span>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--rule)">
+      <div class="panel-eyebrow">Letra chiquita del slide</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label class="fp-toggle"><input type="checkbox" id="fpIva" checked /> <span>Precios <b>+ IVA (16%)</b></span></label>
+        <label class="fp-toggle"><input type="checkbox" id="fpContrato" checked /> <span>Pago de un mes por adelantado con firma de contrato</span></label>
+        <label class="fp-toggle"><input type="checkbox" id="fpVigencia" checked /> <span>Vigencia de la cotización: <b>30 días</b></span></label>
+        <label class="fp-toggle"><input type="checkbox" id="fpIncluye" checked /> <span>Instalación, recargas y mantenimiento incluidos</span></label>
+      </div>
+      <label style="display:flex;flex-direction:column;gap:5px;margin-top:10px">
+        <span style="font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(245,240,232,0.5);font-weight:500">Notas adicionales (opcional)</span>
+        <textarea id="fpNotas" rows="2" placeholder="Ej. Aplica solo en CDMX · Equipos sujetos a disponibilidad"
+                  style="appearance:none;font-family:inherit;background:rgba(245,240,232,0.08);border:1px solid rgba(245,240,232,0.2);color:var(--bone);font-size:13px;padding:8px 10px;border-radius:5px;outline:none;resize:vertical"></textarea>
+      </label>
+    </div>
+
+    <div class="note">
+      Todo se guarda automáticamente en este navegador. Cuando termines de armar la cotización, presiona <b>Aplicar</b> para integrarla al deck.
+    </div>
+
+    <button class="btn-apply" id="applyBtn">
+      Aplicar al cotizador →
+    </button>
+  </div>
+
+  <!-- ════════════ Slide preview ════════════ -->
+  <div class="panel">
+    <div class="panel-eyebrow">Preview en vivo</div>
+    <div class="panel-title">Slide(s) de cotización</div>
+    <div id="slidesWrap" style="display:flex;flex-direction:column;gap:14px;margin-top:12px"></div>
+    <div class="note">
+      Si la cotización tiene <b>más de 6 difusores</b> distintos, se divide automáticamente en varios slides para que toda la info se lea bien.
+    </div>
+  </div>
+
+</div>
+
+<script>
+const DIFUSORES = [
+  { id: 'cervino',     name: 'Cervino',          precio: 1090 },
+  { id: 'fitz',        name: 'FITZ',             precio: 1620 },
+  { id: 'moai',        name: 'Moai',             precio: 1800 },
+  { id: 'aspen',       name: 'ASPEN',            precio: 2000 },
+  { id: 'montblanc',   name: 'Montblanc',        precio: 2000 },
+  { id: 'montblancXl', name: 'Montblanc XL',     precio: 4500 },
+  { id: 'liberty',     name: 'Liberty',          precio: 4500 },
+  { id: 'empire',      name: 'Empire',           precio: 4500 },
+  { id: 'ural',        name: 'Ural',             precio: 7200 },
+  { id: 'everest',     name: 'Everest',          precio: 9000 },
+  { id: 'uralTrim',    name: 'Ural-Moai (trim)', precio: 1800 },
+];
+
+const BANDS = [
+  { min: 1,  max: 2,   label: 'Hasta 2 difusores',    maxNoAuth: 10 },
+  { min: 3,  max: 9,   label: '3 a 9 difusores',      maxNoAuth: 20 },
+  { min: 10, max: 29,  label: '10 a 29 difusores',    maxNoAuth: 25 },
+  { min: 30, max: Infinity, label: 'Enterprise (30+)', maxNoAuth: 25 },
+];
+const AUTH = {
+  25: 'Cintya', 30: 'Cintya', 35: 'Cintya',
+  40: 'Anthony', 45: 'Anthony', 50: 'Anthony',
+};
+
+// ── Persistencia ────────────────────────────────────────────
+const LS_KEY = 'olfativa.mockup-precios.v1';
+function saveAll() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify({
+    lines, descuento, nextId, clientName, pagoAnual, fp, fpNotas,
+  })); } catch {}
+}
+function loadAll() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch { return null; }
+}
+const persisted = loadAll();
+
+let lines = persisted?.lines || [{ id: 1, difusor: 'aspen', cant: 5 }];
+let descuento = persisted?.descuento ?? 15;
+let nextId = persisted?.nextId || 2;
+let clientName = persisted?.clientName || '';
+let pagoAnual = persisted?.pagoAnual || false;
+let fp = persisted?.fp || { iva: true, contrato: true, vigencia: true, incluye: true };
+let fpNotas = persisted?.fpNotas || '';
+
+function fmt(n) { return '$' + Math.round(n).toLocaleString('es-MX'); }
+
+function renderFinePrint() {
+  const items = [];
+  if (fp.iva)      items.push('Precios <b>+ IVA (16%)</b>');
+  if (fp.contrato) items.push('Pago de un mes por adelantado con firma de contrato');
+  if (fp.vigencia) items.push('Vigencia de la cotización: <b>30 días</b>');
+  if (fp.incluye)  items.push('Instalación, recargas y mantenimiento incluidos');
+  if (pagoAnual)   items.push('Aplica <b>10% adicional</b> de descuento por pago anual anticipado');
+  if (fpNotas && fpNotas.trim()) items.push(fpNotas.trim());
+  if (items.length === 0) return '';
+  return `<div class="sl-fineprint">${items.map(t => `<span class="li">${t}</span>`).join('')}</div>`;
+}
+
+function totalCant() { return lines.reduce((s, l) => s + (Number(l.cant) || 0), 0); }
+function getBand() {
+  const t = totalCant();
+  return BANDS.find(b => t >= b.min && t <= b.max) || BANDS[0];
+}
+function getAuthBy() {
+  const band = getBand();
+  if (descuento <= band.maxNoAuth) return null;
+  for (let pct = descuento; pct >= 25; pct -= 5) {
+    if (AUTH[pct]) return AUTH[pct];
+  }
+  return null;
+}
+
+function render() {
+  const linesEl = document.getElementById('lines');
+  linesEl.innerHTML = '';
+
+  let totalLista = 0;
+  const slideRows = [];
+
+  const annualMult = pagoAnual ? 0.9 : 1;
+  lines.forEach(line => {
+    const dif = DIFUSORES.find(d => d.id === line.difusor);
+    if (!dif) return;
+    const subLista = dif.precio * line.cant;
+    const subFinal = subLista * (1 - descuento / 100) * annualMult;
+    totalLista += subLista;
+
+    const div = document.createElement('div');
+    div.className = 'line';
+    div.innerHTML = `
+      <button class="remove" data-id="${line.id}" title="Quitar">×</button>
+      <label>
+        <span>Difusor</span>
+        <select data-id="${line.id}" data-field="difusor">
+          ${DIFUSORES.map(d => `<option value="${d.id}" ${d.id===line.difusor?'selected':''}>${d.name} · ${fmt(d.precio)}/mes</option>`).join('')}
+        </select>
+      </label>
+      <label>
+        <span>Cantidad</span>
+        <input type="number" min="1" value="${line.cant}" data-id="${line.id}" data-field="cant" />
+      </label>
+      <div class="line-summary">
+        <span class="info">${line.cant} × ${fmt(dif.precio)} = ${fmt(subLista)}/mes lista</span>
+        <span class="v">${fmt(subFinal)}/mes</span>
+      </div>
+    `;
+    linesEl.appendChild(div);
+
+    slideRows.push({ name: dif.name, cant: line.cant, lista: subLista, sub: subFinal });
+  });
+
+  // Bind eventos en líneas
+  linesEl.querySelectorAll('select, input').forEach(el => {
+    el.addEventListener('change', e => {
+      const id = +e.target.dataset.id;
+      const field = e.target.dataset.field;
+      const val = field === 'difusor' ? e.target.value : +e.target.value;
+      lines = lines.map(l => l.id === id ? {...l, [field]: val} : l);
+      render();
+    });
+  });
+  linesEl.querySelectorAll('.remove').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const id = +e.target.dataset.id;
+      lines = lines.filter(l => l.id !== id);
+      render();
+    });
+  });
+
+  // Descuento global UI
+  const band = getBand();
+  const authBy = getAuthBy();
+  const requiresAuth = !!authBy;
+  const isOk = descuento > 0 && !requiresAuth;
+  const gd = document.getElementById('globalDisc');
+  gd.classList.toggle('is-warn', requiresAuth);
+  gd.classList.toggle('is-ok', isOk);
+  document.getElementById('maxHint').innerHTML =
+    `Banda: <b>${band.label}</b> · máx sin autorización: <b>${band.maxNoAuth}%</b>`;
+  document.getElementById('authMsgWrap').innerHTML = requiresAuth
+    ? `<div class="auth-msg">Descuento de <b>${descuento}%</b> requiere ser autorizado por <b>${authBy}</b>.</div>`
+    : '';
+
+  // Totales (descuento + opcional 10% extra por pago anual)
+  const subPostDesc = totalLista * (1 - descuento / 100);
+  const totalFinal = pagoAnual ? subPostDesc * 0.9 : subPostDesc;
+  const ahorro = totalLista - totalFinal;
+  document.getElementById('tListaMonthly').textContent = fmt(totalLista);
+  document.getElementById('tAhorro').textContent = fmt(ahorro);
+  document.getElementById('tFinalMonthly').textContent = fmt(totalFinal);
+  document.getElementById('tAnnual').textContent = fmt(totalFinal * 12);
+
+  // ── Slide preview con auto-paginación ───────────────────
+  const slidesWrap = document.getElementById('slidesWrap');
+  if (slideRows.length === 0) {
+    slidesWrap.innerHTML = `
+      <div class="slide-preview">
+        <div class="sl-eyebrow">Cotización · ${clientName || 'Sin nombre de cliente'}</div>
+        <div class="sl-title">Inversión <i>mensual.</i></div>
+        <div class="empty">Agrega un difusor para ver el preview</div>
+        <div class="sl-foot">
+          <span>OLFATIVA · CASA OLFATIVA</span>
+          <span>IVA NO INCLUIDO</span>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // Si hay letra chiquita activa, máximo 3 por slide; si no, 5
+  const fpActiveCount = (fp.iva?1:0)+(fp.contrato?1:0)+(fp.vigencia?1:0)+(fp.incluye?1:0)+(pagoAnual?1:0)+(fpNotas&&fpNotas.trim()?1:0);
+  const MAX_PER_SLIDE = fpActiveCount >= 3 ? 3 : (fpActiveCount > 0 ? 4 : 5);
+  const pages = [];
+  for (let i = 0; i < slideRows.length; i += MAX_PER_SLIDE) {
+    pages.push(slideRows.slice(i, i + MAX_PER_SLIDE));
+  }
+  const totalPages = pages.length;
+
+  slidesWrap.innerHTML = pages.map((rows, pIdx) => {
+    const isLast = pIdx === totalPages - 1;
+    return `
+      <div class="slide-preview">
+        <div class="sl-head">
+          <span class="sl-eyebrow">Cotización · ${clientName || 'Sin nombre de cliente'}</span>
+          ${totalPages > 1 ? `<span class="sl-page">${pIdx+1} / ${totalPages}</span>` : ''}
+        </div>
+        <div class="sl-title">Inversión <i>mensual.</i></div>
+        <div class="sl-body">
+          <table class="sl-table">
+            <thead>
+              <tr><th>Difusor</th><th class="num">Cant</th><th class="num">Lista</th><th class="num">Sub-total</th></tr>
+            </thead>
+            <tbody>
+              ${rows.map(r => `
+                <tr>
+                  <td>${r.name}</td>
+                  <td class="num">${r.cant}</td>
+                  <td class="num strike">${fmt(r.lista)}</td>
+                  <td class="num">${fmt(r.sub)}</td>
+                </tr>
+              `).join('')}
+              ${!isLast ? `<tr><td colspan="4" style="text-align:center;color:rgba(245,240,232,0.4);font-size:10px;font-style:italic;padding:8px">continúa en slide ${pIdx+2}…</td></tr>` : ''}
+            </tbody>
+          </table>
+          ${isLast ? `
+            <div class="sl-grand">
+              <div>
+                <div class="l">Total mensual final${totalPages > 1 ? ' (consolidado)' : ''}</div>
+                ${(descuento > 0 || pagoAnual) ? `<div style="font-size:9px;color:rgba(245,240,232,0.5);margin-top:3px;letter-spacing:0.06em">${descuento > 0 ? `Descuento ${descuento}%` : ''}${descuento > 0 && pagoAnual ? ' · ' : ''}${pagoAnual ? '+10% pago anual' : ''}</div>` : ''}
+              </div>
+              <div class="v">${fmt(totalFinal)}</div>
+            </div>
+            ${renderFinePrint()}
+          ` : ''}
+        </div>
+        <div class="sl-foot">
+          <span>OLFATIVA · CASA OLFATIVA</span>
+          <span>IVA NO INCLUIDO</span>
+        </div>
+        ${requiresAuth && isLast ? `<div class="auth-stamp">Pendiente<br>autoriza ${authBy}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  saveAll();
+}
+
+document.getElementById('addBtn').addEventListener('click', () => {
+  lines.push({ id: nextId++, difusor: 'fitz', cant: 1 });
+  render();
+});
+
+document.getElementById('discInput').addEventListener('input', e => {
+  descuento = Math.max(0, Math.min(50, +e.target.value || 0));
+  render();
+});
+
+// Cliente
+const clientInput = document.getElementById('clientNameInput');
+clientInput.value = clientName;
+clientInput.addEventListener('input', e => { clientName = e.target.value; render(); });
+
+// Pago anual toggle
+const anualToggle = document.getElementById('anualToggle');
+anualToggle.checked = pagoAnual;
+anualToggle.addEventListener('change', e => { pagoAnual = e.target.checked; render(); });
+
+// Letra chiquita: 4 toggles + notas
+['iva','contrato','vigencia','incluye'].forEach(k => {
+  const cap = k.charAt(0).toUpperCase() + k.slice(1);
+  const el = document.getElementById('fp' + cap);
+  el.checked = fp[k];
+  el.addEventListener('change', e => { fp[k] = e.target.checked; render(); });
+});
+const notasEl = document.getElementById('fpNotas');
+notasEl.value = fpNotas;
+notasEl.addEventListener('input', e => { fpNotas = e.target.value; render(); });
+
+// Botón Aplicar
+document.getElementById('applyBtn').addEventListener('click', e => {
+  saveAll();
+  const btn = e.currentTarget;
+  const orig = btn.innerHTML;
+  btn.classList.add('is-saved');
+  btn.innerHTML = '✓ Cotización guardada';
+  setTimeout(() => {
+    btn.classList.remove('is-saved');
+    btn.innerHTML = orig;
+  }, 1800);
+});
+
+render();
+</script>
+
+</body>
+</html>

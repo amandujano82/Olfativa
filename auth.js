@@ -36,12 +36,12 @@
           position: fixed; inset: 0;
           z-index: 2147483647;
           background:
-            radial-gradient(ellipse 1200px 800px at 80% 20%, rgba(199,166,104,0.10) 0%, transparent 60%),
-            radial-gradient(ellipse 800px 600px at 10% 90%, rgba(199,166,104,0.06) 0%, transparent 60%),
-            #0E0E0E;
-          color: #F3EDE3;
+            radial-gradient(ellipse 1200px 800px at 80% 20%, rgba(204,102,51,0.10) 0%, transparent 60%),
+            radial-gradient(ellipse 800px 600px at 10% 90%, rgba(204,102,51,0.06) 0%, transparent 60%),
+            #1C1A18;
+          color: #F5F0E8;
           display: flex; align-items: center; justify-content: center;
-          font-family: 'Inter Tight', system-ui, -apple-system, sans-serif;
+          font-family: 'Public Sans', system-ui, -apple-system, sans-serif;
           visibility: visible !important;
         }
         #__olf_gate .gate-card {
@@ -56,21 +56,21 @@
         }
         #__olf_gate .gate-eyebrow {
           font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase;
-          color: #C7A668; font-weight: 500; margin-bottom: 24px;
+          color: #CC6633; font-weight: 500; margin-bottom: 24px;
         }
         #__olf_gate .gate-logo {
-          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-family: 'Libre Baskerville', Georgia, serif;
           font-style: italic; font-weight: 500;
           font-size: 48px; letter-spacing: 0.01em;
-          color: #F3EDE3; margin-bottom: 8px; line-height: 1;
+          color: #F5F0E8; margin-bottom: 8px; line-height: 1;
         }
         #__olf_gate .gate-logo .reg {
-          font-family: 'Inter Tight', sans-serif;
+          font-family: 'Public Sans', sans-serif;
           font-size: 12px; font-style: normal; vertical-align: super;
-          margin-left: 2px; color: #C7A668;
+          margin-left: 2px; color: #CC6633;
         }
         #__olf_gate .gate-sub {
-          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-family: 'Libre Baskerville', Georgia, serif;
           font-style: italic; font-size: 18px;
           color: rgba(243,237,227,0.55); margin-bottom: 36px;
         }
@@ -80,19 +80,19 @@
           background: rgba(243,237,227,0.06);
           border: 1px solid rgba(243,237,227,0.18);
           border-radius: 4px;
-          color: #F3EDE3; font-size: 15px;
+          color: #F5F0E8; font-size: 15px;
           font-family: inherit; letter-spacing: 0.05em;
           outline: none; transition: border-color 160ms;
           text-align: center;
         }
         #__olf_gate input:focus {
-          border-color: #C7A668;
-          background: rgba(199,166,104,0.06);
+          border-color: #CC6633;
+          background: rgba(204,102,51,0.06);
         }
         #__olf_gate input::placeholder { color: rgba(243,237,227,0.3); letter-spacing: 0.02em; }
         #__olf_gate button {
           width: 100%; padding: 14px;
-          background: #C7A668; color: #0E0E0E;
+          background: #CC6633; color: #1C1A18;
           border: 0; border-radius: 4px;
           font-family: inherit; font-size: 13px; font-weight: 600;
           letter-spacing: 0.08em; text-transform: uppercase;

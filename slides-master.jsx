@@ -22,16 +22,17 @@ const SPACING = {
   itemGap: 28,
 };
 
+// Paleta Brand Book Olfativa 2026 — 4 colores no negociables
 const PALETTE = {
-  ink: "#0E0E0E",
-  inkSoft: "#1A1815",
-  bone: "#F3EDE3",
+  ink: "#1C1A18",        // Charcoal · lienzo principal
+  inkSoft: "#1C1A18",    // mismo charcoal
+  bone: "#F5F0E8",       // Cream · pausa visual
   boneSoft: "#E8DFD0",
-  gold: "#C7A668",
-  goldSoft: "#A88A4F",
-  bronze: "#7A6242",
-  rule: "rgba(243, 237, 227, 0.18)",
-  ruleInk: "rgba(14, 14, 14, 0.14)",
+  gold: "#CC6633",       // Terracota · color de acción/acento
+  goldSoft: "#A85528",
+  bronze: "#8E4423",
+  rule: "rgba(245, 240, 232, 0.18)",
+  ruleInk: "rgba(28, 26, 24, 0.14)",
 };
 
 // ============================================================
@@ -543,7 +544,7 @@ const CURADORA = {
 // ============================================================
 const SerifH = ({ children, size = TYPE_SCALE.title, italic = true, weight = 400, color = PALETTE.bone, lineHeight = 1.02, style }) => (
   <span style={{
-    fontFamily: "'Cormorant Garamond', 'Cormorant', 'EB Garamond', Georgia, serif",
+    fontFamily: "'Libre Baskerville', 'Cormorant', 'EB Garamond', Georgia, serif",
     fontSize: size,
     fontWeight: weight,
     fontStyle: italic ? 'italic' : 'normal',
@@ -556,7 +557,7 @@ const SerifH = ({ children, size = TYPE_SCALE.title, italic = true, weight = 400
 
 const SansH = ({ children, size = TYPE_SCALE.title, weight = 500, color = PALETTE.bone, tracking = '-0.025em', lineHeight = 1.02, style }) => (
   <span style={{
-    fontFamily: "'Inter Tight', 'Inter', system-ui, sans-serif",
+    fontFamily: "'Public Sans', 'Inter', system-ui, sans-serif",
     fontSize: size,
     fontWeight: weight,
     letterSpacing: tracking,
@@ -568,7 +569,7 @@ const SansH = ({ children, size = TYPE_SCALE.title, weight = 500, color = PALETT
 
 const Eyebrow = ({ children, color = PALETTE.gold, size = TYPE_SCALE.micro, style }) => (
   <span style={{
-    fontFamily: "'Inter Tight', 'Inter', system-ui, sans-serif",
+    fontFamily: "'Public Sans', 'Inter', system-ui, sans-serif",
     fontSize: size,
     fontWeight: 500,
     letterSpacing: '0.18em',
@@ -580,7 +581,7 @@ const Eyebrow = ({ children, color = PALETTE.gold, size = TYPE_SCALE.micro, styl
 
 const Body = ({ children, color = PALETTE.boneSoft, size = TYPE_SCALE.body, weight = 400, style }) => (
   <div style={{
-    fontFamily: "'Inter Tight', 'Inter', system-ui, sans-serif",
+    fontFamily: "'Public Sans', 'Inter', system-ui, sans-serif",
     fontSize: size,
     fontWeight: weight,
     lineHeight: 1.45,
@@ -604,14 +605,14 @@ const HairRule = ({ color = PALETTE.rule, vertical = false, length = '100%', thi
 const OlfativaMark = ({ color = PALETTE.bone, height = 28, style }) => (
   <svg viewBox="0 0 280 56" style={{ height, width: 'auto', display: 'block', ...style }} aria-label="Olfativa">
     <text x="0" y="42" fill={color} style={{
-      fontFamily: "'Cormorant Garamond', Georgia, serif",
+      fontFamily: "'Libre Baskerville', Georgia, serif",
       fontStyle: 'italic',
       fontSize: 48,
       fontWeight: 500,
       letterSpacing: '0.01em',
     }}>Olfativa</text>
     <text x="216" y="20" fill={color} style={{
-      fontFamily: "'Inter Tight', sans-serif",
+      fontFamily: "'Public Sans', sans-serif",
       fontSize: 14,
       fontWeight: 400,
     }}>®</text>
@@ -665,7 +666,7 @@ const SlideFrame = ({ children, bg = PALETTE.ink, style }) => (
     background: bg,
     position: 'relative',
     overflow: 'hidden',
-    fontFamily: "'Inter Tight', sans-serif",
+    fontFamily: "'Public Sans', sans-serif",
     ...style,
   }}>{children}</div>
 );
@@ -688,7 +689,7 @@ const SegmentMarkers = ({ current = 0, segments, dark = true, style }) => {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 28,
-      fontFamily: "'Inter Tight', 'Inter', system-ui, sans-serif",
+      fontFamily: "'Public Sans', 'Inter', system-ui, sans-serif",
       ...style,
     }}>
       {groups.map((g, i) => {

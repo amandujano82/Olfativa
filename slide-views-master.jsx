@@ -181,12 +181,12 @@ function SlidePromise({ segment, clientName, idx, totalSlides, propId, propDate 
             opacity: 0.82,
           }}>
             {[
-              { n: "MICROSOFT",          f: "'Inter Tight', sans-serif", w: 600, italic: false, size: 16, ls: '0.04em' },
-              { n: "EL PALACIO DE HIERRO", f: "'Inter Tight', sans-serif", w: 600, italic: false, size: 13, ls: '0.18em' },
-              { n: "HYATT",              f: "'Inter Tight', sans-serif",  w: 700, italic: false, size: 18, ls: '0.42em' },
-              { n: "AMERICAN EXPRESS",   f: "'Inter Tight', sans-serif",  w: 700, italic: false, size: 13, ls: '0.16em' },
-              { n: "VOLVO",              f: "'Inter Tight', sans-serif",  w: 500, italic: false, size: 19, ls: '0.46em' },
-              { n: "THE NORTH FACE",     f: "'Inter Tight', sans-serif",  w: 800, italic: false, size: 12, ls: '0.10em' },
+              { n: "MICROSOFT",          f: "'Public Sans', sans-serif", w: 600, italic: false, size: 16, ls: '0.04em' },
+              { n: "EL PALACIO DE HIERRO", f: "'Public Sans', sans-serif", w: 600, italic: false, size: 13, ls: '0.18em' },
+              { n: "HYATT",              f: "'Public Sans', sans-serif",  w: 700, italic: false, size: 18, ls: '0.42em' },
+              { n: "AMERICAN EXPRESS",   f: "'Public Sans', sans-serif",  w: 700, italic: false, size: 13, ls: '0.16em' },
+              { n: "VOLVO",              f: "'Public Sans', sans-serif",  w: 500, italic: false, size: 19, ls: '0.46em' },
+              { n: "THE NORTH FACE",     f: "'Public Sans', sans-serif",  w: 800, italic: false, size: 12, ls: '0.10em' },
             ].map((b, i) => (
               <span key={i} style={{
                 fontFamily: b.f,
@@ -469,7 +469,7 @@ function SlideAroma({ segment, clientName, idx, totalSlides, propId, propDate })
                   <div key={j} style={{ display: 'grid', gridTemplateColumns: '14px 1fr', alignItems: 'start', gap: 10 }}>
                     <span style={{ width: 4, height: 4, borderRadius: '50%', background: PALETTE.bronze, marginTop: 9, justifySelf: 'start' }} />
                     <div style={{
-                      fontFamily: "'Inter Tight', sans-serif",
+                      fontFamily: "'Public Sans', sans-serif",
                       fontSize: TYPE_SCALE.small - 3,
                       fontWeight: 500,
                       color: PALETTE.ink,
@@ -647,14 +647,14 @@ function SlideTrust({ segment, clientName, idx, totalSlides, fields, propId, pro
             ].map((row, i) => (
               <div key={i} style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.2fr', gap: 16, alignItems: 'baseline' }}>
                 <div style={{
-                  fontFamily: "'Inter Tight', sans-serif",
+                  fontFamily: "'Public Sans', sans-serif",
                   fontSize: TYPE_SCALE.small - 2,
                   fontWeight: 400,
                   color: PALETTE.boneSoft,
                   lineHeight: 1.35,
                 }}>{row.l}</div>
                 <div style={{
-                  fontFamily: "'Inter Tight', sans-serif",
+                  fontFamily: "'Public Sans', sans-serif",
                   fontSize: TYPE_SCALE.small - 2,
                   fontWeight: 500,
                   color: PALETTE.bone,
@@ -795,7 +795,7 @@ function CatalogRow({ d, dense = false }) {
           {d.name}
         </SerifH>
         <span style={{
-          fontFamily: "'Inter Tight', sans-serif",
+          fontFamily: "'Public Sans', sans-serif",
           fontSize: 14, fontWeight: 600, letterSpacing: '0.18em',
           color: PALETTE.bronze, textTransform: 'uppercase',
         }}>
@@ -810,7 +810,7 @@ function CatalogRow({ d, dense = false }) {
 
       {/* Coverage */}
       <div style={{
-        fontFamily: "'Cormorant Garamond', serif",
+        fontFamily: "'Libre Baskerville', serif",
         fontStyle: 'italic',
         fontSize: 16,
         color: PALETTE.ink,
@@ -849,7 +849,7 @@ function CatalogTableHeader() {
       <div></div>
       {['Equipo', 'Espacios indicados', 'Cobertura', 'Renta mensual'].map((h, i) => (
         <span key={i} style={{
-          fontFamily: "'Inter Tight', sans-serif",
+          fontFamily: "'Public Sans', sans-serif",
           fontSize: 16, fontWeight: 600, letterSpacing: '0.20em',
           color: 'rgba(14,14,14,0.45)', textTransform: 'uppercase',
           textAlign: i === 3 ? 'right' : 'left',
@@ -923,7 +923,7 @@ function SlideCatalog({ segment, clientName, idx, totalSlides, propId, propDate 
               background: 'rgba(199,166,104,0.12)',
               border: `1px solid ${PALETTE.goldSoft}`,
               borderRadius: 2,
-              fontFamily: "'Inter Tight', sans-serif",
+              fontFamily: "'Public Sans', sans-serif",
               fontSize: 14, fontWeight: 600,
               letterSpacing: '0.14em',
               color: PALETTE.bronze,
@@ -1007,7 +1007,7 @@ function SlideCatalog({ segment, clientName, idx, totalSlides, propId, propDate 
               background: 'rgba(199,166,104,0.12)',
               border: `1px solid ${PALETTE.goldSoft}`,
               borderRadius: 2,
-              fontFamily: "'Inter Tight', sans-serif",
+              fontFamily: "'Public Sans', sans-serif",
               fontSize: 14, fontWeight: 600,
               letterSpacing: '0.14em',
               color: PALETTE.bronze,
@@ -1099,7 +1099,7 @@ function SlideCatalog({ segment, clientName, idx, totalSlides, propId, propDate 
                 <div style={{
                   position: 'absolute',
                   top: 10, left: 10,
-                  fontFamily: "'Inter Tight', sans-serif",
+                  fontFamily: "'Public Sans', sans-serif",
                   fontSize: compact ? 9 : 10,
                   fontWeight: 600,
                   letterSpacing: '0.16em',
@@ -1115,7 +1115,7 @@ function SlideCatalog({ segment, clientName, idx, totalSlides, propId, propDate 
                 <div style={{
                   position: 'absolute',
                   top: 10, right: 10,
-                  fontFamily: "'Cormorant Garamond', serif",
+                  fontFamily: "'Libre Baskerville', serif",
                   fontStyle: 'italic',
                   fontSize: compact ? 13 : 15,
                   color: PALETTE.ink,
@@ -1172,7 +1172,7 @@ function SlideCatalog({ segment, clientName, idx, totalSlides, propId, propDate 
             background: 'rgba(199,166,104,0.12)',
             border: `1px solid ${PALETTE.goldSoft}`,
             borderRadius: 2,
-            fontFamily: "'Inter Tight', sans-serif",
+            fontFamily: "'Public Sans', sans-serif",
             fontSize: 14, fontWeight: 600,
             letterSpacing: '0.14em',
             color: PALETTE.bronze,
@@ -1471,7 +1471,7 @@ function SlideQuote({ segment, clientName, idx, totalSlides, propId, propDate, f
                       </SerifH>
                       {isRecommended && (
                         <span style={{
-                          fontFamily: "'Inter Tight', sans-serif",
+                          fontFamily: "'Public Sans', sans-serif",
                           fontSize: 14, fontWeight: 600,
                           letterSpacing: '0.18em',
                           color: PALETTE.bronze,
@@ -1496,7 +1496,7 @@ function SlideQuote({ segment, clientName, idx, totalSlides, propId, propDate, f
                         −{Math.round(t.discount * 100)}%
                       </SerifH>
                     ) : (
-                      <span style={{ color: 'rgba(14,14,14,0.3)', fontSize: 14, fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic' }}>—</span>
+                      <span style={{ color: 'rgba(14,14,14,0.3)', fontSize: 14, fontFamily: "'Libre Baskerville', serif", fontStyle: 'italic' }}>—</span>
                     )}
                   </div>
 

@@ -7,17 +7,17 @@
 <script src="auth.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Public+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   html, body {
     margin: 0; padding: 0;
     background: #050505;
-    font-family: 'Inter Tight', system-ui, sans-serif;
-    color: #F3EDE3;
+    font-family: 'Public Sans', system-ui, sans-serif;
+    color: #F5F0E8;
     overflow: hidden;
   }
   * { box-sizing: border-box; }
-  deck-stage section { background: #0E0E0E; }
+  deck-stage section { background: #1C1A18; }
 
   /* ── Top bar siempre visible ────────────────────────────── */
   .topbar {
@@ -29,18 +29,18 @@
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid rgba(243, 237, 227, 0.1);
     display: flex; align-items: center; justify-content: space-between;
-    color: #F3EDE3;
-    font-family: 'Inter Tight', system-ui, sans-serif;
+    color: #F5F0E8;
+    font-family: 'Public Sans', system-ui, sans-serif;
   }
   .topbar-left, .topbar-right { display: flex; align-items: center; gap: 14px; }
   .topbar-logo {
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Libre Baskerville', Georgia, serif;
     font-style: italic; font-weight: 500; font-size: 22px;
-    letter-spacing: 0.01em; color: #F3EDE3;
+    letter-spacing: 0.01em; color: #F5F0E8;
   }
   .topbar-logo span {
     font-family: 'Inter Tight', sans-serif; font-style: normal;
-    font-size: 9px; vertical-align: super; color: #C7A668; margin-left: 1px;
+    font-size: 9px; vertical-align: super; color: #CC6633; margin-left: 1px;
   }
   .topbar-divider {
     width: 1px; height: 24px;
@@ -52,19 +52,19 @@
     color: rgba(243, 237, 227, 0.45); font-weight: 500;
   }
   .topbar-client-display {
-    color: #F3EDE3; font-size: 13.5px; font-weight: 500;
+    color: #F5F0E8; font-size: 13.5px; font-weight: 500;
     display: flex; align-items: center; gap: 6px;
   }
-  .topbar-client-name { color: #F3EDE3; }
+  .topbar-client-name { color: #F5F0E8; }
   .topbar-client-id { color: rgba(243, 237, 227, 0.5); font-weight: 400; font-size: 12px; }
   .btn-edit {
-    background: rgba(199, 166, 104, 0.12) !important;
-    border-color: rgba(199, 166, 104, 0.4) !important;
-    color: #C7A668 !important;
+    background: rgba(204, 102, 51, 0.12) !important;
+    border-color: rgba(204, 102, 51, 0.4) !important;
+    color: #CC6633 !important;
   }
   .btn-edit:hover {
-    background: rgba(199, 166, 104, 0.22) !important;
-    color: #F3EDE3 !important;
+    background: rgba(204, 102, 51, 0.22) !important;
+    color: #F5F0E8 !important;
   }
 
   .btn-primary, .btn-secondary, .btn-tertiary {
@@ -73,15 +73,15 @@
     display: inline-flex; align-items: center; gap: 8px;
   }
   .btn-primary {
-    background: #C7A668; color: #0E0E0E;
-    border: 1px solid #C7A668;
+    background: #CC6633; color: #1C1A18;
+    border: 1px solid #CC6633;
     padding: 9px 16px; font-size: 12.5px; font-weight: 600;
     letter-spacing: 0.04em;
   }
   .btn-primary:hover { background: #d4b376; }
   .btn-secondary {
     background: rgba(243, 237, 227, 0.06);
-    color: #F3EDE3;
+    color: #F5F0E8;
     border: 1px solid rgba(243, 237, 227, 0.2);
     padding: 9px 14px; font-size: 12.5px; font-weight: 500;
   }
@@ -91,7 +91,7 @@
     border: 1px solid rgba(243, 237, 227, 0.2);
     padding: 9px 12px; font-size: 14px;
   }
-  .btn-tertiary:hover { color: #F3EDE3; border-color: rgba(243, 237, 227, 0.4); }
+  .btn-tertiary:hover { color: #F5F0E8; border-color: rgba(243, 237, 227, 0.4); }
   .btn-icon { font-size: 14px; opacity: 0.85; }
   .btn-counter {
     background: rgba(14, 14, 14, 0.2); padding: 2px 7px; border-radius: 4px;
@@ -121,8 +121,8 @@
     width: 100%; max-width: 1180px;
     max-height: calc(100vh - 64px);
     display: flex; flex-direction: column;
-    color: #F3EDE3;
-    font-family: 'Inter Tight', system-ui, sans-serif;
+    color: #F5F0E8;
+    font-family: 'Public Sans', system-ui, sans-serif;
     overflow: hidden;
   }
   .client-modal { max-width: 520px; }
@@ -133,10 +133,10 @@
   }
   .picker-eyebrow {
     font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
-    color: #C7A668; font-weight: 500; margin-bottom: 6px;
+    color: #CC6633; font-weight: 500; margin-bottom: 6px;
   }
   .picker-title {
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Libre Baskerville', Georgia, serif;
     font-style: italic; font-weight: 400; font-size: 32px;
     margin: 0; letter-spacing: -0.01em; line-height: 1;
   }
@@ -152,7 +152,7 @@
     display: flex; align-items: center; justify-content: center;
     border-radius: 4px; transition: all 160ms;
   }
-  .picker-close:hover { color: #F3EDE3; background: rgba(243, 237, 227, 0.08); }
+  .picker-close:hover { color: #F5F0E8; background: rgba(243, 237, 227, 0.08); }
 
   .picker-presets {
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
@@ -168,7 +168,7 @@
     appearance: none; cursor: pointer; font-family: inherit;
     background: rgba(243, 237, 227, 0.05);
     border: 1px solid rgba(243, 237, 227, 0.12);
-    color: #F3EDE3; font-size: 11.5px; font-weight: 500;
+    color: #F5F0E8; font-size: 11.5px; font-weight: 500;
     padding: 6px 11px; border-radius: 4px;
     display: inline-flex; align-items: center; gap: 6px;
     transition: all 160ms;
@@ -193,23 +193,23 @@
     transition: all 200ms;
     opacity: 0.45;
   }
-  .picker-card.is-on { opacity: 1; border-color: rgba(199, 166, 104, 0.35); }
+  .picker-card.is-on { opacity: 1; border-color: rgba(204, 102, 51, 0.35); }
   .picker-card.is-dragging { opacity: 0.4; transform: scale(0.97); cursor: grabbing; }
-  .picker-card.is-dragover { border-color: #C7A668; box-shadow: 0 0 0 2px rgba(199, 166, 104, 0.4); }
+  .picker-card.is-dragover { border-color: #CC6633; box-shadow: 0 0 0 2px rgba(204, 102, 51, 0.4); }
   .picker-card-handle {
     display: flex; align-items: center; justify-content: space-between;
     padding: 8px 12px;
-    background: rgba(199, 166, 104, 0.08);
-    border-bottom: 1px solid rgba(199, 166, 104, 0.18);
+    background: rgba(204, 102, 51, 0.08);
+    border-bottom: 1px solid rgba(204, 102, 51, 0.18);
     cursor: grab; user-select: none;
   }
   .picker-card-handle:active { cursor: grabbing; }
   .handle-icon {
-    color: rgba(199, 166, 104, 0.7); font-size: 13px;
+    color: rgba(204, 102, 51, 0.7); font-size: 13px;
     letter-spacing: -3px; font-weight: 700;
   }
   .handle-pos {
-    font-size: 12px; font-weight: 600; color: #C7A668;
+    font-size: 12px; font-weight: 600; color: #CC6633;
     font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
   }
   .picker-card-thumb {
@@ -228,18 +228,18 @@
     background: rgba(0, 0, 0, 0.6);
     border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px; color: #F3EDE3;
+    font-size: 18px; color: #F5F0E8;
     backdrop-filter: blur(4px);
     transition: all 160ms;
   }
   .picker-card.is-on .picker-card-check {
-    background: #C7A668; color: #0E0E0E;
+    background: #CC6633; color: #1C1A18;
   }
   .picker-card-thumb:hover .picker-card-check { transform: scale(1.05); }
   .picker-card-order {
     position: absolute; top: 10px; right: 10px; z-index: 2;
     background: rgba(0, 0, 0, 0.6);
-    color: #C7A668; font-size: 11px; font-weight: 600;
+    color: #CC6633; font-size: 11px; font-weight: 600;
     padding: 4px 8px; border-radius: 4px;
     font-variant-numeric: tabular-nums;
     backdrop-filter: blur(4px);
@@ -250,7 +250,7 @@
     flex: 1; position: relative;
   }
   .picker-card-label {
-    font-size: 13.5px; font-weight: 600; color: #F3EDE3;
+    font-size: 13.5px; font-weight: 600; color: #F5F0E8;
     letter-spacing: -0.01em;
   }
   .picker-card-desc {
@@ -264,7 +264,7 @@
     appearance: none; cursor: pointer; font-family: inherit;
     background: rgba(243, 237, 227, 0.06);
     border: 1px solid rgba(243, 237, 227, 0.15);
-    color: #F3EDE3; font-size: 11px;
+    color: #F5F0E8; font-size: 11px;
     padding: 5px 8px; border-radius: 4px; flex: 1;
   }
   .picker-card-arrows { display: flex; gap: 2px; }
@@ -294,7 +294,7 @@
   .picker-footer-info {
     font-size: 12px; color: rgba(243, 237, 227, 0.6);
   }
-  .picker-footer-info strong { color: #C7A668; font-weight: 600; }
+  .picker-footer-info strong { color: #CC6633; font-weight: 600; }
   .picker-footer-btns { display: flex; gap: 8px; }
 
   /* ── Client modal fields ────────────────────────────────── */
@@ -310,11 +310,186 @@
     appearance: none; font-family: inherit;
     background: rgba(243, 237, 227, 0.06);
     border: 1px solid rgba(243, 237, 227, 0.18);
-    color: #F3EDE3; font-size: 14px;
+    color: #F5F0E8; font-size: 14px;
     padding: 10px 12px; border-radius: 5px; outline: none;
     transition: border-color 160ms;
   }
-  .client-field-input:focus { border-color: #C7A668; background: rgba(199, 166, 104, 0.06); }
+  .client-field-input:focus { border-color: #CC6633; background: rgba(204, 102, 51, 0.06); }
+
+  /* ── Prices modal ───────────────────────────────────────── */
+  .prices-modal {
+    background: #131210;
+    border: 1px solid rgba(243, 237, 227, 0.12);
+    border-radius: 10px;
+    width: 100%; max-width: 720px;
+    max-height: calc(100vh - 64px);
+    display: flex; flex-direction: column;
+    color: #F5F0E8;
+    font-family: 'Public Sans', system-ui, sans-serif;
+    overflow: hidden;
+  }
+  .prices-body {
+    flex: 1; overflow-y: auto;
+    padding: 0 32px 12px;
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .prices-section {
+    padding: 16px;
+    background: rgba(243, 237, 227, 0.03);
+    border: 1px solid rgba(243, 237, 227, 0.08);
+    border-radius: 8px;
+  }
+  .prices-section:first-child { margin-top: 18px; }
+  .prices-section-label {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: #CC6633; font-weight: 500; margin-bottom: 10px;
+  }
+  .prices-line {
+    display: grid; grid-template-columns: 24px 1fr 70px 110px;
+    gap: 8px; align-items: center;
+    padding: 6px 0; position: relative;
+    transition: background 160ms;
+  }
+  .prices-line.is-unit {
+    grid-template-columns: 24px 1fr 60px 75px 100px;
+  }
+  .prices-line.is-warn {
+    background: rgba(194,119,107,0.06);
+    border-radius: 5px; padding: 6px 8px;
+  }
+  .prices-line-disc {
+    display: flex; align-items: baseline; gap: 2px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(243,237,227,0.18);
+    border-radius: 5px; padding: 5px 6px;
+  }
+  .prices-line-disc input {
+    appearance: none; font-family: inherit;
+    background: transparent; border: 0;
+    color: #F5F0E8; font-size: 14px; font-weight: 600;
+    width: 38px; padding: 0; outline: none;
+    text-align: center; font-variant-numeric: tabular-nums;
+  }
+  .prices-line-disc span { color: rgba(243,237,227,0.5); font-size: 12px; }
+  .prices-line-auth {
+    font-size: 9px; color: #C2776B; font-weight: 600;
+    margin-top: 2px; letter-spacing: 0.04em;
+  }
+
+  /* Toggle de modo descuento */
+  .prices-mode-toggle {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    margin-bottom: 4px;
+  }
+  .prices-mode-btn {
+    appearance: none; cursor: pointer; font-family: inherit;
+    background: rgba(243,237,227,0.05);
+    border: 1px solid rgba(243,237,227,0.15);
+    color: rgba(243,237,227,0.7); font-size: 11.5px; font-weight: 500;
+    padding: 9px 10px; border-radius: 5px;
+    transition: all 160ms;
+  }
+  .prices-mode-btn:hover {
+    background: rgba(243,237,227,0.1); color: #F5F0E8;
+  }
+  .prices-mode-btn.is-on {
+    background: #CC6633; color: #1C1A18;
+    border-color: #CC6633; font-weight: 600;
+  }
+  .prices-disc-l-text {
+    font-size: 12px; color: rgba(243,237,227,0.7);
+    letter-spacing: 0.04em;
+  }
+  .prices-line-rm {
+    appearance: none; background: transparent; border: 0;
+    color: rgba(243,237,227,0.4); font-size: 18px; cursor: pointer;
+    width: 24px; padding: 0;
+  }
+  .prices-line-rm:hover { color: #C2776B; }
+  .prices-line-sel, .prices-line-cant {
+    appearance: none; font-family: inherit;
+    background: rgba(243,237,227,0.08);
+    border: 1px solid rgba(243,237,227,0.18);
+    color: #F5F0E8; font-size: 13px;
+    padding: 8px 10px; border-radius: 5px; outline: none;
+  }
+  .prices-line-cant { text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .prices-line-sub {
+    text-align: right; font-size: 16px; font-weight: 600;
+    color: #CC6633; font-variant-numeric: tabular-nums;
+  }
+  .prices-line-sub span { font-size: 11px; color: rgba(243,237,227,0.5); font-weight: 400; }
+  .prices-add {
+    appearance: none; cursor: pointer; font-family: inherit;
+    width: 100%; padding: 10px; margin-top: 8px;
+    background: transparent; color: #CC6633;
+    border: 1px dashed rgba(199,166,104,0.4); border-radius: 6px;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.04em;
+  }
+  .prices-add:hover { background: rgba(199,166,104,0.06); }
+
+  .prices-disc { transition: all 200ms; }
+  .prices-disc.is-warn { border-color: #C2776B; background: rgba(194,119,107,0.06); }
+  .prices-disc.is-ok { border-color: #7BA77B; background: rgba(123,167,123,0.05); }
+  .prices-disc-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 14px;
+  }
+  .prices-disc-hint {
+    font-size: 11px; color: rgba(243,237,227,0.55); margin-top: 4px;
+  }
+  .prices-disc-hint b { color: #F5F0E8; }
+  .prices-disc-input {
+    display: flex; align-items: baseline; gap: 4px;
+    background: rgba(0,0,0,0.4); border-radius: 6px; padding: 6px 12px;
+  }
+  .prices-disc-input input {
+    appearance: none; background: transparent; border: 0;
+    color: #F5F0E8; font-family: inherit;
+    font-size: 26px; font-weight: 600; outline: none;
+    width: 64px; text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .prices-disc-input span { font-size: 16px; color: rgba(243,237,227,0.5); }
+  .prices-auth {
+    margin-top: 10px; padding: 8px 12px;
+    background: rgba(194,119,107,0.15);
+    border: 1px solid #C2776B; border-radius: 5px;
+    color: #C2776B; font-size: 12px;
+  }
+  .prices-auth b { color: #F5F0E8; }
+  .prices-toggle {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12.5px; color: rgba(243,237,227,0.85);
+    cursor: pointer; padding: 6px 0;
+  }
+  .prices-toggle input { accent-color: #CC6633; width: 14px; height: 14px; }
+  .prices-toggle b { color: #F5F0E8; }
+  .prices-toggle .muted { color: rgba(243,237,227,0.5); }
+
+  .prices-totals { display: flex; flex-direction: column; gap: 4px; }
+  .prices-total-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 4px 0; font-size: 13px; color: rgba(243,237,227,0.75);
+  }
+  .prices-total-row span:last-child { font-variant-numeric: tabular-nums; font-weight: 500; color: #F5F0E8; }
+  .prices-total-row.grand {
+    margin-top: 8px; padding-top: 10px;
+    border-top: 1px solid rgba(199,166,104,0.4);
+    font-size: 17px; font-weight: 600; color: #CC6633;
+  }
+  .prices-total-row.grand span:last-child { color: #CC6633; font-size: 22px; font-weight: 600; }
+  .prices-total-row.sub { font-size: 11px; color: rgba(243,237,227,0.5); }
+
+  .prices-fp { display: flex; flex-direction: column; gap: 2px; }
+  .prices-notas {
+    appearance: none; font-family: inherit;
+    background: rgba(243,237,227,0.08);
+    border: 1px solid rgba(243,237,227,0.2);
+    color: #F5F0E8; font-size: 13px;
+    padding: 8px 10px; border-radius: 5px; outline: none;
+    width: 100%; margin-top: 8px; resize: vertical;
+  }
+  .prices-notas:focus { border-color: #CC6633; }
 
   /* ── Print: ocultar topbar y overlays ───────────────────── */
   @media print {
