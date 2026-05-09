@@ -1,0 +1,514 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "fuente": "Base de conocimiento Olfativa — IA Scent Advisor (OneDrive)",
+    "documentos_origen": [
+      "Vol. III Parte 1 — Diseño de Interiores: Estilos, Materiales, Color, Luz y Psicología del Espacio",
+      "Vol. III Parte 2 — Congruencia Sensorial: Del Espacio al Aroma (la regla de oro)",
+      "Olfativa — Psicoaromacología: Cómo los aromas afectan emociones y comportamiento humano"
+    ],
+    "uso": "Vocabulario controlado y reglas de congruencia para el agente Scent Advisor. Sirve como (a) tabla de verdad para el mock UI mientras no haya backend; (b) contexto/system prompt cuando se conecte Claude vision."
+  },
+
+  "regla_de_oro": {
+    "enunciado": "No vendemos un aroma como un accesorio aislado. El aroma es la última capa del diseño interior. Cuando el espacio ya comunica algo visualmente, el aroma debe reforzar esa lectura o darle una dirección clara. Rara vez conviene pelear contra ella.",
+    "capas": [
+      {
+        "orden": 1,
+        "nombre": "Geometría",
+        "definicion": "Define la estructura y el ritmo del espacio. Primer lenguaje que el cerebro lee. Mensaje al cerebro: orden, fluidez, tensión, amplitud.",
+        "que_observar": [
+          "Disposición de muros, alturas, curvas y rectas",
+          "Techos altos comunican grandiosidad; bajos, intimidad y refugio",
+          "Curvas generan fluidez; ángulos rectos transmiten precisión y control",
+          "Densidad visual (minimalista vs. maximalista)"
+        ]
+      },
+      {
+        "orden": 2,
+        "nombre": "Materialidad",
+        "definicion": "Define la temperatura táctil y emocional del espacio. Las superficies orgánicas calientan; las pulidas enfrían y elevan. Mensaje al cerebro: calidez, lujo, rusticidad, precisión.",
+        "que_observar": [
+          "Madera (oscura: nogal, wengué / clara: pino, roble, fresno, bambú)",
+          "Piedra y concreto (caliza, travertino, cemento pulido)",
+          "Mármol (blanco Carrara/Calacatta vs. negro/Marquina)",
+          "Metal (acero inoxidable, cromo, latón, cobre)",
+          "Vidrio (templado, transparente)",
+          "Textiles (terciopelo, lino, algodón, lana, bouclé)",
+          "Cuero (genuino, vintage envejecido)"
+        ]
+      },
+      {
+        "orden": 3,
+        "nombre": "Iluminación",
+        "definicion": "Define la temperatura cromática y la atmósfera. Modulador de las capas anteriores. Mensaje al cerebro: energía, calma, intimidad, claridad.",
+        "que_observar": [
+          "Temperatura de color en Kelvin (1800-2200K cálido extremo / vela; 2700-3000K cálido incandescente; 3000-3500K blanco cálido; 3500-4500K blanco neutro; 4500-5500K blanco frío; 5500-6500K luz de día)",
+          "Tipo: natural directa, dramática (spots), difusa (plafones), de acento + zona oscura",
+          "Principio de temperatura doble: en mezclas, manda la luz dominante en la zona de mayor permanencia"
+        ]
+      },
+      {
+        "orden": 4,
+        "nombre": "Aroma",
+        "definicion": "Refuerza y consolida la experiencia emocional total construida por las tres capas anteriores. Opera consciente y subconscientemente. Mensaje al cerebro: congruencia o conflicto sensorial.",
+        "que_observar": [
+          "Familia olfativa congruente con el estilo dominante",
+          "Temperatura olfativa (cálida / neutra / fría) coherente con paleta + luz",
+          "Intensidad apropiada (1-5) según densidad visual y volumen",
+          "Notas de salida, corazón y base alineadas con materiales"
+        ]
+      }
+    ]
+  },
+
+  "direcciones_olfativas": [
+    {
+      "nombre": "Muy Cálida",
+      "rango_temperatura": "4.1 — 5.0",
+      "familias": ["oriental", "resinas", "especias", "oud", "ámbar oscuro"],
+      "espacios_apropiados": ["suite de luna de miel", "glam residencial privado", "spa de medicina tradicional"],
+      "estilos_compatibles": ["Glam-nocturno", "Bohemio-artesanal"],
+      "luz_tipica": "1800-2200K (cálido extremo / vela), velas reales + dim artificial",
+      "materiales_tipicos": ["cuero envejecido", "maderas oscuras", "terciopelo", "dorado", "cobre"],
+      "mood": "Intimidad máxima, romántico, dramático, pasional, lujoso oscuro"
+    },
+    {
+      "nombre": "Cálida",
+      "rango_temperatura": "3.1 — 4.0",
+      "familias": ["amaderada", "oriental", "gourmand"],
+      "espacios_apropiados": ["residencia hogareña", "hotel boutique medio-alto", "rincón de lectura", "restaurante romántico"],
+      "estilos_compatibles": ["Clásico-transicional", "Mid-Century Modern", "Mexicano contemporáneo", "Bohemio-artesanal"],
+      "luz_tipica": "2700-3000K (cálido incandescente, acogedor)",
+      "materiales_tipicos": ["madera oscura (nogal, wengué)", "cuero", "terciopelo", "mármol negro / Marquina"],
+      "mood": "Acogedor, intimidad, calidez, madurez"
+    },
+    {
+      "nombre": "Neutra-Cálida",
+      "rango_temperatura": "2.6 — 3.0",
+      "familias": ["floral suave", "amaderada ligera"],
+      "espacios_apropiados": ["penthouse residencial", "pasillo y entrada de hotel"],
+      "estilos_compatibles": ["Quiet Luxury", "Clásico-transicional"],
+      "luz_tipica": "3000-3500K (blanco cálido, retail elegante)",
+      "materiales_tipicos": ["musgo blanco", "iris", "té negro", "cedro suave", "mármol beige"],
+      "mood": "Lujo discreto, sofisticación ligera, elegancia atemporal"
+    },
+    {
+      "nombre": "Neutra",
+      "rango_temperatura": "2.1 — 3.0",
+      "familias": ["aromática", "verde limpia", "té"],
+      "espacios_apropiados": ["sala de juntas", "boutique", "coworking"],
+      "estilos_compatibles": ["Japandi", "Minimalista"],
+      "luz_tipica": "3500-4500K (blanco neutro, profesional, limpio)",
+      "materiales_tipicos": ["té blanco", "bambú", "lirio", "algodón", "madera clara lavada"],
+      "mood": "Sereno, limpio, equilibrado"
+    },
+    {
+      "nombre": "Fresca",
+      "rango_temperatura": "1.0 — 2.0",
+      "familias": ["herbal", "verde", "acuática", "cítrico"],
+      "espacios_apropiados": ["boutique costera", "casa con patio interior", "bar industrial"],
+      "estilos_compatibles": ["Costero-tropical", "Orgánico-biofílico", "Industrial urbano"],
+      "luz_tipica": "4500-5500K (blanco frío, moderno, alta energía)",
+      "materiales_tipicos": ["concreto / cemento", "vidrio", "metal cepillado", "cal texturizada", "terrazo"],
+      "mood": "Fresca, serena, limpia, natural, dinámica"
+    },
+    {
+      "nombre": "Muy Fría",
+      "rango_temperatura": "< 1.0",
+      "familias": ["aromática fría", "ozónica", "acuática"],
+      "espacios_apropiados": ["lobby de aeropuerto", "galería de arte contemporáneo", "espacio industrial / clínico"],
+      "estilos_compatibles": ["Industrial puro", "Minimalista extremo"],
+      "luz_tipica": "5500-6500K hasta 6500K+ (luz de día, azul extremo)",
+      "materiales_tipicos": ["agua de roca", "ozone", "menta polar", "algas", "concreto pulido", "metal pulido"],
+      "mood": "Industrial, clínico, frialdad máxima, silencio inteligente"
+    }
+  ],
+
+  "estilos": [
+    {
+      "nombre": "Minimalismo",
+      "descriptores": ["líneas limpias", "espacios amplios", "ausencia de ornamento", "vacío intencional", "precisión"],
+      "materiales_tipicos": ["vidrio", "acero", "cromo", "superficies pulidas"],
+      "paleta": ["blanco", "gris", "negro"],
+      "densidad": "Muy baja",
+      "direccion_olfativa_recomendada": "Neutra"
+    },
+    {
+      "nombre": "Japandi",
+      "descriptores": ["wabi-sabi", "asimetría deliberada", "calidez", "calma", "autenticidad"],
+      "materiales_tipicos": ["madera natural", "roble", "fresno", "lino", "cerámica artesanal", "bambú"],
+      "paleta": ["neutros cálidos", "contrastes suaves"],
+      "densidad": "Baja",
+      "direccion_olfativa_recomendada": "Neutra"
+    },
+    {
+      "nombre": "Escandinavo",
+      "descriptores": ["funcionalismo", "calidez dentro de la simplicidad", "luz natural priorizada"],
+      "materiales_tipicos": ["maderas claras", "roble", "abedul", "lana", "algodón"],
+      "paleta": ["neutros claros", "blancos cálidos"],
+      "densidad": "Baja",
+      "direccion_olfativa_recomendada": "Neutra-Cálida"
+    },
+    {
+      "nombre": "Quiet Luxury / Contemporáneo cálido",
+      "descriptores": ["interiores tonales y táctiles", "sofisticación contenida", "neutros complejos", "menos piezas pero mejores"],
+      "materiales_tipicos": ["nogal", "roble ahumado", "travertino", "mármol veteado", "yesos texturizados", "lana bouclé", "cachemira", "lino pesado", "metal cepillado"],
+      "paleta": ["topo", "marrón profundo", "beige sofisticado", "crema tonal", "grises complejos"],
+      "densidad": "Baja-media",
+      "direccion_olfativa_recomendada": "Neutra-Cálida"
+    },
+    {
+      "nombre": "Orgánico-biofílico",
+      "descriptores": ["diseñado para restaurar", "curvas suaves", "narrativa de salud y naturaleza"],
+      "materiales_tipicos": ["madera clara", "piedra natural sin pulir", "fibras vegetales", "bambú", "rattan"],
+      "paleta": ["verdes suaves", "beiges arena", "blancos cálidos", "terracota"],
+      "densidad": "Media",
+      "direccion_olfativa_recomendada": "Fresca"
+    },
+    {
+      "nombre": "Costero-tropical",
+      "descriptores": ["frescura", "brisa", "escapismo", "luminosa", "interior-exterior"],
+      "materiales_tipicos": ["rattan", "cuerda", "lino", "madera clara o lavada"],
+      "paleta": ["blancos rotos", "beiges arena", "azul agua", "verde mar"],
+      "densidad": "Baja-media",
+      "direccion_olfativa_recomendada": "Fresca"
+    },
+    {
+      "nombre": "Mediterráneo",
+      "descriptores": ["paredes encaladas", "azulejos artesanales", "bienvenida luminosa"],
+      "materiales_tipicos": ["terracota", "azulejos artesanales", "madera clara"],
+      "paleta": ["blancos rotos", "terracota", "tonos de oliva"],
+      "densidad": "Baja-media",
+      "direccion_olfativa_recomendada": "Neutra-Cálida"
+    },
+    {
+      "nombre": "Industrial urbano",
+      "descriptores": ["materiales expuestos", "estructura visible", "contraste alto", "techos altos"],
+      "materiales_tipicos": ["concreto", "acero negro", "ladrillo", "cuero", "madera recuperada", "metal negro mate"],
+      "paleta": ["grises", "negros", "blancos", "acentos metálicos"],
+      "densidad": "Media",
+      "direccion_olfativa_recomendada": "Fresca"
+    },
+    {
+      "nombre": "Clásico-transicional",
+      "descriptores": ["simetría", "molduras", "siluetas contenidas", "40% tradicional / 40% contemporáneo / 20% sello personal"],
+      "materiales_tipicos": ["maderas pulidas", "lino", "algodón", "vidrio", "acentos metálicos"],
+      "paleta": ["grises", "beiges", "blancos suaves", "neutros suaves"],
+      "densidad": "Media",
+      "direccion_olfativa_recomendada": "Cálida"
+    },
+    {
+      "nombre": "Bohemio-artesanal",
+      "descriptores": ["ecléctica", "viajera", "huella humana visible", "alta textura visual", "storytelling"],
+      "materiales_tipicos": ["lino", "algodón", "lana", "rattan", "cerámica", "madera tallada"],
+      "paleta": ["terracotas", "verdes botánicos", "mostazas", "azules profundos", "tonos tierra"],
+      "densidad": "Alta",
+      "direccion_olfativa_recomendada": "Cálida"
+    },
+    {
+      "nombre": "Mexicano contemporáneo",
+      "descriptores": ["narrativa cultural", "cerámica de Oaxaca", "textiles de Chiapas", "herrería local"],
+      "materiales_tipicos": ["cerámica artesanal", "textiles regionales", "herrería"],
+      "paleta": ["terracota", "azul cobalto", "verde jade", "amarillo maíz"],
+      "densidad": "Media",
+      "direccion_olfativa_recomendada": "Cálida"
+    },
+    {
+      "nombre": "Glam-nocturno",
+      "descriptores": ["altos contrastes", "brillo", "intensidad emocional", "luz dramática"],
+      "materiales_tipicos": ["terciopelos", "metales dorados", "espejos", "cristal"],
+      "paleta": ["negros", "esmeralda", "vino", "zafiro", "dorado"],
+      "densidad": "Alta",
+      "direccion_olfativa_recomendada": "Muy Cálida"
+    },
+    {
+      "nombre": "Maximalism",
+      "descriptores": ["patrón sobre patrón", "mezcla de épocas", "más es más", "exuberancia visual"],
+      "materiales_tipicos": ["terciopelo", "seda", "patrones", "metálicos brillantes"],
+      "paleta": ["jewel tones", "contrastes fuertes"],
+      "densidad": "Alta",
+      "direccion_olfativa_recomendada": "Cálida"
+    },
+    {
+      "nombre": "Mid-Century Modern",
+      "descriptores": ["formas orgánicas", "líneas limpias", "integración interior-exterior", "aspiración futurista retro"],
+      "materiales_tipicos": ["teca", "nogal", "cuero", "cobre", "cromo", "latón"],
+      "paleta": ["verde", "azul", "naranja", "teca"],
+      "densidad": "Baja-media",
+      "direccion_olfativa_recomendada": "Cálida"
+    },
+    {
+      "nombre": "Farmhouse moderno",
+      "descriptores": ["calidez rústica en lenguaje contemporáneo", "autenticidad doméstica"],
+      "materiales_tipicos": ["madera recuperada", "metales envejecidos", "textiles naturales"],
+      "paleta": ["blancos", "cremas", "grises claros", "acentos de madera natural"],
+      "densidad": "Media",
+      "direccion_olfativa_recomendada": "Neutra-Cálida"
+    },
+    {
+      "nombre": "Wabi-Sabi",
+      "descriptores": ["filosofía estética japonesa", "imperfección (fukinsei)", "transitoriedad (mujo)", "kintsugi", "elegancia de lo inacabado"],
+      "materiales_tipicos": ["madera con pátina", "cerámica hecha a mano"],
+      "paleta": ["neutros terrosos apagados"],
+      "densidad": "Baja",
+      "direccion_olfativa_recomendada": "Neutra"
+    }
+  ],
+
+  "luz": {
+    "tipos": [
+      { "nombre": "Cálida intensa", "rango_kelvin": "1800-2200K", "asociaciones": ["intimidad profunda", "romance", "vela", "lounge", "bar"] },
+      { "nombre": "Cálida dorada", "rango_kelvin": "2700-3000K", "asociaciones": ["confort", "hogar", "hotelería", "retail premium"] },
+      { "nombre": "Neutra cálida", "rango_kelvin": "3000-3500K", "asociaciones": ["versatilidad", "oficinas", "retail elegante"] },
+      { "nombre": "Neutra", "rango_kelvin": "3500-4100K", "asociaciones": ["claridad", "funcionalidad", "balance"] },
+      { "nombre": "Neutra fría", "rango_kelvin": "4100-5000K", "asociaciones": ["alerta", "precisión", "energía"] },
+      { "nombre": "Fría", "rango_kelvin": "5000-6500K", "asociaciones": ["estimulación", "amplitud", "tareas técnicas"] },
+      { "nombre": "Luz natural", "rango_kelvin": "variable", "asociaciones": ["bienestar", "ritmos circadianos", "ánimo"] },
+      { "nombre": "Iluminación uniforme", "asociaciones": ["amplitud", "claridad", "neutralidad"] },
+      { "nombre": "Iluminación por capas", "asociaciones": ["profundidad", "sofisticación", "residencial"] },
+      { "nombre": "Iluminación dramática", "asociaciones": ["intimidad", "drama", "memoria", "glam"] },
+      { "nombre": "Luz cálida difusa", "asociaciones": ["acogedor", "envolvente", "hogareño"] }
+    ]
+  },
+
+  "geometria": {
+    "tipos": [
+      { "nombre": "Curvilínea / curvas", "asociaciones": ["fluidez", "calma", "biofilia", "femenino", "facilidad cognitiva"] },
+      { "nombre": "Rectilínea / rectas", "asociaciones": ["orden", "control", "racionalidad", "precisión"] },
+      { "nombre": "Rectas suavizadas con asimetría deliberada", "asociaciones": ["calma imperfecta", "Japandi"] },
+      { "nombre": "Proporciones generosas con curvas sutiles", "asociaciones": ["confort refinado", "Quiet Luxury"] },
+      { "nombre": "Curvas orgánicas / formas fractales", "asociaciones": ["conexión natural", "biofílico"] },
+      { "nombre": "Líneas relajadas, formas ligeras", "asociaciones": ["libertad", "frescura", "costero"] },
+      { "nombre": "Rectas rígidas, ángulos marcados", "asociaciones": ["fuerza", "honestidad", "industrial"] },
+      { "nombre": "Mezcla rectas en estructura + curvas en mobiliario", "asociaciones": ["equilibrio", "transicional"] },
+      { "nombre": "Curvas dramáticas, esculturales", "asociaciones": ["seducción", "teatralidad", "glam-nocturno"] },
+      { "nombre": "Orgánicas funcionales, ángulos de 45°", "asociaciones": ["optimismo", "mid-century"] }
+    ],
+    "principios": [
+      "Proporción áurea (1:1.618 / phi) — equilibrio, armonía, fluidez emocional",
+      "Regla 60/40 — ~60% del piso con mobiliario, ~40% libre",
+      "Techos altos: libertad, ambición, pensamiento abstracto",
+      "Techos bajos: foco, intimidad, refugio"
+    ]
+  },
+
+  "materialidad": {
+    "familias": [
+      {
+        "nombre": "Madera",
+        "ejemplos": ["roble claro", "nogal", "teca", "pino recuperado", "roble ahumado", "bambú", "fresno", "abedul", "madera recuperada", "madera lavada"],
+        "carga_sensorial": "Calidez, organicidad, refugio. Roble claro: serenidad. Nogal: sofisticación, permanencia. Teca: elegancia natural. Bambú: ligereza, sostenibilidad. Calidez perceptual nivel 7-8."
+      },
+      {
+        "nombre": "Piedra y concreto",
+        "ejemplos": ["concreto pulido", "concreto en bruto", "travertino", "granito", "pizarra", "caliza"],
+        "carga_sensorial": "Permanencia, peso visual, gravedad, quietud. Concreto pulido: control, precisión. Travertino: lujo accesible. Granito: seriedad institucional."
+      },
+      {
+        "nombre": "Mármol",
+        "ejemplos": ["Carrara", "Calacatta", "Nero Marquina", "Emperador", "mármol blanco", "mármol oscuro", "mármol veteado"],
+        "carga_sensorial": "Lujo, limpieza, status. Blanco: pureza y amplitud. Oscuro: drama y peso. Calidez perceptual nivel 4."
+      },
+      {
+        "nombre": "Metal",
+        "ejemplos": ["acero negro mate", "latón", "bronce", "cromo", "cobre", "acero inoxidable", "dorado", "metal cepillado"],
+        "carga_sensorial": "Precisión, modernidad, contraste. Latón/cobre: calidez vintage. Cromo: precisión, modernidad extrema. Acero negro: edge industrial. Calidez perceptual nivel 1."
+      },
+      {
+        "nombre": "Textiles",
+        "ejemplos": ["terciopelo", "lino", "lana", "bouclé", "algodón", "cuero", "rattan", "fibras vegetales", "cachemira"],
+        "carga_sensorial": "Tactilidad, confort, domesticidad. Capa más íntima del diseño. Atrapa y libera moléculas aromáticas gradualmente."
+      },
+      {
+        "nombre": "Vidrio",
+        "ejemplos": ["vidrio liso", "vidrio fluted", "vidrio ribbed", "vidrio texturado", "grandes ventanales"],
+        "carga_sensorial": "Transparencia, amplitud, ligereza. Material de la apertura. Calidez perceptual nivel 2."
+      },
+      {
+        "nombre": "Cerámica",
+        "ejemplos": ["cerámica artesanal", "cerámica de Oaxaca", "cerámica vitrificada"],
+        "carga_sensorial": "Huella humana, craft, imperfección. Calidez perceptual nivel 6."
+      }
+    ],
+    "tensiones_perceptuales": [
+      { "combinacion": "concreto + madera", "efecto": "equilibrio entre fuerza y refugio" },
+      { "combinacion": "terciopelo + metal", "efecto": "sofisticación táctil con estructura" },
+      { "combinacion": "mármol + lino", "efecto": "lujo accesible, elegancia sin rigidez" },
+      { "combinacion": "rattan + concreto", "efecto": "frescura con ancla de peso visual" },
+      { "combinacion": "cuero + madera", "efecto": "madurez, autenticidad, tiempo" },
+      { "combinacion": "vidrio + piedra", "efecto": "amplitud anclada, luz con gravedad" }
+    ]
+  },
+
+  "densidad": {
+    "niveles": [
+      { "nombre": "Muy baja", "definicion": "Vacío intencional; minimalismo puro", "intensidad_aroma_sugerida": "1" },
+      { "nombre": "Baja", "definicion": "Cada pieza con propósito; Japandi, industrial, mid-century", "intensidad_aroma_sugerida": "1-2" },
+      { "nombre": "Baja-media", "definicion": "Quiet luxury, costero, mid-century", "intensidad_aroma_sugerida": "2" },
+      { "nombre": "Media", "definicion": "Biofílico, transicional; equilibrio óptimo para espacios habitados", "intensidad_aroma_sugerida": "2-3" },
+      { "nombre": "Alta", "definicion": "Bohemio, maximalism, glam; capas de textura, arte y objetos", "intensidad_aroma_sugerida": "3-4" }
+    ]
+  },
+
+  "reglas_de_congruencia": [
+    { "si_espacio": "Paleta cálida (amarillos, naranjas, ocres, terra, marrones, borgoñas)", "entonces_aroma": "Familia amaderada, oriental, gourmand: cedro, sándalo, vainilla, ámbar, canela", "razon": "Correspondencia natural de temperatura olfativa cálida" },
+    { "si_espacio": "Paleta fría (azules, verdes fríos, grises, blancos)", "entonces_aroma": "Herbales, verdes, acuáticas, cítricos: eucalipto, menta, limón, brisa marina", "razon": "Valencia emocional fresca compartida" },
+    { "si_espacio": "Madera oscura dominante (nogal, wengué)", "entonces_aroma": "Amaderada oscura: cedro, vetiver, tabaco, cuero suave", "razon": "Amplifica calidez y madurez" },
+    { "si_espacio": "Madera clara (pino, roble, bambú)", "entonces_aroma": "Amaderada ligera, herbal: bambú, cedro blanco, té verde, salvia", "razon": "Mantiene frescura orgánica" },
+    { "si_espacio": "Concreto / cemento expuesto", "entonces_aroma": "Verde, ozónica, aromática: agua de roca, limón puro, bambú, vetiver frío", "razon": "Complementa frescura mineral" },
+    { "si_espacio": "Mármol blanco (Carrara, Calacatta)", "entonces_aroma": "Floral discreta, musgo blanco: iris, té blanco, rosa seca, algodón", "razon": "Refuerza lujo limpio" },
+    { "si_espacio": "Mármol negro / Marquina", "entonces_aroma": "Oriental suave, amaderada: oud suave, sándalo, almizcle oscuro", "razon": "Amplifica oscuridad sofisticada" },
+    { "si_espacio": "Cuero genuino visible", "entonces_aroma": "Cuero, tabaco, oud, ámbar oscuro, maderas ahumadas", "razon": "El cuero tiene firma olfativa potente que el cerebro espera" },
+    { "si_espacio": "Vidrio dominante / grandes ventanales", "entonces_aroma": "Máxima transparencia: agua pura, té blanco, pepino, cítricos aéreos, aldehídos limpios", "razon": "Transparencia visual = transparencia olfativa" },
+    { "si_espacio": "Terciopelo", "entonces_aroma": "Suaves y acolchados: vainilla ligera, almizcle suave, florales cremosos, ámbar muy sutil", "razon": "Textura redondeada pide aromas redondos" },
+    { "si_espacio": "Lino y algodón crudo", "entonces_aroma": "Aromas simples y naturales: algodón, hierba seca, lavanda", "razon": "Naturalidad textil" },
+    { "si_espacio": "Luz natural directa (ventanales, lucernarios)", "entonces_aroma": "Herbal, verde o acuática: eucalipto, salvia, té, brisa", "razon": "Traer el exterior al interior; conexión biofílica" },
+    { "si_espacio": "Luz dramática (spots, sombras pronunciadas)", "entonces_aroma": "Notas oscuras o exóticas: oud, resinas, maderas ahumadas, florales nocturnos", "razon": "Teatralidad pide carácter" },
+    { "si_espacio": "Luz difusa (plafones, indirecta)", "entonces_aroma": "Limpio y suave: té blanco, algodón, musgo blanco, cítricos suaves", "razon": "Uniformidad lumínica = uniformidad olfativa" },
+    { "si_espacio": "Curvas predominantes (arcos, formas orgánicas)", "entonces_aroma": "Florales suaves y redondos", "razon": "Geometría curva acepta aromas redondos" },
+    { "si_espacio": "Ángulos rectos predominantes (líneas rígidas)", "entonces_aroma": "Aromas limpios, estructurados, con menos calidez", "razon": "Precisión visual exige precisión olfativa" },
+    { "si_espacio": "Triunvirato: luz cálida + madera + amaderada", "entonces_aroma": "Familias amaderadas, florales suaves y ámbar (rango 2700-3000K)", "razon": "La combinación de congruencia más robusta en residencial y hotelero" }
+  ],
+
+  "antipatrones": [
+    "Fragancia oriental pesada en espacio minimalista blanco — tensión cognitiva, gasto −17%",
+    "Aroma acuático en salón con maderas oscuras y cuero — incongruencia de temperatura",
+    "Aroma muy intenso (cualquier tipo) — sobrecarga sensorial, satisfacción −30%",
+    "Difusor al 100% de su capacidad — pierde flexibilidad de ajuste",
+    "Difusor en zona de mesas en restaurantes — compite con aromas de comida",
+    "Difusor junto a puerta giratoria en lobby — el aroma sale del espacio",
+    "Difusor cerca de extractor en baño — se elimina rápidamente",
+    "Difusor directamente sobre la cama — riesgo de insomnio o cefalea",
+    "Solo difusor en entrada de tienda — el fondo queda sin aroma",
+    "Florales pesados, orientales o gourmand en Minimalista — contradicen 'menos es más'",
+    "Gourmand o especias pesadas en Japandi — traicionan la sobriedad",
+    "Cítricos baratos o aromas de limpieza en Quiet Luxury — comunican mantenimiento, no lujo",
+    "Aromas dulces de panadería en Quiet Luxury — comunican domesticidad",
+    "Florales agresivos en Quiet Luxury — percepción de 'hotel de carretera'",
+    "Pesados, cuero, resinas u oud en Costero-tropical — contradicen la ligereza",
+    "Florales dulces, frutales o gourmand en Industrial urbano — rompen la estética cruda",
+    "Verdes, herbales o cítricos en Glam nocturno — el Glam exige oud, ámbar, vainilla rica",
+    "Acuáticos u ozónicos en Mid-Century Modern — caen en pastiche",
+    "Aroma fijo todo el día en espacios con alta luz natural — la temperatura cromática cambia entre 8am y 7pm",
+    "Aromatización en oficinas con empleados con hiperosmia — riesgo de cefaleas",
+    "Que el visitante pueda decir 'aquí huele a X' — la intensidad es demasiado alta"
+  ],
+
+  "familias_olfativas": [
+    {
+      "nombre": "Lavanda",
+      "notas_quimicas": ["linalool", "acetato de linalilo"],
+      "efecto": "Ansiolítica, sedante, calmante; reduce cortisol hasta 69.6%; mejora sueño",
+      "espacios": ["spa", "habitaciones de hotel", "sala de espera médica", "meditación", "yoga", "consultorio dental"],
+      "evitar_en": ["retail activo", "gimnasios", "showrooms"]
+    },
+    {
+      "nombre": "Cítricos",
+      "notas_quimicas": ["d-limoneno", "linalool", "limón", "naranja", "toronja", "bergamota"],
+      "efecto": "Energizante, eleva ánimo, mejora alerta y atención; −54% errores de tecleo (limón); aumenta ondas alfa y delta",
+      "espacios": ["entrada retail", "oficinas", "lobbies", "gimnasios", "baños y servicio", "fast fashion", "vestidores"],
+      "evitar_en": ["spas", "dormitorios"]
+    },
+    {
+      "nombre": "Vainilla",
+      "notas_quimicas": ["vainillina"],
+      "efecto": "Calmante, reconfortante; nostalgia; reduce cortisol; sensación de calidez maternal; efecto Morrin (más gasto en lujo)",
+      "espacios": ["retail de lujo femenino", "hoteles", "spas", "open houses residencial familiar", "joyería", "showroom autos de lujo"],
+      "evitar_en": ["espacios masculinos", "minimalistas", "gimnasios"]
+    },
+    {
+      "nombre": "Menta / Peppermint",
+      "notas_quimicas": ["mentol"],
+      "efecto": "Aroma frío; aumenta alerta, mejora rendimiento, agiliza pensamiento; espacios se perciben más amplios",
+      "espacios": ["oficinas alta productividad", "gimnasios", "retail tecnología", "salas de conferencias"],
+      "evitar_en": ["spas", "dormitorios"]
+    },
+    {
+      "nombre": "Canela",
+      "notas_quimicas": ["cinnamaldehido"],
+      "efecto": "Aroma cálido; potencia creatividad, nostalgia; espacios se perciben más pequeños y acogedores",
+      "espacios": ["panaderías", "cafeterías", "retail otoño-invierno", "oficina creativa", "bar/lounge"],
+      "evitar_en": ["entornos minimalistas", "tecnológicos"]
+    },
+    {
+      "nombre": "Romero",
+      "notas_quimicas": ["1,8-cineol (eucaliptol)"],
+      "efecto": "Mejora memoria prospectiva y de trabajo; mejora velocidad y precisión cognitiva",
+      "espacios": ["oficinas", "bibliotecas", "salas de capacitación", "coworking", "oficina analítica"],
+      "evitar_en": ["retail", "hospitality"]
+    },
+    {
+      "nombre": "Eucalipto",
+      "notas_quimicas": ["eucaliptol", "1,8-cineol"],
+      "efecto": "Vigorizante; reduce fatiga mental; sensación de aire limpio",
+      "espacios": ["centros de salud", "gimnasios", "baños", "vestidores"],
+      "evitar_en": ["espacios de lujo", "boutiques", "fine dining"]
+    },
+    {
+      "nombre": "Amaderadas",
+      "notas_quimicas": ["cedro", "sándalo", "vetiver", "cuero"],
+      "efecto": "Estabilidad, sofisticación; sándalo reduce ansiedad y aumenta atención; vetiver favorece grounding",
+      "espacios": ["retail lujo masculino", "oficinas corporativas", "hoteles boutique", "spas de lujo (sándalo)", "bar/lounge"],
+      "evitar_en": ["espacios infantiles"]
+    },
+    {
+      "nombre": "Café",
+      "notas_quimicas": ["aroma de café"],
+      "efecto": "Aumenta razonamiento analítico (sin consumo)",
+      "espacios": ["librerías", "salas de reunión", "espacios de estudio", "lobbies de oficinas"],
+      "evitar_en": ["spas", "habitaciones de hotel"]
+    },
+    {
+      "nombre": "Florales",
+      "notas_quimicas": ["rosa", "jazmín", "ylang ylang", "neroli", "rose maroc"],
+      "efecto": "Rosa: romance, lujo. Jazmín: confianza, sensualidad. Ylang ylang: afrodisiaco. Neroli: ansiolítico. Aumenta gasto +45% (Hirsch)",
+      "espacios": ["boutiques de lujo", "spas", "hoteles", "casinos", "lobby de hotel"],
+      "evitar_en": ["espacios masculinos", "industriales", "gimnasios"]
+    }
+  ],
+
+  "espacio_a_familia": [
+    { "tipo_espacio": "Hotel - Lobby/recepción", "familias_recomendadas": ["florales cálidos", "maderas sutiles", "vainilla"] },
+    { "tipo_espacio": "Hotel - Habitaciones", "familias_recomendadas": ["lavanda", "vainilla suave", "algodón limpio"] },
+    { "tipo_espacio": "Spa", "familias_recomendadas": ["lavanda", "sándalo", "ylang ylang"] },
+    { "tipo_espacio": "Restaurante - Fine dining", "familias_recomendadas": ["herbal sutil", "cítrico elegante"] },
+    { "tipo_espacio": "Restaurante - Cafetería/bakery", "familias_recomendadas": ["café", "pan horneado", "canela", "vainilla"] },
+    { "tipo_espacio": "Bar/lounge", "familias_recomendadas": ["madera", "vainilla", "notas especiadas"] },
+    { "tipo_espacio": "Retail - Lujo femenino", "familias_recomendadas": ["vainilla", "florales suaves", "bergamota"] },
+    { "tipo_espacio": "Retail - Lujo masculino", "familias_recomendadas": ["madera", "cuero", "vetiver", "rose maroc"] },
+    { "tipo_espacio": "Retail - Fast fashion", "familias_recomendadas": ["cítrico vibrante", "menta ligera"] },
+    { "tipo_espacio": "Oficina analítica", "familias_recomendadas": ["limón", "romero", "café sutil"] },
+    { "tipo_espacio": "Oficina creativa", "familias_recomendadas": ["canela", "naranja", "menta ligera"] },
+    { "tipo_espacio": "Sala de conferencias", "familias_recomendadas": ["menta", "cítrico", "romero"] },
+    { "tipo_espacio": "Coworking", "familias_recomendadas": ["cítrico neutro", "café", "romero"] },
+    { "tipo_espacio": "Healthcare - Sala de espera", "familias_recomendadas": ["lavanda suave", "bergamota"] },
+    { "tipo_espacio": "Real estate - Residencial familiar", "familias_recomendadas": ["vainilla", "galletas", "pan horneado", "canela"] },
+    { "tipo_espacio": "Real estate - Lujo", "familias_recomendadas": ["madera fina", "cuero", "sándalo"] },
+    { "tipo_espacio": "Automotive - Showroom de lujo", "familias_recomendadas": ["cuero", "madera", "vainilla sutil"] },
+    { "tipo_espacio": "Fitness - Cardio/pesas", "familias_recomendadas": ["menta", "cítrico"] },
+    { "tipo_espacio": "Fitness - Yoga", "familias_recomendadas": ["lavanda suave"] },
+    { "tipo_espacio": "Casino", "familias_recomendadas": ["floral"] }
+  ],
+
+  "principios_clave": [
+    "La Congruencia es Todo: el aroma debe ser congruente con espacio, marca, audiencia, música, iluminación y posicionamiento de precio (Spangenberg 2006, Mattila y Wirtz 2001)",
+    "La Sutileza es Potencia: el scent marketing más efectivo opera en zona subliminal-a-perceptible. Si el visitante puede decir 'aquí huele a X', la intensidad es demasiado alta.",
+    "La Consistencia Crea Memoria: un aroma signature debe mantenerse constante a través del tiempo y ubicaciones (efecto Proust)",
+    "El olfato es el único sentido que no pasa por el tálamo: conecta directo con amígdala (emoción) e hipocampo (memoria), generando respuesta emocional ANTES del pensamiento consciente",
+    "Aromas simples superan a complejos en retail (Washington State University)",
+    "Aromas cálidos hacen el espacio más pequeño → reducen poder social → incrementan compra de lujo (Morrin 2015). Aromas fríos amplían percepción del espacio.",
+    "Combatir adaptación olfativa con difusión intermitente: el cerebro suprime un olor constante en 15-20 min; nunca aumentar intensidad, ajustar ciclos."
+  ],
+
+  "citas_voz_olfativa": [
+    "No vendemos un aroma como un accesorio aislado. El aroma es la última capa del diseño interior.",
+    "Cuando el espacio ya comunica algo visualmente, el aroma debe reforzar esa lectura o darle una dirección clara. Rara vez conviene pelear contra ella.",
+    "Un aroma inapropiado es peor que ningún aroma.",
+    "Cuando el aroma y el entorno visual comparten la misma valencia emocional, el cerebro los integra con mínimo esfuerzo cognitivo.",
+    "La intensidad correcta de un aroma es aquella en la que el visitante percibe una diferencia positiva pero no puede identificar el aroma como el elemento responsable.",
+    "Olfativa no vende fragancias, vende coherencia sensorial.",
+    "El diseño biofílico multisensorial no se trata de añadir un olor bonito, sino de completar la experiencia sensorial que el diseño visual ya inició. El aroma es la capa que faltaba.",
+    "La madera absorbe; el concreto resiste. Juntos forman un diálogo de sensación, un ritmo entre alerta y alivio."
+  ]
+}
