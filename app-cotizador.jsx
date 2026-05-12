@@ -299,8 +299,8 @@ function App() {
   // html2canvas y armando un PDF multipágina con jsPDF. Params tuneados
   // agresivamente para que el archivo pese poco (objetivo < 10 MB en
   // decks con fotos full-bleed) sin perder legibilidad del texto:
-  //   · scale 0.9    (subsample, baja la resolución de captura)
-  //   · JPEG 0.4     (compresión fuerte en fotos)
+  //   · scale 0.6    (subsample fuerte de la resolución de captura)
+  //   · JPEG 0.25    (compresión muy fuerte en fotos)
   //   · compress: true (Flate sobre los streams del PDF)
   // Cada <section> del deck-stage se renderiza y se inserta como una
   // página landscape de 1920×1080.
@@ -325,7 +325,7 @@ function App() {
       const sec = sections[i];
       // eslint-disable-next-line no-await-in-loop
       const canvas = await html2canvas(sec, {
-        scale: 0.9,
+        scale: 0.6,
         useCORS: true,
         allowTaint: false,
         backgroundColor: '#0E0E0E',
@@ -335,7 +335,7 @@ function App() {
         windowHeight: 1080,
         logging: false,
       });
-      const imgData = canvas.toDataURL('image/jpeg', 0.4);
+      const imgData = canvas.toDataURL('image/jpeg', 0.25);
       if (i > 0) pdf.addPage([1920, 1080], 'landscape');
       pdf.addImage(imgData, 'JPEG', 0, 0, 1920, 1080, undefined, 'FAST');
     }

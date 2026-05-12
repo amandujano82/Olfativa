@@ -1,3 +1,5 @@
 .DS_Store
 *.log
 node_modules/
+# Backups locales de fotos antes de la compresion masiva (no se versionan)
+photos/*.orig.jpg
