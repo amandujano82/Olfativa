@@ -181,12 +181,12 @@ function SlidePromise({ segment, clientName, idx, totalSlides, propId, propDate 
             opacity: 0.82,
           }}>
             {[
-              { n: "MICROSOFT",          f: "'Public Sans', sans-serif", w: 600, italic: false, size: 16, ls: '0.04em' },
-              { n: "EL PALACIO DE HIERRO", f: "'Public Sans', sans-serif", w: 600, italic: false, size: 13, ls: '0.18em' },
-              { n: "HYATT",              f: "'Public Sans', sans-serif",  w: 700, italic: false, size: 18, ls: '0.42em' },
-              { n: "AMERICAN EXPRESS",   f: "'Public Sans', sans-serif",  w: 700, italic: false, size: 13, ls: '0.16em' },
-              { n: "VOLVO",              f: "'Public Sans', sans-serif",  w: 500, italic: false, size: 19, ls: '0.46em' },
-              { n: "THE NORTH FACE",     f: "'Public Sans', sans-serif",  w: 800, italic: false, size: 12, ls: '0.10em' },
+              { n: "MICROSOFT",          f: "'Inter Tight', sans-serif", w: 600, italic: false, size: 16, ls: '0.04em' },
+              { n: "EL PALACIO DE HIERRO", f: "'Inter Tight', sans-serif", w: 600, italic: false, size: 13, ls: '0.18em' },
+              { n: "HYATT",              f: "'Inter Tight', sans-serif",  w: 700, italic: false, size: 18, ls: '0.42em' },
+              { n: "AMERICAN EXPRESS",   f: "'Inter Tight', sans-serif",  w: 700, italic: false, size: 13, ls: '0.16em' },
+              { n: "VOLVO",              f: "'Inter Tight', sans-serif",  w: 500, italic: false, size: 19, ls: '0.46em' },
+              { n: "THE NORTH FACE",     f: "'Inter Tight', sans-serif",  w: 800, italic: false, size: 12, ls: '0.10em' },
             ].map((b, i) => (
               <span key={i} style={{
                 fontFamily: b.f,
@@ -469,7 +469,7 @@ function SlideAroma({ segment, clientName, idx, totalSlides, propId, propDate })
                   <div key={j} style={{ display: 'grid', gridTemplateColumns: '14px 1fr', alignItems: 'start', gap: 10 }}>
                     <span style={{ width: 4, height: 4, borderRadius: '50%', background: PALETTE.bronze, marginTop: 9, justifySelf: 'start' }} />
                     <div style={{
-                      fontFamily: "'Public Sans', sans-serif",
+                      fontFamily: "'Inter Tight', sans-serif",
                       fontSize: TYPE_SCALE.small - 3,
                       fontWeight: 500,
                       color: PALETTE.ink,
@@ -647,14 +647,14 @@ function SlideTrust({ segment, clientName, idx, totalSlides, fields, propId, pro
             ].map((row, i) => (
               <div key={i} style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.2fr', gap: 16, alignItems: 'baseline' }}>
                 <div style={{
-                  fontFamily: "'Public Sans', sans-serif",
+                  fontFamily: "'Inter Tight', sans-serif",
                   fontSize: TYPE_SCALE.small - 2,
                   fontWeight: 400,
                   color: PALETTE.boneSoft,
                   lineHeight: 1.35,
                 }}>{row.l}</div>
                 <div style={{
-                  fontFamily: "'Public Sans', sans-serif",
+                  fontFamily: "'Inter Tight', sans-serif",
                   fontSize: TYPE_SCALE.small - 2,
                   fontWeight: 500,
                   color: PALETTE.bone,
@@ -795,7 +795,7 @@ function CatalogRow({ d, dense = false }) {
           {d.name}
         </SerifH>
         <span style={{
-          fontFamily: "'Public Sans', sans-serif",
+          fontFamily: "'Inter Tight', sans-serif",
           fontSize: 14, fontWeight: 600, letterSpacing: '0.18em',
           color: PALETTE.bronze, textTransform: 'uppercase',
         }}>
@@ -810,7 +810,7 @@ function CatalogRow({ d, dense = false }) {
 
       {/* Coverage */}
       <div style={{
-        fontFamily: "'Libre Baskerville', serif",
+        fontFamily: "'Cormorant Garamond', serif",
         fontStyle: 'italic',
         fontSize: 16,
         color: PALETTE.ink,
@@ -849,7 +849,7 @@ function CatalogTableHeader() {
       <div></div>
       {['Equipo', 'Espacios indicados', 'Cobertura', 'Renta mensual'].map((h, i) => (
         <span key={i} style={{
-          fontFamily: "'Public Sans', sans-serif",
+          fontFamily: "'Inter Tight', sans-serif",
           fontSize: 16, fontWeight: 600, letterSpacing: '0.20em',
           color: 'rgba(14,14,14,0.45)', textTransform: 'uppercase',
           textAlign: i === 3 ? 'right' : 'left',
@@ -923,7 +923,7 @@ function SlideCatalog({ segment, clientName, idx, totalSlides, propId, propDate 
               background: 'rgba(199,166,104,0.12)',
               border: `1px solid ${PALETTE.goldSoft}`,
               borderRadius: 2,
-              fontFamily: "'Public Sans', sans-serif",
+              fontFamily: "'Inter Tight', sans-serif",
               fontSize: 14, fontWeight: 600,
               letterSpacing: '0.14em',
               color: PALETTE.bronze,
@@ -1007,7 +1007,7 @@ function SlideCatalog({ segment, clientName, idx, totalSlides, propId, propDate 
               background: 'rgba(199,166,104,0.12)',
               border: `1px solid ${PALETTE.goldSoft}`,
               borderRadius: 2,
-              fontFamily: "'Public Sans', sans-serif",
+              fontFamily: "'Inter Tight', sans-serif",
               fontSize: 14, fontWeight: 600,
               letterSpacing: '0.14em',
               color: PALETTE.bronze,
@@ -1099,7 +1099,7 @@ function SlideCatalog({ segment, clientName, idx, totalSlides, propId, propDate 
                 <div style={{
                   position: 'absolute',
                   top: 10, left: 10,
-                  fontFamily: "'Public Sans', sans-serif",
+                  fontFamily: "'Inter Tight', sans-serif",
                   fontSize: compact ? 9 : 10,
                   fontWeight: 600,
                   letterSpacing: '0.16em',
@@ -1115,7 +1115,7 @@ function SlideCatalog({ segment, clientName, idx, totalSlides, propId, propDate 
                 <div style={{
                   position: 'absolute',
                   top: 10, right: 10,
-                  fontFamily: "'Libre Baskerville', serif",
+                  fontFamily: "'Cormorant Garamond', serif",
                   fontStyle: 'italic',
                   fontSize: compact ? 13 : 15,
                   color: PALETTE.ink,
@@ -1172,7 +1172,7 @@ function SlideCatalog({ segment, clientName, idx, totalSlides, propId, propDate 
             background: 'rgba(199,166,104,0.12)',
             border: `1px solid ${PALETTE.goldSoft}`,
             borderRadius: 2,
-            fontFamily: "'Public Sans', sans-serif",
+            fontFamily: "'Inter Tight', sans-serif",
             fontSize: 14, fontWeight: 600,
             letterSpacing: '0.14em',
             color: PALETTE.bronze,
@@ -1471,7 +1471,7 @@ function SlideQuote({ segment, clientName, idx, totalSlides, propId, propDate, f
                       </SerifH>
                       {isRecommended && (
                         <span style={{
-                          fontFamily: "'Public Sans', sans-serif",
+                          fontFamily: "'Inter Tight', sans-serif",
                           fontSize: 14, fontWeight: 600,
                           letterSpacing: '0.18em',
                           color: PALETTE.bronze,
@@ -1496,7 +1496,7 @@ function SlideQuote({ segment, clientName, idx, totalSlides, propId, propDate, f
                         −{Math.round(t.discount * 100)}%
                       </SerifH>
                     ) : (
-                      <span style={{ color: 'rgba(14,14,14,0.3)', fontSize: 14, fontFamily: "'Libre Baskerville', serif", fontStyle: 'italic' }}>—</span>
+                      <span style={{ color: 'rgba(14,14,14,0.3)', fontSize: 14, fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic' }}>—</span>
                     )}
                   </div>
 
@@ -1542,4 +1542,330 @@ function SlideQuote({ segment, clientName, idx, totalSlides, propId, propDate, f
 }
 
 // expose to global
-Object.assign(window, { SlideCover, SlidePromise, SlidePillars, SlideMethod, SlideAroma, SlideCatalog, SlideCuradora, SlideCompliance, SlideTrust, SlideClose, SlideQuote });
+Object.assign(window, { SlideCover, SlidePromise, SlidePillars, SlideMethod, SlideAroma, SlideCatalog, SlideCuradora, SlideCompliance, SlideTrust, SlideClose, SlideQuote, SlideScentAdvisor, SlideCotizador });
+
+
+// ============================================================
+// SLIDE · SCENT ADVISOR (Long Tail · IA: foto → aroma recomendado)
+// ============================================================
+function SlideScentAdvisor({ segment, clientName, idx, totalSlides, propId, propDate }) {
+  const steps = segment.scentAdvisorSteps || [];
+  const photo = segment.photos?.scentAdvisor;
+  return (
+    <SlideFrame bg={PALETTE.ink}>
+      <SlideChrome index={idx + 1} total={totalSlides} segment={segment} clientName={clientName} eyebrow="SCENT ADVISOR · IA" propId={propId} propDate={propDate} />
+
+      <div style={{
+        position: 'absolute',
+        top: SPACING.paddingTop + 16,
+        left: SPACING.paddingX,
+        right: SPACING.paddingX,
+        bottom: SPACING.paddingBottom + 40,
+        display: 'flex', flexDirection: 'column', gap: 32,
+      }}>
+        {/* Header */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 1fr', gap: 72, alignItems: 'end' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <Eyebrow color={PALETTE.gold} size={TYPE_SCALE.micro}>{segment.scentAdvisorEyebrow}</Eyebrow>
+            <div style={{ lineHeight: 1.02 }}>
+              <SansH size={TYPE_SCALE.title - 14} color={PALETTE.bone} weight={400} tracking="-0.03em">
+                {segment.scentAdvisorTitleA}{' '}
+              </SansH>
+              <SerifH size={TYPE_SCALE.title - 14} color={PALETTE.gold}>
+                {segment.scentAdvisorTitleB}
+              </SerifH>
+            </div>
+          </div>
+          <Body size={TYPE_SCALE.body - 4} color={PALETTE.boneSoft} weight={400} style={{ textAlign: 'right', lineHeight: 1.55 }}>
+            {segment.scentAdvisorIntro}
+          </Body>
+        </div>
+
+        <HairRule color={PALETTE.rule} />
+
+        {/* Body: 3 steps left | output card right */}
+        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 56 }}>
+          {/* 3 steps */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 28, justifyContent: 'center' }}>
+            {steps.map((s, i) => (
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '64px 1fr', gap: 22, alignItems: 'start' }}>
+                <div style={{
+                  width: 56, height: 56,
+                  border: `1px solid ${PALETTE.goldSoft}`,
+                  borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(199,166,104,0.08)',
+                }}>
+                  <SerifH size={22} color={PALETTE.gold} italic={true} weight={500} lineHeight={1}>
+                    {s.n}
+                  </SerifH>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 4 }}>
+                  <SerifH size={TYPE_SCALE.subtitle - 4} color={PALETTE.bone} italic={false} weight={500} lineHeight={1.1}>
+                    {s.t}
+                  </SerifH>
+                  <Body size={TYPE_SCALE.small - 1} color={PALETTE.boneSoft} weight={400} style={{ lineHeight: 1.5, maxWidth: 540 }}>
+                    {s.d}
+                  </Body>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Output card — mock recommendation */}
+          <div style={{
+            background: PALETTE.inkSoft,
+            border: `1px solid ${PALETTE.goldSoft}`,
+            borderRadius: 2,
+            padding: '32px 36px',
+            display: 'flex', flexDirection: 'column', gap: 20,
+            position: 'relative',
+          }}>
+            <div style={{
+              position: 'absolute', top: -10, left: 28,
+              background: PALETTE.gold, color: PALETTE.ink,
+              fontFamily: "'Inter Tight', sans-serif", fontSize: 11, fontWeight: 700,
+              letterSpacing: '0.22em', padding: '4px 10px', borderRadius: 1,
+            }}>
+              TU RESULTADO
+            </div>
+
+            {/* Faux photo placeholder + tag */}
+            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+              <div style={{
+                width: 72, height: 72,
+                backgroundImage: photo ? `url(${photo})` : 'linear-gradient(135deg, #2a2622, #1a1816)',
+                backgroundSize: 'cover', backgroundPosition: 'center',
+                border: `1px solid ${PALETTE.rule}`, borderRadius: 1,
+              }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <Eyebrow color="rgba(243,237,227,0.45)" size={13}>ESPACIO ANALIZADO</Eyebrow>
+                <Body size={TYPE_SCALE.small - 2} color={PALETTE.bone} weight={500}>tu-local · interior</Body>
+                <Body size={TYPE_SCALE.small - 4} color="rgba(243,237,227,0.5)" weight={400}>Procesado por Olfativa AI</Body>
+              </div>
+            </div>
+
+            <HairRule color={PALETTE.rule} />
+
+            {/* Recommendation */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <Eyebrow color={PALETTE.gold} size={13}>AROMA RECOMENDADO</Eyebrow>
+              <SerifH size={TYPE_SCALE.subtitle + 4} color={PALETTE.bone} italic={false} weight={500} lineHeight={1.05}>
+                {segment.scentAdvisorOutputName}
+              </SerifH>
+              <Body size={TYPE_SCALE.small - 2} color={PALETTE.gold} weight={600} style={{ letterSpacing: '0.18em' }}>
+                {segment.scentAdvisorOutputFamily}
+              </Body>
+            </div>
+
+            <Body size={TYPE_SCALE.small - 2} color={PALETTE.boneSoft} weight={400} style={{ lineHeight: 1.55, fontStyle: 'italic' }}>
+              {segment.scentAdvisorOutputReason}
+            </Body>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <Eyebrow color="rgba(243,237,227,0.5)" size={13}>NOTAS CLAVE</Eyebrow>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {(segment.scentAdvisorOutputNotes || []).map((note, i) => (
+                  <span key={i} style={{
+                    fontFamily: "'Cormorant Garamond', serif",
+                    fontStyle: 'italic',
+                    fontSize: 16,
+                    color: PALETTE.bone,
+                    padding: '4px 12px',
+                    border: `1px solid ${PALETTE.rule}`,
+                    borderRadius: 999,
+                    background: 'rgba(243,237,227,0.04)',
+                  }}>
+                    {note}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </SlideFrame>
+  );
+}
+
+// ============================================================
+// SLIDE · COTIZADOR (Long Tail · 1–2 difusores con precio dinámico)
+// Static representation: cards de difusores + tabla de paquetes con precio mensual
+// ============================================================
+function SlideCotizador({ segment, clientName, idx, totalSlides, propId, propDate }) {
+  const DIFFUSERS = (typeof window !== 'undefined' && window.DIFFUSERS) || {};
+  const ids = segment.cotizadorDeviceIds || [];
+  const devices = ids.map(id => DIFFUSERS[id]).filter(Boolean);
+  const bundles = segment.cotizadorBundles || [];
+
+  const fmt = (n) => '$' + Math.round(n).toLocaleString('es-MX');
+  const parseMxn = (s) => parseFloat(String(s || '').replace(/[^0-9.]/g, '')) || 0;
+
+  return (
+    <SlideFrame bg={PALETTE.bone}>
+      <SlideChrome index={idx + 1} total={totalSlides} segment={segment} clientName={clientName} dark={false} eyebrow="COTIZADOR" propId={propId} propDate={propDate} />
+
+      <div style={{
+        position: 'absolute',
+        top: SPACING.paddingTop + 8,
+        left: SPACING.paddingX,
+        right: SPACING.paddingX,
+        bottom: SPACING.paddingBottom + 32,
+        display: 'flex', flexDirection: 'column', gap: 28,
+      }}>
+        {/* Header */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 1fr', gap: 72, alignItems: 'end' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <Eyebrow color={PALETTE.goldSoft} size={TYPE_SCALE.micro}>{segment.cotizadorEyebrow}</Eyebrow>
+            <div style={{ lineHeight: 1.02 }}>
+              <SansH size={TYPE_SCALE.title - 16} color={PALETTE.ink} weight={400} tracking="-0.03em">
+                {segment.cotizadorTitleA}{' '}
+              </SansH>
+              <SerifH size={TYPE_SCALE.title - 16} color={PALETTE.bronze}>
+                {segment.cotizadorTitleB}
+              </SerifH>
+            </div>
+          </div>
+          <Body size={TYPE_SCALE.body - 4} color="rgba(14,14,14,0.7)" weight={400} style={{ textAlign: 'right', lineHeight: 1.55 }}>
+            {segment.cotizadorIntro}
+          </Body>
+        </div>
+
+        <HairRule color={PALETTE.ruleInk} />
+
+        {/* Body: device cards (left, 4 wide) + bundle table (right) */}
+        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 48 }}>
+          {/* Device cards */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <Eyebrow color={PALETTE.bronze} size={14}>1. ELIGE TU DIFUSOR</Eyebrow>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: 12,
+              flex: 1,
+            }}>
+              {devices.map((d, i) => {
+                const monthly = parseMxn(d.priceMxn);
+                const isRec = i === 1; // segundo difusor recomendado
+                return (
+                  <div key={d.id} style={{
+                    display: 'grid',
+                    gridTemplateColumns: '72px 1fr',
+                    gap: 14,
+                    padding: '14px 16px',
+                    background: isRec ? 'rgba(199,166,104,0.08)' : '#FFFFFF',
+                    border: `1px solid ${isRec ? PALETTE.goldSoft : PALETTE.ruleInk}`,
+                    borderRadius: 2,
+                    alignItems: 'center',
+                    position: 'relative',
+                  }}>
+                    {isRec && (
+                      <span style={{
+                        position: 'absolute', top: -8, right: 10,
+                        fontFamily: "'Inter Tight', sans-serif", fontSize: 9, fontWeight: 700,
+                        letterSpacing: '0.18em', color: PALETTE.ink,
+                        background: PALETTE.gold, padding: '2px 7px', borderRadius: 1,
+                      }}>
+                        RECOMENDADO
+                      </span>
+                    )}
+                    <div style={{
+                      width: 72, height: 72,
+                      background: 'linear-gradient(180deg, #f4ede0 0%, #ede4d2 100%)',
+                      border: `1px solid ${PALETTE.ruleInk}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      borderRadius: 1,
+                    }}>
+                      <img src={d.photo} alt={d.name} style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <SerifH size={20} color={PALETTE.ink} italic={false} weight={500} lineHeight={1}>{d.name}</SerifH>
+                      <Body size={13} color="rgba(14,14,14,0.6)" weight={400} style={{ lineHeight: 1.3 }}>
+                        {d.m2} m² · {d.suited?.split('.')[0]}
+                      </Body>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 2 }}>
+                        <SerifH size={18} color={PALETTE.bronze} italic={false} weight={500} lineHeight={1}>{fmt(monthly)}</SerifH>
+                        <Body size={12} color="rgba(14,14,14,0.5)" weight={400}>/mes</Body>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Bundle table */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <Eyebrow color={PALETTE.bronze} size={14}>2. ¿UNO O DOS DIFUSORES?</Eyebrow>
+            <div style={{
+              flex: 1,
+              background: '#FFFFFF',
+              border: `1px solid ${PALETTE.ruleInk}`,
+              borderRadius: 2,
+              padding: '20px 22px',
+              display: 'flex', flexDirection: 'column', gap: 18,
+            }}>
+              {bundles.map((b, i) => {
+                // ejemplo con difusor moai (recomendado)
+                const refDevice = devices[1] || devices[0];
+                const baseMonthly = parseMxn(refDevice?.priceMxn || 0);
+                const totalMonthly = Math.round(baseMonthly * b.multiplier * (1 - b.discount));
+                const isHighlighted = i === bundles.length - 1;
+                return (
+                  <div key={b.id} style={{
+                    padding: '16px 18px',
+                    background: isHighlighted ? 'rgba(199,166,104,0.10)' : 'rgba(14,14,14,0.03)',
+                    border: `1px solid ${isHighlighted ? PALETTE.goldSoft : PALETTE.ruleInk}`,
+                    borderRadius: 2,
+                    display: 'flex', flexDirection: 'column', gap: 8,
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <SerifH size={22} color={PALETTE.ink} italic={false} weight={500} lineHeight={1}>{b.label}</SerifH>
+                      {b.discount > 0 && (
+                        <span style={{
+                          fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic',
+                          fontSize: 16, color: PALETTE.bronze,
+                        }}>
+                          −{Math.round(b.discount * 100)}%
+                        </span>
+                      )}
+                    </div>
+                    <Body size={12} color="rgba(14,14,14,0.55)" weight={400}>{b.sub}</Body>
+                    <HairRule color="rgba(14,14,14,0.10)" />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <Body size={12} color="rgba(14,14,14,0.55)" weight={400}>Renta mensual · ejemplo {refDevice?.name}</Body>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                        <SerifH size={26} color={PALETTE.bronze} italic={false} weight={500} lineHeight={1}>{fmt(totalMonthly)}</SerifH>
+                        <Body size={13} color="rgba(14,14,14,0.5)" weight={400}>/mes</Body>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              <div style={{ flex: 1 }} />
+              <div style={{
+                padding: '10px 12px',
+                background: 'rgba(199,166,104,0.10)',
+                border: `1px dashed ${PALETTE.goldSoft}`,
+                borderRadius: 2,
+                fontFamily: "'Inter Tight', sans-serif",
+                fontSize: 11, fontWeight: 600,
+                letterSpacing: '0.14em',
+                color: PALETTE.bronze,
+                textAlign: 'center',
+              }}>
+                INSTALACIÓN · RECARGAS · MANTENIMIENTO INCLUIDOS
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <Body size={12} color="rgba(14,14,14,0.55)" weight={400} style={{ lineHeight: 1.5 }}>
+          {segment.cotizadorFootnote}
+        </Body>
+      </div>
+    </SlideFrame>
+  );
+}
+

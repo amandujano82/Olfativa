@@ -22,17 +22,16 @@ const SPACING = {
   itemGap: 28,
 };
 
-// Paleta Brand Book Olfativa 2026 — 4 colores no negociables
 const PALETTE = {
-  ink: "#1C1A18",        // Charcoal · lienzo principal
-  inkSoft: "#1C1A18",    // mismo charcoal
-  bone: "#F5F0E8",       // Cream · pausa visual
+  ink: "#0E0E0E",
+  inkSoft: "#1A1815",
+  bone: "#F3EDE3",
   boneSoft: "#E8DFD0",
-  gold: "#CC6633",       // Terracota · color de acción/acento
-  goldSoft: "#A85528",
-  bronze: "#8E4423",
-  rule: "rgba(245, 240, 232, 0.18)",
-  ruleInk: "rgba(28, 26, 24, 0.14)",
+  gold: "#C7A668",
+  goldSoft: "#A88A4F",
+  bronze: "#7A6242",
+  rule: "rgba(243, 237, 227, 0.18)",
+  ruleInk: "rgba(14, 14, 14, 0.14)",
 };
 
 // ============================================================
@@ -48,11 +47,11 @@ const SEGMENTS = {
     propSubtitle: "Un difusor profesional, listo en 7 días. Tú eliges, nosotros operamos. Si no convence, cambiamos el aroma.",
     eyebrow: "PROPUESTA DE SERVICIO",
 
-    // Slide 2 — Promesa
-    promiseEyebrow: "PROMESA",
-    promiseLead: "Va a notarse",
-    promiseHighlight: "desde el primer día.",
-    promiseBody: "El aroma que asignamos a tu espacio ya fue probado en miles de locales como el tuyo. La intensidad, la cobertura y la difusión están calibradas para que tu cliente lo perciba al entrar — sin que tú tengas que ajustar nada.",
+    // Slide 2 — Posicionamiento (texto rediseñado · más corto y directo)
+    promiseEyebrow: "POSICIONAMIENTO",
+    promiseLead: "Tú eliges.",
+    promiseHighlight: "Nosotros operamos.",
+    promiseBody: "Tu cliente percibe el aroma desde que entra. Tú no calibras, no recargas, no coordinas. Instalación en 7 días — si no convence en el primer mes, cambiamos el aroma sin costo.",
     promiseStats: [
       { n: "3,816", l: "ESPACIOS ACTIVOS" },
       { n: "7 DÍAS", l: "DE LA FIRMA A LA INSTALACIÓN" },
@@ -68,7 +67,34 @@ const SEGMENTS = {
       { eyebrow: "Garantía", title: "Si no convence, cambiamos el aroma.", body: "En el primer mes pruebas el aroma asignado. Si no comunica lo que tu marca necesita, lo cambiamos sin costo. La operación sigue, el aroma se ajusta." },
     ],
 
-    // Slide 4 — Aroma (1 tier)
+    // Slide 4 — IA Scent Advisor (NOSOTROS subimos foto del cliente → IA recomienda; el cliente solo recibe el resultado)
+    scentAdvisorEyebrow: "OLFATIVA SCENT ADVISOR · IA",
+    scentAdvisorTitleA: "Analizamos tu espacio.",
+    scentAdvisorTitleB: "Este es tu aroma.",
+    scentAdvisorIntro: "Nuestro motor olfativo analiza la foto de tu espacio — paleta, materiales, luz, giro de negocio — y recomienda el aroma de catálogo que mejor comunica tu marca. Tarda 12 segundos. Sin comités.",
+    scentAdvisorSteps: [
+      { n: "01", t: "Visitamos o recibimos imágenes de tu local", d: "Fachada, interior, ambientes clave. Tú no haces nada — nosotros lo procesamos." },
+      { n: "02", t: "Estudiamos tu marca y tu público", d: "Giro, estética, paleta, materiales y perfil del público que ya entra a tu local — todo entra a la curaduría." },
+      { n: "03", t: "Recibes tu aroma — listo para operar", d: "Una recomendación curada del catálogo, con familia olfativa, notas clave y razón del match." },
+    ],
+    scentAdvisorOutputName: "Bergamota & Vetiver",
+    scentAdvisorOutputFamily: "AMADERADO · CÍTRICO",
+    scentAdvisorOutputReason: "Tu local tiene materiales cálidos y luz neutra. Este aroma fresco-amaderado refuerza la sensación premium sin saturar el espacio. Probado en 47 locales del segmento.",
+    scentAdvisorOutputNotes: ["Bergamota de Calabria", "Vetiver de Haití", "Cedro Virginia", "Almizcle blanco"],
+
+    // Slide 6 — Cotizador (1–2 difusores · precio dinámico)
+    cotizadorEyebrow: "COTIZADOR · 1–2 DIFUSORES",
+    cotizadorTitleA: "Cotiza tu espacio",
+    cotizadorTitleB: "en 30 segundos.",
+    cotizadorIntro: "Elige el difusor que recomendamos para tu espacio y obtén el precio mensual exacto — con instalación, recargas y mantenimiento incluidos. Sin sorpresas, sin letra chica.",
+    cotizadorDeviceIds: ["fitz", "moai", "aspen", "montblanc"],
+    cotizadorBundles: [
+      { id: "single", label: "1 difusor", multiplier: 1, discount: 0, sub: "Un espacio único" },
+      { id: "double", label: "2 difusores", multiplier: 2, discount: 0.08, sub: "Dos espacios o uno grande · 8% descuento" },
+    ],
+    cotizadorFootnote: "Renta mensual a 12 meses · IVA no incluido · Aroma curado sin costo · Cambio de aroma sin costo el primer mes",
+
+    // Slide 4 (LEGACY) — Aroma (1 tier) — ya no se usa, queda como referencia
     aromaTitleA: "Un aroma curado",
     aromaTitleB: "para tu espacio.",
     aromaEyebrow: "RECOMENDACIÓN OLFATIVA",
@@ -97,12 +123,14 @@ const SEGMENTS = {
     trust: { quote: "Buscábamos algo profesional, no perfumar el espacio nosotros mismos. Olfativa instaló y se hace cargo. No nos volvimos a preocupar.", by: "Propietaria", co: "Boutique de moda · CDMX" },
 
     photos: {
-      cover: "photos/127-2.jpg",       // Órgano de aromas — atelier vertical
-      promise: "photos/74-2.jpg",      // Frasco hero del órgano
-      pillars: "photos/202-2.jpg",     // Técnico recargando difusor (difusor visible)
-      aroma: "photos/151-2.jpg",       // Disco fragancia
-      catalog: "photos/207-2.jpg",     // Difusor torre vertical
-      close: "photos/78-2.jpg",        // Curadora en el órgano (atmosférica, sin marca)
+      cover: "photos/127-2.jpg",
+      promise: "photos/74-2.jpg",
+      pillars: "photos/202-2.jpg",
+      scentAdvisor: "photos/151-2.jpg",
+      aroma: "photos/151-2.jpg",
+      catalog: "photos/207-2.jpg",
+      cotizador: "photos/207-2.jpg",
+      close: "photos/78-2.jpg",
     },
 
     // Catálogo de equipos (Long Tail) ── 4 modelos accesibles para boutique/consultorio
@@ -113,8 +141,8 @@ const SEGMENTS = {
     catalogDeviceIds: ["fitz", "moai", "aspen", "montblanc", "montblancXl", "empire", "ural"],
     catalogFootnote: "Aroma comercial curado · IVA no incluido · Precios vigentes 2026",
 
-    // Slide structure (which slides this segment shows)
-    slides: ["cover", "promise", "pillars", "aroma", "catalog", "quote", "close"],
+    // LIMPIA 2026 LT: cover → promise → pillars → scentAdvisor (IA) → catalog → cotizador → close
+    slides: ["cover", "promise", "pillars", "scentAdvisor", "catalog", "cotizador", "close"],
   },
 
   // ── 🟩 CORE ───────────────────────────────────────────────
@@ -544,7 +572,7 @@ const CURADORA = {
 // ============================================================
 const SerifH = ({ children, size = TYPE_SCALE.title, italic = true, weight = 400, color = PALETTE.bone, lineHeight = 1.02, style }) => (
   <span style={{
-    fontFamily: "'Libre Baskerville', 'Cormorant', 'EB Garamond', Georgia, serif",
+    fontFamily: "'Cormorant Garamond', 'Cormorant', 'EB Garamond', Georgia, serif",
     fontSize: size,
     fontWeight: weight,
     fontStyle: italic ? 'italic' : 'normal',
@@ -557,7 +585,7 @@ const SerifH = ({ children, size = TYPE_SCALE.title, italic = true, weight = 400
 
 const SansH = ({ children, size = TYPE_SCALE.title, weight = 500, color = PALETTE.bone, tracking = '-0.025em', lineHeight = 1.02, style }) => (
   <span style={{
-    fontFamily: "'Public Sans', 'Inter', system-ui, sans-serif",
+    fontFamily: "'Inter Tight', 'Inter', system-ui, sans-serif",
     fontSize: size,
     fontWeight: weight,
     letterSpacing: tracking,
@@ -569,7 +597,7 @@ const SansH = ({ children, size = TYPE_SCALE.title, weight = 500, color = PALETT
 
 const Eyebrow = ({ children, color = PALETTE.gold, size = TYPE_SCALE.micro, style }) => (
   <span style={{
-    fontFamily: "'Public Sans', 'Inter', system-ui, sans-serif",
+    fontFamily: "'Inter Tight', 'Inter', system-ui, sans-serif",
     fontSize: size,
     fontWeight: 500,
     letterSpacing: '0.18em',
@@ -581,7 +609,7 @@ const Eyebrow = ({ children, color = PALETTE.gold, size = TYPE_SCALE.micro, styl
 
 const Body = ({ children, color = PALETTE.boneSoft, size = TYPE_SCALE.body, weight = 400, style }) => (
   <div style={{
-    fontFamily: "'Public Sans', 'Inter', system-ui, sans-serif",
+    fontFamily: "'Inter Tight', 'Inter', system-ui, sans-serif",
     fontSize: size,
     fontWeight: weight,
     lineHeight: 1.45,
@@ -605,14 +633,14 @@ const HairRule = ({ color = PALETTE.rule, vertical = false, length = '100%', thi
 const OlfativaMark = ({ color = PALETTE.bone, height = 28, style }) => (
   <svg viewBox="0 0 280 56" style={{ height, width: 'auto', display: 'block', ...style }} aria-label="Olfativa">
     <text x="0" y="42" fill={color} style={{
-      fontFamily: "'Libre Baskerville', Georgia, serif",
+      fontFamily: "'Cormorant Garamond', Georgia, serif",
       fontStyle: 'italic',
       fontSize: 48,
       fontWeight: 500,
       letterSpacing: '0.01em',
     }}>Olfativa</text>
     <text x="216" y="20" fill={color} style={{
-      fontFamily: "'Public Sans', sans-serif",
+      fontFamily: "'Inter Tight', sans-serif",
       fontSize: 14,
       fontWeight: 400,
     }}>®</text>
@@ -666,7 +694,7 @@ const SlideFrame = ({ children, bg = PALETTE.ink, style }) => (
     background: bg,
     position: 'relative',
     overflow: 'hidden',
-    fontFamily: "'Public Sans', sans-serif",
+    fontFamily: "'Inter Tight', sans-serif",
     ...style,
   }}>{children}</div>
 );
@@ -689,7 +717,7 @@ const SegmentMarkers = ({ current = 0, segments, dark = true, style }) => {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 28,
-      fontFamily: "'Public Sans', 'Inter', system-ui, sans-serif",
+      fontFamily: "'Inter Tight', 'Inter', system-ui, sans-serif",
       ...style,
     }}>
       {groups.map((g, i) => {
