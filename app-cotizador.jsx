@@ -250,6 +250,7 @@ function App() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [clientOpen, setClientOpen] = useState(false);
   const [pricesOpen, setPricesOpen] = useState(false);
+  const [downloadOpen, setDownloadOpen] = useState(false);
 
   useEffect(() => {
     saveState({ selected, client, prices });
@@ -274,7 +275,44 @@ function App() {
 
   const updateClient = (k, v) => setClient(c => ({ ...c, [k]: v }));
 
-  const print = () => window.print();
+  // ── Descarga + notificación por correo ───────────────────────
+  // Construye el mailto con el resumen de la propuesta para enviar a
+  // automation.sales@olfativa.com y clopez@olfativa.com. El vendedor
+  // adjunta el PDF (que se descargó vía window.print) manualmente,
+  // porque mailto no permite attachments desde el navegador.
+  const buildMailto = () => {
+    const to = 'automation.sales@olfativa.com,clopez@olfativa.com';
+    const segName = (triageSegment && SEG_LABEL[triageSegment]) || '—';
+    const slidesList = activeSlides
+      .map((s, i) => `  ${String(i + 1).padStart(2,'0')}. ${SLIDE_LABELS[s.kind] || s.kind} (${SEG_SHORT[s.segment] || s.segment})`)
+      .join('\n');
+    const subject = `Nueva cotización: ${client.clientName || '—'} · ${client.propId || '—'}`;
+    const body = [
+      `Se generó una nueva cotización el ${client.propDate || '—'} para ${client.clientName || '—'}.`,
+      ``,
+      `Folio:     ${client.propId || '—'}`,
+      `Segmento:  ${segName}`,
+      `Ejecutivo: ${client.account || '—'}`,
+      ``,
+      `Láminas incluidas (${activeSlides.length}):`,
+      slidesList,
+      ``,
+      `—`,
+      `Nota: adjunta manualmente el PDF de la cotización antes de enviar este correo. Los navegadores no permiten adjuntar archivos en mailto:.`,
+    ].join('\n');
+    return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const confirmDownload = () => {
+    setDownloadOpen(false);
+    // Esperamos a que el modal se desmonte antes de imprimir para que no
+    // entre en el PDF, y luego abrimos el cliente de correo.
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => { window.location.href = buildMailto(); }, 300);
+    }, 80);
+  };
+
   const reset = () => {
     if (!confirm("Restablecer al machote MASTER completo?")) return;
     setSelected(defaultSelected());
@@ -289,7 +327,7 @@ function App() {
         onOpenPicker={() => setPickerOpen(true)}
         onOpenClient={() => setClientOpen(true)}
         onOpenPrices={() => setPricesOpen(true)}
-        onPrint={print}
+        onDownload={() => setDownloadOpen(true)}
         onReset={reset}
       />
 
@@ -400,6 +438,17 @@ function App() {
           }}
         />
       )}
+
+      {downloadOpen && (
+        <DownloadReviewModal
+          activeSlides={activeSlides}
+          client={client}
+          prices={prices}
+          triageSegment={triageSegment}
+          onClose={() => setDownloadOpen(false)}
+          onConfirm={confirmDownload}
+        />
+      )}
     </>
   );
 }
@@ -407,7 +456,7 @@ function App() {
 // ============================================================
 // Top Bar — siempre visible
 // ============================================================
-function TopBar({ total, totalAvailable, client, onOpenPicker, onOpenClient, onOpenPrices, onPrint, onReset }) {
+function TopBar({ total, totalAvailable, client, onOpenPicker, onOpenClient, onOpenPrices, onDownload, onReset }) {
   return (
     <div className="topbar">
       <div className="topbar-left">
@@ -435,8 +484,8 @@ function TopBar({ total, totalAvailable, client, onOpenPicker, onOpenClient, onO
           <span className="btn-icon">▦</span>
           Láminas <span className="btn-counter">{total} / {totalAvailable}</span>
         </button>
-        <button className="btn-secondary" onClick={onPrint} title="Imprimir o guardar como PDF">
-          <span className="btn-icon">⎙</span> Imprimir
+        <button className="btn-download" onClick={onDownload} title="Revisar resumen y descargar la cotización">
+          <span className="btn-icon">↓</span> Descargar cotización
         </button>
         <button className="btn-tertiary" onClick={onReset} title="Restablecer al Master completo">
           ↻
@@ -523,6 +572,85 @@ function FullPreview({ kind, segmentName, Renderer, slideProps, enabled, onToggl
 }
 
 // ============================================================
+// ============================================================
+// DownloadReviewModal — resumen visual de la propuesta antes de descargar.
+// Muestra thumbnails de TODAS las láminas activas en orden. Botón final
+// dispara window.print() + abre mailto pre-llenado.
+// ============================================================
+function DownloadReviewModal({ activeSlides, client, prices, triageSegment, onClose, onConfirm }) {
+  return (
+    <div className="picker-overlay" onClick={onClose}>
+      <div className="picker-modal" onClick={e => e.stopPropagation()}>
+        <div className="picker-header">
+          <div>
+            <div className="picker-eyebrow">Resumen · revisa antes de descargar</div>
+            <h2 className="picker-title">Resumen de tu propuesta</h2>
+            <div className="picker-sub">
+              <strong>{activeSlides.length}</strong> {activeSlides.length === 1 ? 'lámina' : 'láminas'} ·
+              {' '}{client.clientName || 'Cliente'} · {client.propId}
+              {triageSegment && <> · {SEG_LABEL[triageSegment]}</>}
+            </div>
+          </div>
+          <button className="picker-close" onClick={onClose} aria-label="Cerrar">×</button>
+        </div>
+
+        <div className="download-summary">
+          <div className="download-summary-grid">
+            {activeSlides.map((s, i) => {
+              const segObj = SEGMENTS[s.segment] || SEGMENTS.master;
+              const slideProps = {
+                segment: segObj,
+                clientName: client?.clientName || 'Cliente',
+                propId: client?.propId || '—',
+                propDate: client?.propDate || '',
+                account: client?.account || '',
+                accountEmail: client?.accountEmail || '',
+                fields: segObj.fields,
+                totalSlides: activeSlides.length,
+                idx: i,
+                prices,
+              };
+              return (
+                <div key={s.uid || `${s.kind}-${i}`} className="download-summary-card">
+                  <div className="download-summary-num">#{String(i + 1).padStart(2,'0')}</div>
+                  <SlidePreview
+                    Renderer={SLIDE_RENDERERS[s.kind]}
+                    slideProps={slideProps}
+                  />
+                  <div className="download-summary-foot">
+                    <span className="download-summary-name">{SLIDE_LABELS[s.kind] || s.kind}</span>
+                    <span className="download-summary-seg" style={{ '--seg-color': SEG_COLOR[s.segment] }}>
+                      <span className="download-summary-dot" />
+                      {SEG_SHORT[s.segment] || s.segment}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="picker-footer">
+          <div className="picker-footer-info">
+            <span style={{ display: 'block', marginBottom: 2 }}>
+              <strong>Acción doble:</strong> se abre el diálogo de impresión (para guardar como PDF) <em>y</em> un correo pre-cargado para notificar al equipo.
+            </span>
+            <span style={{ fontSize: 11, opacity: 0.55 }}>
+              Para: automation.sales@olfativa.com, clopez@olfativa.com
+            </span>
+          </div>
+          <div className="picker-footer-btns">
+            <button onClick={onClose} className="btn-secondary">Volver a editar</button>
+            <button onClick={onConfirm} className="btn-download btn-download-confirm">
+              ↓ Descargar y notificar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply }) {
   const [draft, setDraft] = useState(() => normalizeSelected(selected.map(s => ({ ...s }))));
   // fullPreviewTarget: { kind, segment } | null

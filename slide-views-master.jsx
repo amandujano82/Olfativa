@@ -24,83 +24,164 @@ function SlideCover({ segment, clientName, propId, propDate, totalSlides, idx })
   const photo = segment.photos?.cover;
   return (
     <SlideFrame bg={PALETTE.ink}>
-      <SlideChrome index={idx + 1} total={totalSlides} segment={segment} clientName={clientName} propId={propId} propDate={propDate} />
-
-      {/* Right-side photo bleed */}
+      {/* Full-bleed photo · capa base */}
       {photo && (
         <div style={{
-          position: 'absolute',
-          top: 0, right: 0, bottom: 0,
-          width: '46%',
+          position: 'absolute', inset: 0,
           backgroundImage: `url(${photo})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-        }}>
-          {/* gradient blend on left edge to fade into ink */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: `linear-gradient(to right, ${PALETTE.ink} 0%, rgba(14,14,14,0.55) 12%, rgba(14,14,14,0) 35%)`,
-          }} />
-          {/* subtle bottom shade for chrome legibility */}
-          <div style={{
-            position: 'absolute', bottom: 0, left: 0, right: 0, height: 200,
-            background: `linear-gradient(to bottom, rgba(14,14,14,0) 0%, rgba(14,14,14,0.7) 100%)`,
-          }} />
-        </div>
+        }} />
       )}
+      {/* Overlay editorial: gradiente vertical para legibilidad */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: `linear-gradient(180deg, rgba(14,14,14,0.78) 0%, rgba(14,14,14,0.18) 28%, rgba(14,14,14,0.18) 52%, rgba(14,14,14,0.88) 100%)`,
+      }} />
+      {/* Viñeta lateral suave hacia el folio para reforzar la columna izquierda */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: `linear-gradient(90deg, rgba(14,14,14,0.55) 0%, rgba(14,14,14,0.10) 32%, rgba(14,14,14,0) 55%)`,
+      }} />
 
+      {/* TOP STRIP — wordmark izquierda, meta derecha */}
       <div style={{
         position: 'absolute',
-        top: SPACING.paddingTop + 60,
-        bottom: SPACING.paddingBottom + 100,
-        left: SPACING.paddingX,
-        width: '54%',
-        display: 'flex', flexDirection: 'column', justifyContent: 'center',
-        gap: 44,
+        top: 64, left: SPACING.paddingX, right: SPACING.paddingX,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+        zIndex: 2,
       }}>
-        <Eyebrow color={PALETTE.gold} size={TYPE_SCALE.micro}>PROPUESTA DE AROMATIZACIÓN PROFESIONAL</Eyebrow>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <SansH size={TYPE_SCALE.title + 8} color={PALETTE.bone} weight={400} tracking="-0.035em" lineHeight={1.05}>
-            {t1}
-          </SansH>
-          <SerifH size={TYPE_SCALE.title + 8} color={PALETTE.gold} lineHeight={1.05}>
-            {t2}
-          </SerifH>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontStyle: 'italic', fontWeight: 500,
+            fontSize: 44, lineHeight: 1, color: PALETTE.bone,
+            letterSpacing: '0.005em',
+          }}>
+            Olfativa<span style={{ fontSize: 18, color: PALETTE.gold, verticalAlign: 'super', marginLeft: 2 }}>®</span>
+          </span>
+          <span style={{
+            fontFamily: "'Inter Tight', sans-serif",
+            fontSize: 11, fontWeight: 500,
+            color: 'rgba(243,237,227,0.55)',
+            letterSpacing: '0.34em', textTransform: 'uppercase',
+          }}>
+            Casa Olfativa · México
+          </span>
         </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end', textAlign: 'right' }}>
+          <span style={{
+            fontFamily: "'Inter Tight', sans-serif",
+            fontSize: 10.5, fontWeight: 600,
+            color: PALETTE.gold,
+            letterSpacing: '0.36em', textTransform: 'uppercase',
+          }}>
+            Propuesta · Vol. {String(idx + 1).padStart(2,'0')}
+          </span>
+          <span style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontStyle: 'italic', fontWeight: 400,
+            fontSize: 32, lineHeight: 1, color: PALETTE.bone,
+            letterSpacing: '0.005em',
+          }}>
+            {clientName || '—'}
+          </span>
+        </div>
+      </div>
 
-        <div style={{ maxWidth: 720, marginTop: 12 }}>
-          <Body size={TYPE_SCALE.body} color={PALETTE.boneSoft} weight={300}>
+      {/* TÍTULO PRINCIPAL — esquina inferior izquierda, escala editorial */}
+      <div style={{
+        position: 'absolute',
+        left: SPACING.paddingX, right: SPACING.paddingX,
+        bottom: 280,
+        zIndex: 2,
+        maxWidth: 1320,
+      }}>
+        <div style={{
+          fontFamily: "'Inter Tight', sans-serif",
+          fontSize: 11.5, fontWeight: 600,
+          color: PALETTE.gold,
+          letterSpacing: '0.34em', textTransform: 'uppercase',
+          marginBottom: 36,
+          display: 'flex', alignItems: 'center', gap: 14,
+        }}>
+          <span style={{ width: 52, height: 1, background: PALETTE.gold, opacity: 0.7 }} />
+          Propuesta de aromatización profesional
+        </div>
+        <div style={{ lineHeight: 0.95 }}>
+          <div style={{
+            fontFamily: "'Inter Tight', sans-serif",
+            fontSize: 144, fontWeight: 300,
+            color: PALETTE.bone,
+            letterSpacing: '-0.042em',
+          }}>
+            {t1}
+          </div>
+          <div style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontStyle: 'italic', fontWeight: 400,
+            fontSize: 152,
+            color: PALETTE.gold,
+            letterSpacing: '-0.028em',
+            marginTop: -10,
+          }}>
+            {t2}
+          </div>
+        </div>
+        <div style={{ marginTop: 28, maxWidth: 760 }}>
+          <Body size={TYPE_SCALE.body - 2} color={PALETTE.boneSoft} weight={300}>
             {segment.propSubtitle}
           </Body>
         </div>
       </div>
 
+      {/* BOTTOM STRIP — hairline + meta */}
       <div style={{
         position: 'absolute',
-        bottom: 116, left: SPACING.paddingX, width: '54%',
-        display: 'flex', gap: 56,
+        bottom: 84, left: SPACING.paddingX, right: SPACING.paddingX,
+        zIndex: 2,
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <Eyebrow color="rgba(243,237,227,0.45)" size={14}>FOLIO</Eyebrow>
-          <Body size={TYPE_SCALE.small} color={PALETTE.bone} weight={500}>
-            {propId || '—'}
-          </Body>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <Eyebrow color="rgba(243,237,227,0.45)" size={14}>FECHA</Eyebrow>
-          <Body size={TYPE_SCALE.small} color={PALETTE.bone} weight={500}>
-            {propDate || '—'}
-          </Body>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <Eyebrow color="rgba(243,237,227,0.45)" size={14}>VIGENCIA</Eyebrow>
-          <Body size={TYPE_SCALE.small} color={PALETTE.bone} weight={500}>
-            30 días naturales
-          </Body>
+        <div style={{
+          height: 1,
+          background: 'linear-gradient(90deg, rgba(199,166,104,0.65) 0%, rgba(199,166,104,0.2) 100%)',
+          marginBottom: 24,
+        }} />
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 36,
+        }}>
+          <CoverMeta label="Folio"    value={propId || '—'} />
+          <CoverMeta label="Fecha"    value={propDate || '—'} />
+          <CoverMeta label="Vigencia" value="30 días naturales" />
+          <CoverMeta label="Cliente"  value={clientName || '—'} />
         </div>
       </div>
     </SlideFrame>
+  );
+}
+
+function CoverMeta({ label, value }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <span style={{
+        fontFamily: "'Inter Tight', sans-serif",
+        fontSize: 10.5, fontWeight: 600,
+        color: 'rgba(199,166,104,0.85)',
+        letterSpacing: '0.34em', textTransform: 'uppercase',
+      }}>
+        {label}
+      </span>
+      <span style={{
+        fontFamily: "'Cormorant Garamond', serif",
+        fontStyle: 'normal', fontWeight: 500,
+        fontSize: 24, lineHeight: 1.15,
+        color: PALETTE.bone,
+        letterSpacing: '-0.005em',
+      }}>
+        {value}
+      </span>
+    </div>
   );
 }
 

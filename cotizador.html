@@ -67,7 +67,7 @@
     color: #F5F0E8 !important;
   }
 
-  .btn-primary, .btn-secondary, .btn-tertiary {
+  .btn-primary, .btn-secondary, .btn-tertiary, .btn-download {
     appearance: none; cursor: pointer; font-family: inherit;
     border-radius: 6px; transition: all 160ms;
     display: inline-flex; align-items: center; gap: 8px;
@@ -92,6 +92,18 @@
     padding: 9px 12px; font-size: 14px;
   }
   .btn-tertiary:hover { color: #F5F0E8; border-color: rgba(243, 237, 227, 0.4); }
+  /* Acción principal de descarga */
+  .btn-download {
+    background: #F5F0E8; color: #1C1A18;
+    border: 1px solid #F5F0E8;
+    padding: 9px 18px; font-size: 12.5px; font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .btn-download:hover { background: #CC6633; color: #1C1A18; border-color: #CC6633; }
+  .btn-download.btn-download-confirm {
+    padding: 12px 24px; font-size: 13px;
+    letter-spacing: 0.06em;
+  }
   .btn-icon { font-size: 14px; opacity: 0.85; }
   .btn-counter {
     background: rgba(14, 14, 14, 0.2); padding: 2px 7px; border-radius: 4px;
@@ -734,8 +746,62 @@
   .prices-notas:focus { border-color: #CC6633; }
 
   /* ── Print: ocultar topbar y overlays ───────────────────── */
+  /* DOWNLOAD REVIEW MODAL — resumen de slides activos antes de descargar */
+  .download-summary {
+    flex: 1; overflow-y: auto;
+    padding: 22px 32px 32px;
+  }
+  .download-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .download-summary-card {
+    position: relative;
+    background: rgba(243, 237, 227, 0.03);
+    border: 1px solid rgba(204, 102, 51, 0.25);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .download-summary-num {
+    position: absolute; top: 8px; left: 8px;
+    background: rgba(0, 0, 0, 0.72);
+    color: #CC6633;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 4px 9px;
+    border-radius: 3px;
+    z-index: 3;
+    backdrop-filter: blur(6px);
+    font-variant-numeric: tabular-nums;
+  }
+  .download-summary-foot {
+    padding: 10px 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 8px;
+    border-top: 1px solid rgba(243, 237, 227, 0.06);
+    background: rgba(14, 14, 14, 0.3);
+  }
+  .download-summary-name {
+    font-size: 12px; color: #F5F0E8; font-weight: 600;
+    letter-spacing: -0.01em;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    flex: 1; min-width: 0;
+  }
+  .download-summary-seg {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; color: rgba(243, 237, 227, 0.65);
+    letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .download-summary-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--seg-color, #CC6633);
+    display: inline-block;
+  }
+
   @media print {
-    .topbar, .picker-overlay { display: none !important; }
+    .topbar, .picker-overlay, .full-preview-overlay { display: none !important; }
     .deck-area { position: static !important; }
     deck-stage { top: 0 !important; }
   }
