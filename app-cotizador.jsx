@@ -15,6 +15,7 @@ const PALETTE = window.PALETTE;
 const {
   SlideCover, SlidePromise, SlidePillars, SlideMethod, SlideAroma,
   SlideCatalog, SlideQuote, SlideCuradora, SlideCompliance, SlideTrust, SlideClose,
+  SlideScentAdvisor,
 } = window;
 
 // Slide dinámico de precios - definido más abajo
@@ -23,8 +24,12 @@ let SlideCotizacionPrecios; // forward decl
 const SLIDE_RENDERERS = {
   cover: SlideCover, promise: SlidePromise, pillars: SlidePillars,
   curadora: SlideCuradora, method: SlideMethod, aroma: SlideAroma,
+  scentAdvisor: SlideScentAdvisor,
   catalog: SlideCatalog, quote: SlideQuote,
+  // 'cotizacion' (legacy) y 'cotizador' (new kind del segmento Long Tail)
+  // ambos renderizan el slide editable dinámico de precios.
   cotizacion: (props) => SlideCotizacionPrecios(props),
+  cotizador:  (props) => SlideCotizacionPrecios(props),
   compliance: SlideCompliance, trust: SlideTrust, close: SlideClose,
 };
 
@@ -35,9 +40,11 @@ const SLIDE_LABELS = {
   curadora: "Curaduría · Manuela",
   method: "Metodología (6 fases)",
   aroma: "Arquitectura olfativa",
+  scentAdvisor: "Scent Advisor · IA",
   catalog: "Catálogo de equipos",
   quote: "Cotización · alcance",
   cotizacion: "Cotización · precios dinámicos",
+  cotizador: "Cotización · precios dinámicos",
   compliance: "Cumplimiento",
   trust: "Confianza · cliente",
   close: "Cierre",
@@ -50,9 +57,11 @@ const SLIDE_DESCRIPTIONS = {
   curadora: "Manuela P. Fleischhacker · 30+ años de oficio",
   method: "Las fases que eliminan la incertidumbre",
   aroma: "Tiers olfativos · arquitectura por zona",
+  scentAdvisor: "Foto del local → motor olfativo IA → aroma recomendado",
   catalog: "Los difusores que operamos · precios por mes",
   quote: "Alcance económico · términos · entregables",
   cotizacion: "Calculadora dinámica · difusores + descuento + IVA",
+  cotizador: "Calculadora dinámica · difusores + descuento + IVA",
   compliance: "IFRA · ISO · EcoCert · Grand Cru de Grasse",
   trust: "Quote del cliente referencia",
   close: "Cierre · próximo paso · vigencia",
@@ -71,6 +80,8 @@ const SLIDE_SEGMENTS = (() => {
   });
   // El slide dinámico de cotización aplica a todos los segmentos
   map.cotizacion = ['longtail','core','key','enterprise','master'];
+  // El kind 'cotizador' (nuevo, Long Tail) también es global como editable
+  map.cotizador = ['longtail','core','key','enterprise','master'];
   return map;
 })();
 
@@ -295,6 +306,8 @@ function App() {
       {pickerOpen && (
         <SlidePicker
           selected={selected}
+          client={client}
+          prices={prices}
           onClose={() => setPickerOpen(false)}
           onApply={(next) => { setSelected(next); setPickerOpen(false); }}
         />
@@ -391,10 +404,82 @@ function TopBar({ total, totalAvailable, client, onOpenPicker, onOpenClient, onO
 // ============================================================
 // Slide Picker — overlay visual con grid de láminas
 // ============================================================
-function SlidePicker({ selected, onClose, onApply }) {
+// ============================================================
+// SlidePreview — renders a real slide scaled into the card.
+// ============================================================
+function SlidePreview({ Renderer, slideProps, onClick }) {
+  const containerRef = useRef(null);
+  const [scale, setScale] = useState(0.24);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => {
+      const w = el.offsetWidth;
+      if (w > 0) setScale(w / 1920);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div ref={containerRef} className="picker-card-preview" onClick={onClick}>
+      <div className="picker-card-preview-inner" style={{ transform: `scale(${scale})` }}>
+        {Renderer ? <Renderer {...slideProps} /> : null}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// FullPreview — modal a pantalla completa con el slide al máximo.
+// ============================================================
+function FullPreview({ kind, Renderer, slideProps, enabled, onToggle, onClose }) {
+  const stageRef = useRef(null);
+  const [scale, setScale] = useState(0.5);
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const update = () => {
+      const w = el.offsetWidth;
+      if (w > 0) setScale(w / 1920);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  // ESC para cerrar
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+  return (
+    <div className="full-preview-overlay" onClick={onClose}>
+      <div className="full-preview-stage" ref={stageRef} onClick={e => e.stopPropagation()}>
+        <div className="full-preview-meta">{SLIDE_LABELS[kind] || kind}</div>
+        <button className="full-preview-close" onClick={onClose} aria-label="Cerrar">×</button>
+        <div className="full-preview-stage-inner" style={{ transform: `scale(${scale})` }}>
+          {Renderer ? <Renderer {...slideProps} /> : null}
+        </div>
+        <button
+          className={`full-preview-toggle ${enabled ? '' : 'off'}`}
+          onClick={(e) => { e.stopPropagation(); onToggle(); }}
+        >
+          {enabled ? '✓ Incluida · click para quitar' : 'Incluir en cotización'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+function SlidePicker({ selected, client, prices, onClose, onApply }) {
   const [draft, setDraft] = useState(() => selected.map(s => ({ ...s })));
   const [dragKind, setDragKind] = useState(null);
   const [overKind, setOverKind] = useState(null);
+  const [fullPreviewKind, setFullPreviewKind] = useState(null);
   const allKinds = Object.keys(SLIDE_RENDERERS);
   const getRow = (kind) => draft.find(d => d.kind === kind);
 
@@ -521,13 +606,26 @@ function SlidePicker({ selected, onClose, onApply }) {
             const enabled = row?.enabled || false;
             const segment = row?.segment || 'master';
             const segs = SLIDE_SEGMENTS[kind] || ['master'];
-            const thumb = thumbFor(kind, segment);
             const inDraft = !!row;
             const orderIdx = inDraft ? draft.findIndex(d => d.kind === kind) : -1;
             const isFirst = orderIdx <= 0;
             const isLast = orderIdx === draft.length - 1;
             const isDragging = dragKind === kind;
             const isDragOver = overKind === kind && dragKind !== kind;
+            const Renderer = SLIDE_RENDERERS[kind];
+            const segObj = SEGMENTS[segment] || SEGMENTS.master;
+            const slideProps = {
+              segment: segObj,
+              clientName: client?.clientName || 'Cliente',
+              propId: client?.propId || '—',
+              propDate: client?.propDate || '',
+              account: client?.account || '',
+              accountEmail: client?.accountEmail || '',
+              fields: segObj.fields,
+              totalSlides: draft.filter(d => d.enabled).length || 1,
+              idx: Math.max(orderIdx, 0),
+              prices,
+            };
             return (
               <div key={kind}
                    draggable={inDraft}
@@ -542,13 +640,22 @@ function SlidePicker({ selected, onClose, onApply }) {
                     <span className="handle-pos">#{String(orderIdx + 1).padStart(2,'0')}</span>
                   </div>
                 )}
-                <div className="picker-card-thumb"
-                     style={{ backgroundImage: thumb ? `url('${thumb}')` : 'none' }}
-                     onClick={() => toggleKind(kind)}
-                     title={enabled ? 'Click para desactivar' : 'Click para activar'}>
-                  <div className="picker-card-check">
+                <div style={{ position: 'relative' }}>
+                  <SlidePreview
+                    Renderer={Renderer}
+                    slideProps={slideProps}
+                    onClick={() => toggleKind(kind)}
+                  />
+                  <div className="picker-card-check" title={enabled ? 'Click en el preview para quitar' : 'Click en el preview para incluir'}>
                     {enabled ? '☑' : '☐'}
                   </div>
+                  <button
+                    className="picker-card-expand"
+                    onClick={(e) => { e.stopPropagation(); setFullPreviewKind(kind); }}
+                    title="Ver lámina a pantalla completa"
+                  >
+                    ⤢ Ver grande
+                  </button>
                 </div>
                 <div className="picker-card-body">
                   <div className="picker-card-label">{SLIDE_LABELS[kind]}</div>
@@ -593,6 +700,34 @@ function SlidePicker({ selected, onClose, onApply }) {
             </button>
           </div>
         </div>
+
+        {fullPreviewKind && (() => {
+          const row = getRow(fullPreviewKind);
+          const segment = row?.segment || 'master';
+          const segObj = SEGMENTS[segment] || SEGMENTS.master;
+          const orderIdx = row ? draft.findIndex(d => d.kind === fullPreviewKind) : 0;
+          return (
+            <FullPreview
+              kind={fullPreviewKind}
+              Renderer={SLIDE_RENDERERS[fullPreviewKind]}
+              slideProps={{
+                segment: segObj,
+                clientName: client?.clientName || 'Cliente',
+                propId: client?.propId || '—',
+                propDate: client?.propDate || '',
+                account: client?.account || '',
+                accountEmail: client?.accountEmail || '',
+                fields: segObj.fields,
+                totalSlides: draft.filter(d => d.enabled).length || 1,
+                idx: Math.max(orderIdx, 0),
+                prices,
+              }}
+              enabled={row?.enabled || false}
+              onToggle={() => toggleKind(fullPreviewKind)}
+              onClose={() => setFullPreviewKind(null)}
+            />
+          );
+        })()}
       </div>
     </div>
   );

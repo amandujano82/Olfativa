@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Olfativa · Scent Advisor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="auth.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1C1A18;
+    --ink-2: #2A2724;
+    --bone: #F5F0E8;
+    --bone-soft: rgba(243, 237, 227, 0.7);
+    --bone-mute: rgba(243, 237, 227, 0.45);
+    --rule: rgba(243, 237, 227, 0.14);
+    --terra: #CC6633;
+    --terra-soft: #A85528;
+    --bg: #050505;
+  }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--bone);
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  * { box-sizing: border-box; }
+  button { font-family: inherit; cursor: pointer; }
+  input, textarea, select { font-family: inherit; }
+
+  .stage {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    padding: 32px 48px;
+  }
+  .stage-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px;
+  }
+  .logo-mark {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 22px; color: var(--bone);
+    letter-spacing: 0.02em;
+  }
+  .logo-mark span { color: var(--terra); }
+  .step-meta {
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--bone-mute); font-weight: 500;
+  }
+
+  .stage-body {
+    flex: 1;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    padding: 24px 0 48px;
+  }
+
+  .eyebrow {
+    font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--terra); font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .question {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 56px; line-height: 1.05; font-weight: 400;
+    color: var(--bone);
+    margin: 0 0 14px;
+    max-width: 880px;
+  }
+  .question em { font-style: italic; color: var(--terra); }
+  .sub {
+    font-size: 16px; line-height: 1.55; color: var(--bone-soft);
+    max-width: 580px; margin: 0 auto 44px;
+  }
+
+  /* CHOICE CARDS */
+  .choices {
+    display: grid; gap: 16px;
+    width: 100%; max-width: 920px;
+  }
+  .choices.two   { grid-template-columns: repeat(2, 1fr); }
+  .choices.four  { grid-template-columns: repeat(4, 1fr); max-width: 1180px; }
+
+  .choice {
+    background: rgba(243, 237, 227, 0.04);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 28px 24px;
+    text-align: left;
+    color: var(--bone);
+    transition: all 0.18s ease;
+    display: flex; flex-direction: column;
+    min-height: 180px;
+    position: relative;
+  }
+  .choice:hover {
+    background: rgba(204, 102, 51, 0.08);
+    border-color: rgba(204, 102, 51, 0.55);
+    transform: translateY(-2px);
+  }
+  .choice-num {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 14px; color: var(--terra);
+    letter-spacing: 0.04em; margin-bottom: 10px;
+  }
+  .choice-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; line-height: 1.1; font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .choice-sub {
+    font-size: 13px; color: var(--bone-mute);
+    line-height: 1.45; margin-top: auto; padding-top: 12px;
+    border-top: 1px solid var(--rule);
+  }
+  .choice-tag {
+    position: absolute; top: 14px; right: 14px;
+    font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--terra); font-weight: 600;
+  }
+
+  /* FORM */
+  .form {
+    width: 100%; max-width: 560px;
+    display: flex; flex-direction: column; gap: 22px;
+    text-align: left;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--bone-mute); font-weight: 500;
+  }
+  .field input, .field select, .field textarea {
+    background: rgba(243, 237, 227, 0.05);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--bone);
+    padding: 12px 14px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--terra);
+    background: rgba(243, 237, 227, 0.07);
+  }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .actions {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 12px; gap: 16px;
+  }
+  .btn-primary {
+    background: var(--terra); color: var(--ink);
+    border: none; border-radius: 3px;
+    padding: 14px 28px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background 0.15s ease;
+  }
+  .btn-primary:hover { background: #d97a40; }
+  .btn-link {
+    background: transparent; border: none;
+    color: var(--bone-mute); font-size: 13px;
+    letter-spacing: 0.02em; padding: 8px 10px;
+  }
+  .btn-link:hover { color: var(--bone); }
+
+  /* TRAIL */
+  .trail {
+    display: flex; gap: 10px; align-items: center;
+    margin-top: 24px;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--bone-mute);
+  }
+  .trail .crumb {
+    background: rgba(243, 237, 227, 0.05);
+    border: 1px solid var(--rule);
+    padding: 5px 10px; border-radius: 999px;
+  }
+  .trail .sep { color: var(--bone-mute); opacity: 0.5; }
+
+  /* LICITACIÓN BADGE */
+  .pill {
+    display: inline-block;
+    background: rgba(204, 102, 51, 0.14);
+    color: var(--terra);
+    border: 1px solid rgba(204, 102, 51, 0.4);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .footer-note {
+    font-size: 12px; color: var(--bone-mute);
+    text-align: center; margin-top: 32px;
+    letter-spacing: 0.02em;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="scent-advisor.jsx"></script>
+</body>
+</html>
