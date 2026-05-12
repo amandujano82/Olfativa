@@ -315,7 +315,7 @@ const SEGMENTS = {
     catalogDeviceIds: ["fitz", "moai", "aspen", "montblanc", "montblancXl", "liberty", "empire", "ural", "everest"],
     catalogFootnote: "IVA no incluido · Precios vigentes 2026 · Asignación por sede según diagnóstico técnico",
 
-    slides: ["cover", "promise", "pillars", "curadora", "method", "trust", "close"],
+    slides: ["cover", "promise", "pillars", "curadora", "method", "close"],
   },
 
   // ── 🟥 ENTERPRISE ─────────────────────────────────────────
@@ -411,7 +411,7 @@ const SEGMENTS = {
       close: "photos/200-2.jpg",       // Uniforme "Hace toda la diferencia"
     },
 
-    slides: ["cover", "promise", "pillars", "curadora", "method", "aroma", "compliance", "trust", "close"],
+    slides: ["cover", "promise", "pillars", "curadora", "method", "aroma", "compliance", "close"],
   },
 
   // ── ⬛ MASTER ─────────────────────────────────────────────

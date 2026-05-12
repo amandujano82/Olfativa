@@ -295,14 +295,72 @@ function App() {
     return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
-  const confirmDownload = () => {
+  // Genera el PDF de la cotización capturando cada slide del deck con
+  // html2canvas y armando un PDF multipágina con jsPDF. Params tuneados
+  // para que el archivo pese poco (idealmente < 5 MB) y siga legible:
+  //   · scale 1.4    (resolución suficiente sin inflar bytes)
+  //   · JPEG 0.65    (compresión agresiva en fotos del deck)
+  //   · compress: true (Flate sobre los streams del PDF)
+  // Cada <section> del deck-stage se renderiza a 1920×1080 y se inserta
+  // como una página landscape.
+  const generateDeckPDF = async () => {
+    const stage = document.querySelector('deck-stage');
+    const html2canvas = window.html2canvas;
+    const jsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    if (!stage || !html2canvas || !jsPDFCtor) {
+      throw new Error('PDF libraries no disponibles');
+    }
+    const sections = Array.from(stage.querySelectorAll('section'));
+    if (!sections.length) throw new Error('Sin láminas para exportar');
+
+    const pdf = new jsPDFCtor({
+      orientation: 'landscape',
+      unit: 'px',
+      format: [1920, 1080],
+      compress: true,
+    });
+
+    for (let i = 0; i < sections.length; i++) {
+      const sec = sections[i];
+      // eslint-disable-next-line no-await-in-loop
+      const canvas = await html2canvas(sec, {
+        scale: 1.4,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#0E0E0E',
+        width: 1920,
+        height: 1080,
+        windowWidth: 1920,
+        windowHeight: 1080,
+        logging: false,
+      });
+      const imgData = canvas.toDataURL('image/jpeg', 0.65);
+      if (i > 0) pdf.addPage([1920, 1080], 'landscape');
+      pdf.addImage(imgData, 'JPEG', 0, 0, 1920, 1080, undefined, 'FAST');
+    }
+
+    const slug = (client.clientName || 'cliente').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'cliente';
+    const propSlug = (client.propId || 'olfativa').toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '-');
+    pdf.save(`cotizacion-${slug}-${propSlug}.pdf`);
+  };
+
+  const confirmDownload = async () => {
     setDownloadOpen(false);
-    // Esperamos a que el modal se desmonte antes de imprimir para que no
-    // entre en el PDF, y luego abrimos el cliente de correo.
-    setTimeout(() => {
+    // Espera a que el modal se desmonte antes de capturar (evita que
+    // quede dentro del PDF) y a que el navegador pinte de nuevo el deck.
+    await new Promise(r => setTimeout(r, 120));
+    try {
+      await generateDeckPDF();
+      // Dejamos que arranque la descarga antes de abrir el correo.
+      setTimeout(() => { window.location.href = buildMailto(); }, 400);
+    } catch (err) {
+      console.error('PDF gen falló, fallback a window.print()', err);
       window.print();
       setTimeout(() => { window.location.href = buildMailto(); }, 300);
-    }, 80);
+    }
   };
 
   const reset = () => {
@@ -625,7 +683,7 @@ function DownloadReviewModal({ activeSlides, client, prices, triageSegment, onCl
         <div className="picker-footer">
           <div className="picker-footer-info">
             <span style={{ display: 'block', marginBottom: 2 }}>
-              <strong>Acción doble:</strong> se abre el diálogo de impresión (para guardar como PDF) <em>y</em> un correo pre-cargado para notificar al equipo.
+              <strong>Acción doble:</strong> se descarga el PDF (comprimido, ideal para correo) <em>y</em> se abre un correo pre-cargado para notificar al equipo.
             </span>
             <span style={{ fontSize: 11, opacity: 0.55 }}>
               Para: automation.sales@olfativa.com, clopez@olfativa.com
