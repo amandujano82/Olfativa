@@ -116,14 +116,45 @@ function thumbFor(kind, seg) {
   return null;
 }
 
+// ── Orden canónico de tipos de slide en el deck ──────────────
+// El picker agrupa POR TIPO. Dentro de cada tipo el vendedor elige
+// la variante (qué copy de qué segmento usar). El deck respeta este
+// orden y no se reordena manualmente.
+const KIND_ORDER = [
+  'cover', 'promise', 'pillars',
+  'curadora', 'method', 'aroma',
+  'scentAdvisor',
+  'catalog',
+  'compliance',
+  'quote', 'cotizacion',
+  'trust', 'close',
+];
+
+// Normalización: `cotizador` (kind nuevo del rediseño Long Tail) y
+// `cotizacion` (legacy) son la MISMA lámina dinámica de precios.
+// Mostramos una sola en el picker (`cotizacion`).
+function normalizeKind(k) { return k === 'cotizador' ? 'cotizacion' : k; }
+function normalizeSelected(arr) {
+  if (!Array.isArray(arr)) return [];
+  const seen = new Set();
+  const out = [];
+  for (const s of arr) {
+    const k = normalizeKind(s.kind);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push({ ...s, kind: k });
+  }
+  return out;
+}
+
 // ── Default cotización: master completo ──────────────────────
 function defaultSelected() {
-  return SEGMENTS.master.slides.map((kind, i) => ({
+  return normalizeSelected(SEGMENTS.master.slides.map((kind, i) => ({
     uid: `s${i}-${kind}`,
     kind,
     segment: 'master',
     enabled: true,
-  }));
+  })));
 }
 
 // ── Persistencia ─────────────────────────────────────────────
@@ -199,9 +230,12 @@ function authForDescuento(totalCant, descuento) {
 // ============================================================
 function App() {
   const persisted = useMemo(() => loadState(), []);
+  // Segmento elegido por el ejecutivo en el triage del Scent Advisor.
+  // Se usa para marcar la variante "Recomendado" dentro de cada tipo de slide.
+  const triageSegment = persisted?.meta?.segment || null;
   const [selected, setSelected] = useState(() =>
     (persisted && Array.isArray(persisted.selected) && persisted.selected.length)
-      ? persisted.selected
+      ? normalizeSelected(persisted.selected)
       : defaultSelected()
   );
   const [client, setClient] = useState(() => ({
@@ -225,7 +259,17 @@ function App() {
     document.title = `Cotización · ${client.clientName} · ${client.propId}`;
   }, [client.clientName, client.propId]);
 
-  const activeSlides = useMemo(() => selected.filter(s => s.enabled), [selected]);
+  // El deck se renderiza en el orden canónico de KIND_ORDER (no manual).
+  // Kinds que no están en KIND_ORDER se ponen al final (futureproof).
+  const activeSlides = useMemo(() => {
+    const enabled = selected.filter(s => s.enabled);
+    const byOrder = KIND_ORDER
+      .map(k => enabled.find(s => s.kind === k))
+      .filter(Boolean);
+    const known = new Set(KIND_ORDER);
+    const unknown = enabled.filter(s => !known.has(s.kind));
+    return [...byOrder, ...unknown];
+  }, [selected]);
   const total = activeSlides.length;
 
   const updateClient = (k, v) => setClient(c => ({ ...c, [k]: v }));
@@ -308,6 +352,7 @@ function App() {
           selected={selected}
           client={client}
           prices={prices}
+          triageSegment={triageSegment}
           onClose={() => setPickerOpen(false)}
           onApply={(next) => { setSelected(next); setPickerOpen(false); }}
         />
@@ -434,7 +479,7 @@ function SlidePreview({ Renderer, slideProps, onClick }) {
 // ============================================================
 // FullPreview — modal a pantalla completa con el slide al máximo.
 // ============================================================
-function FullPreview({ kind, Renderer, slideProps, enabled, onToggle, onClose }) {
+function FullPreview({ kind, segmentName, Renderer, slideProps, enabled, onToggle, onClose }) {
   const stageRef = useRef(null);
   const [scale, setScale] = useState(0.5);
   useEffect(() => {
@@ -458,7 +503,10 @@ function FullPreview({ kind, Renderer, slideProps, enabled, onToggle, onClose })
   return (
     <div className="full-preview-overlay" onClick={onClose}>
       <div className="full-preview-stage" ref={stageRef} onClick={e => e.stopPropagation()}>
-        <div className="full-preview-meta">{SLIDE_LABELS[kind] || kind}</div>
+        <div className="full-preview-meta">
+          {SLIDE_LABELS[kind] || kind}
+          {segmentName && <span className="full-preview-meta-seg"> · {segmentName}</span>}
+        </div>
         <button className="full-preview-close" onClick={onClose} aria-label="Cerrar">×</button>
         <div className="full-preview-stage-inner" style={{ transform: `scale(${scale})` }}>
           {Renderer ? <Renderer {...slideProps} /> : null}
@@ -467,7 +515,7 @@ function FullPreview({ kind, Renderer, slideProps, enabled, onToggle, onClose })
           className={`full-preview-toggle ${enabled ? '' : 'off'}`}
           onClick={(e) => { e.stopPropagation(); onToggle(); }}
         >
-          {enabled ? '✓ Incluida · click para quitar' : 'Incluir en cotización'}
+          {enabled ? '✓ Variante seleccionada · click para reconfirmar' : 'Usar esta variante'}
         </button>
       </div>
     </div>
@@ -475,103 +523,100 @@ function FullPreview({ kind, Renderer, slideProps, enabled, onToggle, onClose })
 }
 
 // ============================================================
-function SlidePicker({ selected, client, prices, onClose, onApply }) {
-  const [draft, setDraft] = useState(() => selected.map(s => ({ ...s })));
-  const [dragKind, setDragKind] = useState(null);
-  const [overKind, setOverKind] = useState(null);
-  const [fullPreviewKind, setFullPreviewKind] = useState(null);
-  const allKinds = Object.keys(SLIDE_RENDERERS);
+function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply }) {
+  const [draft, setDraft] = useState(() => normalizeSelected(selected.map(s => ({ ...s }))));
+  // fullPreviewTarget: { kind, segment } | null
+  const [fullPreviewTarget, setFullPreviewTarget] = useState(null);
   const getRow = (kind) => draft.find(d => d.kind === kind);
 
-  const toggleKind = (kind) => {
+  // Variantes disponibles para un tipo de slide (segmentos que tienen copy)
+  const variantsFor = (kind) => SLIDE_SEGMENTS[kind] || ['master'];
+  // Variante por defecto al activar un tipo: la recomendada si aplica, si no la primera
+  const defaultVariantFor = (kind) => {
+    const vs = variantsFor(kind);
+    return (triageSegment && vs.includes(triageSegment)) ? triageSegment : vs[0];
+  };
+
+  // ── Handlers ──────────────────────────────────────────────
+  // Selecciona una variante para un tipo de slide. La incluye en el deck.
+  const setVariantForKind = (kind, segment) => {
     setDraft(prev => {
-      const existing = prev.find(d => d.kind === kind);
-      if (existing) {
-        return prev.map(d => d.kind === kind ? { ...d, enabled: !d.enabled } : d);
-      } else {
+      const idx = prev.findIndex(d => d.kind === kind);
+      if (idx === -1) {
         return [...prev, {
           uid: `s-${kind}-${Date.now()}`,
-          kind, segment: 'master', enabled: true,
+          kind, segment, enabled: true,
         }];
       }
+      return prev.map(d => d.kind === kind ? { ...d, segment, enabled: true } : d);
     });
   };
 
-  const setSegmentForKind = (kind, seg) => {
+  // Alterna incluir / no incluir un tipo. Si se incluye y no había draft,
+  // se inserta con la variante recomendada (o la primera disponible).
+  const toggleKindEnabled = (kind) => {
     setDraft(prev => {
-      const existing = prev.find(d => d.kind === kind);
-      if (existing) {
-        return prev.map(d => d.kind === kind ? { ...d, segment: seg } : d);
-      } else {
+      const idx = prev.findIndex(d => d.kind === kind);
+      if (idx === -1) {
         return [...prev, {
           uid: `s-${kind}-${Date.now()}`,
-          kind, segment: seg, enabled: true,
+          kind,
+          segment: defaultVariantFor(kind),
+          enabled: true,
         }];
       }
+      return prev.map(d => d.kind === kind ? { ...d, enabled: !d.enabled } : d);
     });
   };
 
-  const moveKind = (kind, dir) => {
+  // "Aplicar todo": para CADA tipo, escoger la variante de un segmento dado
+  // (o la primera disponible si ese segmento no tiene copy para ese tipo).
+  // Marca como enabled solo los tipos donde el segmento elegido sí tiene copy.
+  const applyAllVariants = (segKey) => {
     setDraft(prev => {
-      const i = prev.findIndex(d => d.kind === kind);
-      if (i < 0) return prev;
-      const j = i + dir;
-      if (j < 0 || j >= prev.length) return prev;
-      const next = prev.slice();
-      const [item] = next.splice(i, 1);
-      next.splice(j, 0, item);
+      const next = prev.map(d => ({ ...d }));
+      KIND_ORDER.forEach(kind => {
+        if (!SLIDE_RENDERERS[kind]) return;
+        const vs = variantsFor(kind);
+        const segHasIt = vs.includes(segKey);
+        const targetSeg = segHasIt ? segKey : vs[0];
+        const i = next.findIndex(d => d.kind === kind);
+        if (i === -1) {
+          next.push({
+            uid: `s-${kind}-${Date.now()}`,
+            kind, segment: targetSeg, enabled: segHasIt,
+          });
+        } else {
+          next[i] = { ...next[i], segment: targetSeg, enabled: segHasIt };
+        }
+      });
       return next;
     });
   };
 
-  // Drag & drop reorder
-  const onDragStart = (kind) => (e) => {
-    setDragKind(kind);
-    e.dataTransfer.effectAllowed = 'move';
-    try { e.dataTransfer.setData('text/plain', kind); } catch {}
-  };
-  const onDragOver = (kind) => (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    if (overKind !== kind) setOverKind(kind);
-  };
-  const onDragEnd = () => { setDragKind(null); setOverKind(null); };
-  const onDrop = (toKind) => (e) => {
-    e.preventDefault();
-    const fromKind = dragKind;
-    setDragKind(null); setOverKind(null);
-    if (!fromKind || fromKind === toKind) return;
-    setDraft(prev => {
-      const fromIdx = prev.findIndex(d => d.kind === fromKind);
-      const toIdx = prev.findIndex(d => d.kind === toKind);
-      if (fromIdx < 0) return prev;
-      // Si el destino no está en draft, lo agregamos primero
-      let work = prev.slice();
-      if (toIdx < 0) {
-        work.push({ uid: `s-${toKind}-${Date.now()}`, kind: toKind, segment: 'master', enabled: true });
-      }
-      const fromI = work.findIndex(d => d.kind === fromKind);
-      const toI = work.findIndex(d => d.kind === toKind);
-      const [item] = work.splice(fromI, 1);
-      const adjustedTo = fromI < toI ? toI - 1 : toI;
-      work.splice(adjustedTo, 0, item);
-      return work;
-    });
-  };
+  // Lista de tipos a mostrar en el picker, en orden canónico.
+  const kindList = useMemo(() => (
+    KIND_ORDER.filter(k => !!SLIDE_RENDERERS[k])
+  ), []);
 
-  const orderedKinds = useMemo(() => {
-    const inDraft = draft.map(d => d.kind);
-    const notIn = allKinds.filter(k => !inDraft.includes(k));
-    return [...inDraft, ...notIn];
-  }, [draft]); // eslint-disable-line
+  const enabledCount = useMemo(() => (
+    draft.filter(d => d.enabled).length
+  ), [draft]);
 
-  const enabledCount = draft.filter(d => d.enabled).length;
-
-  const loadPreset = (segKey) => {
-    const seg = SEGMENTS[segKey];
-    setDraft(seg.slides.map((kind, i) => ({
-      uid: `s${i}-${kind}`, kind, segment: segKey, enabled: true,
-    })));
+  const buildSlideProps = (kind, segment) => {
+    const segObj = SEGMENTS[segment] || SEGMENTS.master;
+    return {
+      segment: segObj,
+      clientName: client?.clientName || 'Cliente',
+      propId: client?.propId || '—',
+      propDate: client?.propDate || '',
+      account: client?.account || '',
+      accountEmail: client?.accountEmail || '',
+      fields: segObj.fields,
+      totalSlides: enabledCount || 1,
+      idx: 0,
+      prices,
+    };
   };
 
   return (
@@ -579,112 +624,97 @@ function SlidePicker({ selected, client, prices, onClose, onApply }) {
       <div className="picker-modal" onClick={e => e.stopPropagation()}>
         <div className="picker-header">
           <div>
-            <div className="picker-eyebrow">Selecciona y ordena</div>
-            <h2 className="picker-title">Láminas de la cotización</h2>
+            <div className="picker-eyebrow">Tipos de lámina · elige variante</div>
+            <h2 className="picker-title">Armado de la cotización</h2>
             <div className="picker-sub">
-              Click en la imagen para activar/desactivar · cambia el copy con el dropdown · ordena con ▲▼
+              {triageSegment
+                ? <>Recomendado para tu cliente <strong>{SEG_LABEL[triageSegment]}</strong>. Cambia la variante en el tipo que quieras.</>
+                : <>Cada tipo de lámina tiene variantes por segmento. Click en la variante que quieras usar.</>}
             </div>
           </div>
           <button className="picker-close" onClick={onClose} aria-label="Cerrar">×</button>
         </div>
 
         <div className="picker-presets">
-          <span className="picker-presets-label">Carga un machote pre-armado:</span>
+          <span className="picker-presets-label">Aplicar copy de un segmento a todos los tipos:</span>
           {['longtail','core','key','enterprise','master'].map(seg => (
             <button key={seg}
-                    onClick={() => { if (confirm(`Reemplazar la cotización con el machote "${SEG_SHORT[seg]}"?`)) loadPreset(seg); }}
-                    className="picker-preset-btn">
+                    onClick={() => { if (confirm(`Aplicar el copy "${SEG_SHORT[seg]}" a todos los tipos de slide?`)) applyAllVariants(seg); }}
+                    className={`picker-preset-btn ${seg === triageSegment ? 'is-recommended' : ''}`}>
               <span className="picker-preset-dot" style={{ background: SEG_COLOR[seg] }} />
               {SEG_SHORT[seg]}
+              {seg === triageSegment && <span className="picker-preset-tag">★</span>}
             </button>
           ))}
         </div>
 
-        <div className="picker-grid">
-          {orderedKinds.map((kind, i) => {
+        <div className="picker-sections">
+          {kindList.map(kind => {
             const row = getRow(kind);
-            const enabled = row?.enabled || false;
-            const segment = row?.segment || 'master';
-            const segs = SLIDE_SEGMENTS[kind] || ['master'];
-            const inDraft = !!row;
-            const orderIdx = inDraft ? draft.findIndex(d => d.kind === kind) : -1;
-            const isFirst = orderIdx <= 0;
-            const isLast = orderIdx === draft.length - 1;
-            const isDragging = dragKind === kind;
-            const isDragOver = overKind === kind && dragKind !== kind;
+            const isEnabled = !!row?.enabled;
+            const currentSegment = row?.segment;
+            const variants = variantsFor(kind);
+            const recommended = (triageSegment && variants.includes(triageSegment)) ? triageSegment : null;
             const Renderer = SLIDE_RENDERERS[kind];
-            const segObj = SEGMENTS[segment] || SEGMENTS.master;
-            const slideProps = {
-              segment: segObj,
-              clientName: client?.clientName || 'Cliente',
-              propId: client?.propId || '—',
-              propDate: client?.propDate || '',
-              account: client?.account || '',
-              accountEmail: client?.accountEmail || '',
-              fields: segObj.fields,
-              totalSlides: draft.filter(d => d.enabled).length || 1,
-              idx: Math.max(orderIdx, 0),
-              prices,
-            };
             return (
-              <div key={kind}
-                   draggable={inDraft}
-                   onDragStart={inDraft ? onDragStart(kind) : undefined}
-                   onDragOver={onDragOver(kind)}
-                   onDragEnd={onDragEnd}
-                   onDrop={onDrop(kind)}
-                   className={`picker-card ${enabled ? 'is-on' : ''} ${isDragging ? 'is-dragging' : ''} ${isDragOver ? 'is-dragover' : ''}`}>
-                {inDraft && (
-                  <div className="picker-card-handle" title="Arrastra para reordenar">
-                    <span className="handle-icon">⋮⋮</span>
-                    <span className="handle-pos">#{String(orderIdx + 1).padStart(2,'0')}</span>
+              <section key={kind} className={`picker-kind ${isEnabled ? 'is-on' : 'is-off'}`}>
+                <header className="picker-kind-head">
+                  <div className="picker-kind-info">
+                    <div className="picker-kind-title-row">
+                      <h3 className="picker-kind-title">{SLIDE_LABELS[kind]}</h3>
+                      {isEnabled
+                        ? <span className="picker-kind-status on">Incluida en la cotización</span>
+                        : <span className="picker-kind-status off">No incluida</span>}
+                    </div>
+                    <div className="picker-kind-desc">{SLIDE_DESCRIPTIONS[kind]}</div>
                   </div>
-                )}
-                <div style={{ position: 'relative' }}>
-                  <SlidePreview
-                    Renderer={Renderer}
-                    slideProps={slideProps}
-                    onClick={() => toggleKind(kind)}
-                  />
-                  <div className="picker-card-check" title={enabled ? 'Click en el preview para quitar' : 'Click en el preview para incluir'}>
-                    {enabled ? '☑' : '☐'}
+                  <div className="picker-kind-actions">
+                    <button
+                      onClick={() => toggleKindEnabled(kind)}
+                      className={`picker-kind-toggle ${isEnabled ? 'on' : ''}`}
+                      title={isEnabled ? 'Quitar este tipo del deck' : 'Incluir este tipo en el deck'}>
+                      {isEnabled ? '✓ Incluida' : '+ Incluir'}
+                    </button>
                   </div>
-                  <button
-                    className="picker-card-expand"
-                    onClick={(e) => { e.stopPropagation(); setFullPreviewKind(kind); }}
-                    title="Ver lámina a pantalla completa"
-                  >
-                    ⤢ Ver grande
-                  </button>
-                </div>
-                <div className="picker-card-body">
-                  <div className="picker-card-label">{SLIDE_LABELS[kind]}</div>
-                  <div className="picker-card-desc">{SLIDE_DESCRIPTIONS[kind]}</div>
-                  <div className="picker-card-controls">
-                    <select value={segment}
-                            onChange={e => setSegmentForKind(kind, e.target.value)}
-                            className="picker-card-select"
-                            title="Copy del segmento">
-                      {segs.map(s => (
-                        <option key={s} value={s}>Copy: {SEG_SHORT[s]}</option>
-                      ))}
-                    </select>
-                    {inDraft && (
-                      <div className="picker-card-arrows">
-                        <button onClick={() => moveKind(kind, -1)}
-                                disabled={isFirst}
-                                className="picker-card-arrow"
-                                title="Subir un lugar">▲</button>
-                        <button onClick={() => moveKind(kind, +1)}
-                                disabled={isLast}
-                                className="picker-card-arrow"
-                                title="Bajar un lugar">▼</button>
+                </header>
+
+                <div className="picker-variants">
+                  {variants.map(seg => {
+                    const isSelected = isEnabled && currentSegment === seg;
+                    const isRecommended = seg === recommended;
+                    const slideProps = buildSlideProps(kind, seg);
+                    return (
+                      <div key={seg}
+                           className={`picker-variant ${isSelected ? 'is-selected' : ''} ${isRecommended ? 'is-recommended' : ''}`}
+                           onClick={() => setVariantForKind(kind, seg)}>
+                        {isRecommended && (
+                          <span className="picker-variant-badge" title="Recomendado para tu cliente según el triage">
+                            ★ Recomendado
+                          </span>
+                        )}
+                        <div className="picker-variant-check" title={isSelected ? 'Variante seleccionada' : 'Click para seleccionar'}>
+                          {isSelected ? '✓' : ''}
+                        </div>
+                        <SlidePreview
+                          Renderer={Renderer}
+                          slideProps={slideProps}
+                          onClick={() => setVariantForKind(kind, seg)}
+                        />
+                        <div className="picker-variant-foot">
+                          <span className="picker-variant-dot" style={{ background: SEG_COLOR[seg] }} />
+                          <span className="picker-variant-name">{SEG_SHORT[seg]}</span>
+                          <button
+                            className="picker-variant-expand"
+                            onClick={(e) => { e.stopPropagation(); setFullPreviewTarget({ kind, segment: seg }); }}
+                            title="Ver a pantalla completa">
+                            ⤢
+                          </button>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                  <div className="picker-card-segline" style={{ background: SEG_COLOR[segment] }} />
+                    );
+                  })}
                 </div>
-              </div>
+              </section>
             );
           })}
         </div>
@@ -701,30 +731,19 @@ function SlidePicker({ selected, client, prices, onClose, onApply }) {
           </div>
         </div>
 
-        {fullPreviewKind && (() => {
-          const row = getRow(fullPreviewKind);
-          const segment = row?.segment || 'master';
-          const segObj = SEGMENTS[segment] || SEGMENTS.master;
-          const orderIdx = row ? draft.findIndex(d => d.kind === fullPreviewKind) : 0;
+        {fullPreviewTarget && (() => {
+          const { kind, segment } = fullPreviewTarget;
+          const row = getRow(kind);
+          const isSelectedVariant = !!row?.enabled && row?.segment === segment;
           return (
             <FullPreview
-              kind={fullPreviewKind}
-              Renderer={SLIDE_RENDERERS[fullPreviewKind]}
-              slideProps={{
-                segment: segObj,
-                clientName: client?.clientName || 'Cliente',
-                propId: client?.propId || '—',
-                propDate: client?.propDate || '',
-                account: client?.account || '',
-                accountEmail: client?.accountEmail || '',
-                fields: segObj.fields,
-                totalSlides: draft.filter(d => d.enabled).length || 1,
-                idx: Math.max(orderIdx, 0),
-                prices,
-              }}
-              enabled={row?.enabled || false}
-              onToggle={() => toggleKind(fullPreviewKind)}
-              onClose={() => setFullPreviewKind(null)}
+              kind={kind}
+              segmentName={SEG_LABEL[segment] || segment}
+              Renderer={SLIDE_RENDERERS[kind]}
+              slideProps={buildSlideProps(kind, segment)}
+              enabled={isSelectedVariant}
+              onToggle={() => setVariantForKind(kind, segment)}
+              onClose={() => setFullPreviewTarget(null)}
             />
           );
         })()}
