@@ -15,6 +15,7 @@ const PALETTE = window.PALETTE;
 const {
   SlideCover, SlidePromise, SlidePillars, SlideMethod, SlideAroma,
   SlideCatalog, SlideQuote, SlideCuradora, SlideCompliance, SlideTrust, SlideClose,
+  SlideScentAdvisor,
 } = window;
 
 // Slide dinámico de precios - definido más abajo
@@ -23,8 +24,12 @@ let SlideCotizacionPrecios; // forward decl
 const SLIDE_RENDERERS = {
   cover: SlideCover, promise: SlidePromise, pillars: SlidePillars,
   curadora: SlideCuradora, method: SlideMethod, aroma: SlideAroma,
+  scentAdvisor: SlideScentAdvisor,
   catalog: SlideCatalog, quote: SlideQuote,
+  // 'cotizacion' (legacy) y 'cotizador' (new kind del segmento Long Tail)
+  // ambos renderizan el slide editable dinámico de precios.
   cotizacion: (props) => SlideCotizacionPrecios(props),
+  cotizador:  (props) => SlideCotizacionPrecios(props),
   compliance: SlideCompliance, trust: SlideTrust, close: SlideClose,
 };
 
@@ -35,9 +40,11 @@ const SLIDE_LABELS = {
   curadora: "Curaduría · Manuela",
   method: "Metodología (6 fases)",
   aroma: "Arquitectura olfativa",
+  scentAdvisor: "Scent Advisor · IA",
   catalog: "Catálogo de equipos",
   quote: "Cotización · alcance",
   cotizacion: "Cotización · precios dinámicos",
+  cotizador: "Cotización · precios dinámicos",
   compliance: "Cumplimiento",
   trust: "Confianza · cliente",
   close: "Cierre",
@@ -50,9 +57,11 @@ const SLIDE_DESCRIPTIONS = {
   curadora: "Manuela P. Fleischhacker · 30+ años de oficio",
   method: "Las fases que eliminan la incertidumbre",
   aroma: "Tiers olfativos · arquitectura por zona",
+  scentAdvisor: "Foto del local → motor olfativo IA → aroma recomendado",
   catalog: "Los difusores que operamos · precios por mes",
   quote: "Alcance económico · términos · entregables",
   cotizacion: "Calculadora dinámica · difusores + descuento + IVA",
+  cotizador: "Calculadora dinámica · difusores + descuento + IVA",
   compliance: "IFRA · ISO · EcoCert · Grand Cru de Grasse",
   trust: "Quote del cliente referencia",
   close: "Cierre · próximo paso · vigencia",
@@ -71,6 +80,8 @@ const SLIDE_SEGMENTS = (() => {
   });
   // El slide dinámico de cotización aplica a todos los segmentos
   map.cotizacion = ['longtail','core','key','enterprise','master'];
+  // El kind 'cotizador' (nuevo, Long Tail) también es global como editable
+  map.cotizador = ['longtail','core','key','enterprise','master'];
   return map;
 })();
 
