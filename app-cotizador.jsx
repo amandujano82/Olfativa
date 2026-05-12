@@ -565,7 +565,18 @@ function SlidePicker({ selected, client, prices, onClose, onApply }) {
     return [...inDraft, ...notIn];
   }, [draft]); // eslint-disable-line
 
-  const enabledCount = draft.filter(d => d.enabled).length;
+  // Split kinds in two groups for the new picker layout:
+  //   activeKinds    → en orden, draft enabled=true  → cards grandes
+  //   availableKinds → todo lo demás                  → rows compactas
+  const activeKinds = useMemo(() => (
+    draft.filter(d => d.enabled).map(d => d.kind)
+  ), [draft]);
+  const availableKinds = useMemo(() => {
+    const set = new Set(activeKinds);
+    return orderedKinds.filter(k => !set.has(k));
+  }, [orderedKinds, activeKinds]);
+
+  const enabledCount = activeKinds.length;
 
   const loadPreset = (segKey) => {
     const seg = SEGMENTS[segKey];
@@ -600,93 +611,169 @@ function SlidePicker({ selected, client, prices, onClose, onApply }) {
           ))}
         </div>
 
-        <div className="picker-grid">
-          {orderedKinds.map((kind, i) => {
-            const row = getRow(kind);
-            const enabled = row?.enabled || false;
-            const segment = row?.segment || 'master';
-            const segs = SLIDE_SEGMENTS[kind] || ['master'];
-            const inDraft = !!row;
-            const orderIdx = inDraft ? draft.findIndex(d => d.kind === kind) : -1;
-            const isFirst = orderIdx <= 0;
-            const isLast = orderIdx === draft.length - 1;
-            const isDragging = dragKind === kind;
-            const isDragOver = overKind === kind && dragKind !== kind;
-            const Renderer = SLIDE_RENDERERS[kind];
-            const segObj = SEGMENTS[segment] || SEGMENTS.master;
-            const slideProps = {
-              segment: segObj,
-              clientName: client?.clientName || 'Cliente',
-              propId: client?.propId || '—',
-              propDate: client?.propDate || '',
-              account: client?.account || '',
-              accountEmail: client?.accountEmail || '',
-              fields: segObj.fields,
-              totalSlides: draft.filter(d => d.enabled).length || 1,
-              idx: Math.max(orderIdx, 0),
-              prices,
-            };
-            return (
-              <div key={kind}
-                   draggable={inDraft}
-                   onDragStart={inDraft ? onDragStart(kind) : undefined}
-                   onDragOver={onDragOver(kind)}
-                   onDragEnd={onDragEnd}
-                   onDrop={onDrop(kind)}
-                   className={`picker-card ${enabled ? 'is-on' : ''} ${isDragging ? 'is-dragging' : ''} ${isDragOver ? 'is-dragover' : ''}`}>
-                {inDraft && (
-                  <div className="picker-card-handle" title="Arrastra para reordenar">
-                    <span className="handle-icon">⋮⋮</span>
-                    <span className="handle-pos">#{String(orderIdx + 1).padStart(2,'0')}</span>
-                  </div>
-                )}
-                <div style={{ position: 'relative' }}>
-                  <SlidePreview
-                    Renderer={Renderer}
-                    slideProps={slideProps}
-                    onClick={() => toggleKind(kind)}
-                  />
-                  <div className="picker-card-check" title={enabled ? 'Click en el preview para quitar' : 'Click en el preview para incluir'}>
-                    {enabled ? '☑' : '☐'}
-                  </div>
-                  <button
-                    className="picker-card-expand"
-                    onClick={(e) => { e.stopPropagation(); setFullPreviewKind(kind); }}
-                    title="Ver lámina a pantalla completa"
-                  >
-                    ⤢ Ver grande
-                  </button>
-                </div>
-                <div className="picker-card-body">
-                  <div className="picker-card-label">{SLIDE_LABELS[kind]}</div>
-                  <div className="picker-card-desc">{SLIDE_DESCRIPTIONS[kind]}</div>
-                  <div className="picker-card-controls">
-                    <select value={segment}
-                            onChange={e => setSegmentForKind(kind, e.target.value)}
-                            className="picker-card-select"
-                            title="Copy del segmento">
-                      {segs.map(s => (
-                        <option key={s} value={s}>Copy: {SEG_SHORT[s]}</option>
-                      ))}
-                    </select>
-                    {inDraft && (
-                      <div className="picker-card-arrows">
-                        <button onClick={() => moveKind(kind, -1)}
-                                disabled={isFirst}
-                                className="picker-card-arrow"
-                                title="Subir un lugar">▲</button>
-                        <button onClick={() => moveKind(kind, +1)}
-                                disabled={isLast}
-                                className="picker-card-arrow"
-                                title="Bajar un lugar">▼</button>
-                      </div>
-                    )}
-                  </div>
-                  <div className="picker-card-segline" style={{ background: SEG_COLOR[segment] }} />
-                </div>
+        <div className="picker-sections">
+          {/* SECCIÓN 1 · En tu cotización (activas, en orden, cards grandes) */}
+          <section>
+            <div className="picker-section-head">
+              <span className="picker-section-eyebrow">En tu cotización</span>
+              <h3 className="picker-section-title">Láminas activas</h3>
+              <span className="picker-section-count">{enabledCount} {enabledCount === 1 ? 'lámina' : 'láminas'}</span>
+              {enabledCount > 1 && (
+                <span className="picker-section-hint">Arrastra para reordenar · ▲▼ mueve un lugar</span>
+              )}
+            </div>
+            {enabledCount === 0 ? (
+              <div className="picker-empty">
+                Tu cotización está vacía. Activa láminas desde <strong>"Agregar al deck"</strong> abajo, o carga un machote pre-armado arriba.
               </div>
-            );
-          })}
+            ) : (
+              <div className="picker-section-body-active">
+                {activeKinds.map((kind) => {
+                  const row = getRow(kind);
+                  const segment = row?.segment || 'master';
+                  const segs = SLIDE_SEGMENTS[kind] || ['master'];
+                  const orderIdx = draft.findIndex(d => d.kind === kind);
+                  const isFirst = orderIdx <= 0;
+                  // último entre activos (no entre todo el draft, para que ▼ no quede habilitado si solo siguen disabled)
+                  const lastActiveOrder = Math.max(...draft.map((d, i) => d.enabled ? i : -1));
+                  const isLast = orderIdx === lastActiveOrder;
+                  const isDragging = dragKind === kind;
+                  const isDragOver = overKind === kind && dragKind !== kind;
+                  const Renderer = SLIDE_RENDERERS[kind];
+                  const segObj = SEGMENTS[segment] || SEGMENTS.master;
+                  const slideProps = {
+                    segment: segObj,
+                    clientName: client?.clientName || 'Cliente',
+                    propId: client?.propId || '—',
+                    propDate: client?.propDate || '',
+                    account: client?.account || '',
+                    accountEmail: client?.accountEmail || '',
+                    fields: segObj.fields,
+                    totalSlides: enabledCount || 1,
+                    idx: Math.max(activeKinds.indexOf(kind), 0),
+                    prices,
+                  };
+                  return (
+                    <div key={kind}
+                         draggable
+                         onDragStart={onDragStart(kind)}
+                         onDragOver={onDragOver(kind)}
+                         onDragEnd={onDragEnd}
+                         onDrop={onDrop(kind)}
+                         className={`picker-card is-on ${isDragging ? 'is-dragging' : ''} ${isDragOver ? 'is-dragover' : ''}`}>
+                      <div className="picker-card-handle" title="Arrastra para reordenar">
+                        <span className="handle-icon">⋮⋮</span>
+                        <span className="handle-pos">#{String(activeKinds.indexOf(kind) + 1).padStart(2,'0')}</span>
+                      </div>
+                      <div style={{ position: 'relative' }}>
+                        <SlidePreview
+                          Renderer={Renderer}
+                          slideProps={slideProps}
+                          onClick={() => toggleKind(kind)}
+                        />
+                        <div className="picker-card-check" title="Click en el preview para quitar">☑</div>
+                        <button
+                          className="picker-card-expand"
+                          onClick={(e) => { e.stopPropagation(); setFullPreviewKind(kind); }}
+                          title="Ver lámina a pantalla completa"
+                        >
+                          ⤢ Ver grande
+                        </button>
+                      </div>
+                      <div className="picker-card-body">
+                        <div className="picker-card-label">{SLIDE_LABELS[kind]}</div>
+                        <div className="picker-card-desc">{SLIDE_DESCRIPTIONS[kind]}</div>
+                        <div className="picker-card-controls">
+                          <select value={segment}
+                                  onChange={e => setSegmentForKind(kind, e.target.value)}
+                                  className="picker-card-select"
+                                  title="Copy del segmento">
+                            {segs.map(s => (
+                              <option key={s} value={s}>Copy: {SEG_SHORT[s]}</option>
+                            ))}
+                          </select>
+                          <div className="picker-card-arrows">
+                            <button onClick={() => moveKind(kind, -1)}
+                                    disabled={isFirst}
+                                    className="picker-card-arrow"
+                                    title="Subir un lugar">▲</button>
+                            <button onClick={() => moveKind(kind, +1)}
+                                    disabled={isLast}
+                                    className="picker-card-arrow"
+                                    title="Bajar un lugar">▼</button>
+                          </div>
+                        </div>
+                        <div className="picker-card-segline" style={{ background: SEG_COLOR[segment] }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          {/* SECCIÓN 2 · Agregar al deck (disponibles, rows compactas) */}
+          <section>
+            <div className="picker-section-head">
+              <span className="picker-section-eyebrow">Agregar al deck</span>
+              <h3 className="picker-section-title">Disponibles</h3>
+              <span className="picker-section-count">{availableKinds.length} {availableKinds.length === 1 ? 'lámina' : 'láminas'}</span>
+              <span className="picker-section-hint">Click en el preview o en "Agregar"</span>
+            </div>
+            {availableKinds.length === 0 ? (
+              <div className="picker-empty">
+                Ya tienes todas las láminas disponibles activas en tu cotización.
+              </div>
+            ) : (
+              <div className="picker-section-body-available">
+                {availableKinds.map((kind) => {
+                  const row = getRow(kind);
+                  const segment = row?.segment || 'master';
+                  const Renderer = SLIDE_RENDERERS[kind];
+                  const segObj = SEGMENTS[segment] || SEGMENTS.master;
+                  const slideProps = {
+                    segment: segObj,
+                    clientName: client?.clientName || 'Cliente',
+                    propId: client?.propId || '—',
+                    propDate: client?.propDate || '',
+                    account: client?.account || '',
+                    accountEmail: client?.accountEmail || '',
+                    fields: segObj.fields,
+                    totalSlides: Math.max(enabledCount, 1),
+                    idx: 0,
+                    prices,
+                  };
+                  return (
+                    <div key={kind} className="picker-card-compact">
+                      <SlidePreview
+                        Renderer={Renderer}
+                        slideProps={slideProps}
+                        onClick={() => toggleKind(kind)}
+                      />
+                      <div className="picker-card-compact-body">
+                        <div className="picker-card-compact-label">{SLIDE_LABELS[kind]}</div>
+                        <div className="picker-card-compact-desc">{SLIDE_DESCRIPTIONS[kind]}</div>
+                      </div>
+                      <div className="picker-card-compact-actions">
+                        <button
+                          className="picker-card-compact-add"
+                          onClick={() => toggleKind(kind)}
+                        >
+                          + Agregar
+                        </button>
+                        <button
+                          className="picker-card-compact-expand"
+                          onClick={(e) => { e.stopPropagation(); setFullPreviewKind(kind); }}
+                        >
+                          ⤢ Ver
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
         </div>
 
         <div className="picker-footer">
