@@ -25,7 +25,7 @@ const SLIDE_RENDERERS = {
   cover: SlideCover, promise: SlidePromise, pillars: SlidePillars,
   curadora: SlideCuradora, method: SlideMethod, aroma: SlideAroma,
   scentAdvisor: SlideScentAdvisor,
-  catalog: SlideCatalog, quote: SlideQuote,
+  catalog: SlideCatalog,
   // 'cotizacion' (legacy) y 'cotizador' (new kind del segmento Long Tail)
   // ambos renderizan el slide editable dinámico de precios.
   cotizacion: (props) => SlideCotizacionPrecios(props),
@@ -42,7 +42,6 @@ const SLIDE_LABELS = {
   aroma: "Arquitectura olfativa",
   scentAdvisor: "Scent Advisor · IA",
   catalog: "Catálogo de equipos",
-  quote: "Cotización · alcance",
   cotizacion: "Cotización · precios dinámicos",
   cotizador: "Cotización · precios dinámicos",
   compliance: "Cumplimiento",
@@ -59,7 +58,6 @@ const SLIDE_DESCRIPTIONS = {
   aroma: "Tiers olfativos · arquitectura por zona",
   scentAdvisor: "Foto del local → motor olfativo IA → aroma recomendado",
   catalog: "Los difusores que operamos · precios por mes",
-  quote: "Alcance económico · términos · entregables",
   cotizacion: "Calculadora dinámica · difusores + descuento + IVA",
   cotizador: "Calculadora dinámica · difusores + descuento + IVA",
   compliance: "IFRA · ISO · EcoCert · Grand Cru de Grasse",
@@ -126,7 +124,7 @@ const KIND_ORDER = [
   'scentAdvisor',
   'catalog',
   'compliance',
-  'quote', 'cotizacion',
+  'cotizacion',
   'trust', 'close',
 ];
 

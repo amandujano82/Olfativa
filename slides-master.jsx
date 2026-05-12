@@ -226,7 +226,7 @@ const SEGMENTS = {
     catalogDeviceIds: ["fitz", "moai", "aspen", "montblanc", "montblancXl", "liberty", "empire", "ural", "everest"],
     catalogFootnote: "IVA no incluido · Precios vigentes 2026 · Asignación por punto según diagnóstico técnico",
 
-    slides: ["cover", "promise", "pillars", "method", "aroma", "catalog", "quote", "close"],
+    slides: ["cover", "promise", "pillars", "method", "close"],
   },
 
   // ── 🟨 KEY ────────────────────────────────────────────────
@@ -315,7 +315,7 @@ const SEGMENTS = {
     catalogDeviceIds: ["fitz", "moai", "aspen", "montblanc", "montblancXl", "liberty", "empire", "ural", "everest"],
     catalogFootnote: "IVA no incluido · Precios vigentes 2026 · Asignación por sede según diagnóstico técnico",
 
-    slides: ["cover", "promise", "pillars", "curadora", "method", "aroma", "catalog", "quote", "trust", "close"],
+    slides: ["cover", "promise", "pillars", "curadora", "method", "trust", "close"],
   },
 
   // ── 🟥 ENTERPRISE ─────────────────────────────────────────
@@ -411,7 +411,7 @@ const SEGMENTS = {
       close: "photos/200-2.jpg",       // Uniforme "Hace toda la diferencia"
     },
 
-    slides: ["cover", "promise", "pillars", "curadora", "method", "aroma", "compliance", "quote", "trust", "close"],
+    slides: ["cover", "promise", "pillars", "curadora", "method", "aroma", "compliance", "trust", "close"],
   },
 
   // ── ⬛ MASTER ─────────────────────────────────────────────
@@ -519,7 +519,7 @@ const SEGMENTS = {
     },
 
     // Librería COMPLETA — el vendedor borra lo que no aplica
-    slides: ["cover", "promise", "pillars", "curadora", "method", "aroma", "catalog", "compliance", "quote", "trust", "close"],
+    slides: ["cover", "promise", "pillars", "method", "aroma", "trust", "close"],
   },
 };
 

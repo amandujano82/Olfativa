@@ -202,6 +202,48 @@
     text-align: center; margin-top: 32px;
     letter-spacing: 0.02em;
   }
+
+  /* STEP-SUMMARY · pasos del proceso en línea editorial */
+  .step-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+    width: 100%; max-width: 1120px;
+    margin: 14px 0 36px;
+    text-align: left;
+  }
+  .step-card {
+    position: relative;
+    padding: 28px 22px 22px;
+    border-top: 1px solid rgba(204, 102, 51, 0.55);
+  }
+  .step-card-dot {
+    position: absolute; top: -5px; left: 0;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--terra);
+  }
+  .step-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-weight: 400;
+    font-size: 64px; line-height: 1;
+    color: var(--terra);
+    letter-spacing: -0.02em;
+    margin-bottom: 14px;
+  }
+  .step-title {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 20px; font-weight: 500; color: var(--bone);
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  .step-desc {
+    font-size: 13px; font-weight: 300;
+    color: var(--bone-soft);
+    line-height: 1.5;
+  }
+  @media (max-width: 880px) {
+    .step-grid { grid-template-columns: repeat(2, 1fr); }
+  }
 </style>
 </head>
 <body>
