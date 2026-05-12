@@ -297,12 +297,13 @@ function App() {
 
   // Genera el PDF de la cotización capturando cada slide del deck con
   // html2canvas y armando un PDF multipágina con jsPDF. Params tuneados
-  // para que el archivo pese poco (idealmente < 5 MB) y siga legible:
-  //   · scale 1.4    (resolución suficiente sin inflar bytes)
-  //   · JPEG 0.65    (compresión agresiva en fotos del deck)
+  // agresivamente para que el archivo pese poco (objetivo < 10 MB en
+  // decks con fotos full-bleed) sin perder legibilidad del texto:
+  //   · scale 0.9    (subsample, baja la resolución de captura)
+  //   · JPEG 0.4     (compresión fuerte en fotos)
   //   · compress: true (Flate sobre los streams del PDF)
-  // Cada <section> del deck-stage se renderiza a 1920×1080 y se inserta
-  // como una página landscape.
+  // Cada <section> del deck-stage se renderiza y se inserta como una
+  // página landscape de 1920×1080.
   const generateDeckPDF = async () => {
     const stage = document.querySelector('deck-stage');
     const html2canvas = window.html2canvas;
@@ -324,7 +325,7 @@ function App() {
       const sec = sections[i];
       // eslint-disable-next-line no-await-in-loop
       const canvas = await html2canvas(sec, {
-        scale: 1.4,
+        scale: 0.9,
         useCORS: true,
         allowTaint: false,
         backgroundColor: '#0E0E0E',
@@ -334,7 +335,7 @@ function App() {
         windowHeight: 1080,
         logging: false,
       });
-      const imgData = canvas.toDataURL('image/jpeg', 0.65);
+      const imgData = canvas.toDataURL('image/jpeg', 0.4);
       if (i > 0) pdf.addPage([1920, 1080], 'landscape');
       pdf.addImage(imgData, 'JPEG', 0, 0, 1920, 1080, undefined, 'FAST');
     }
