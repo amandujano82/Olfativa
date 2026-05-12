@@ -19,39 +19,34 @@ const SlideFrame = window.SlideFrame;
 // ============================================================
 // SLIDE 1 · COVER
 // ============================================================
+// ────────────────────────────────────────────────────────────
+// Cover · 100% tipográfico. Sin foto. Estilo editorial de lujo.
+// 4 pasos numerados + metadata al pie.
+// ────────────────────────────────────────────────────────────
+const COVER_STEPS = [
+  { n: '01', t: 'Diagnóstico',   d: 'Respondes el triage breve sobre tu espacio · giro · público · referencias visuales.' },
+  { n: '02', t: 'Recomendación', d: 'Nuestro sistema analiza tu input y elige el segmento de catálogo ideal para tu marca.' },
+  { n: '03', t: 'Selección',     d: 'El ejecutivo arma el deck con las láminas y variantes que mejor explican tu propuesta.' },
+  { n: '04', t: 'Propuesta',     d: 'Recibes esta cotización personalizada con folio, vigencia y precios claros.' },
+];
+
 function SlideCover({ segment, clientName, propId, propDate, totalSlides, idx }) {
-  const [t1, t2] = segment.propTitleParts;
-  const photo = segment.photos?.cover;
   return (
-    <SlideFrame bg={PALETTE.ink}>
-      {/* Full-bleed photo · capa base */}
-      {photo && (
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `url(${photo})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }} />
-      )}
-      {/* Overlay editorial: gradiente vertical para legibilidad */}
+    <SlideFrame bg="#0a0a0a">
+      {/* sutil gradiente vertical para profundidad sin foto */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: `linear-gradient(180deg, rgba(14,14,14,0.78) 0%, rgba(14,14,14,0.18) 28%, rgba(14,14,14,0.18) 52%, rgba(14,14,14,0.88) 100%)`,
-      }} />
-      {/* Viñeta lateral suave hacia el folio para reforzar la columna izquierda */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: `linear-gradient(90deg, rgba(14,14,14,0.55) 0%, rgba(14,14,14,0.10) 32%, rgba(14,14,14,0) 55%)`,
+        background: 'radial-gradient(ellipse at 50% 30%, rgba(199,166,104,0.04) 0%, rgba(10,10,10,0) 60%)',
       }} />
 
-      {/* TOP STRIP — wordmark izquierda, meta derecha */}
+      {/* TOP STRIP — wordmark izquierda · meta de cliente derecha */}
       <div style={{
         position: 'absolute',
-        top: 64, left: SPACING.paddingX, right: SPACING.paddingX,
+        top: 72, left: SPACING.paddingX, right: SPACING.paddingX,
         display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
         zIndex: 2,
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <span style={{
             fontFamily: "'Cormorant Garamond', serif",
             fontStyle: 'italic', fontWeight: 500,
@@ -63,13 +58,13 @@ function SlideCover({ segment, clientName, propId, propDate, totalSlides, idx })
           <span style={{
             fontFamily: "'Inter Tight', sans-serif",
             fontSize: 11, fontWeight: 500,
-            color: 'rgba(243,237,227,0.55)',
+            color: 'rgba(243,237,227,0.50)',
             letterSpacing: '0.34em', textTransform: 'uppercase',
           }}>
             Casa Olfativa · México
           </span>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end', textAlign: 'right' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end', textAlign: 'right' }}>
           <span style={{
             fontFamily: "'Inter Tight', sans-serif",
             fontSize: 10.5, fontWeight: 600,
@@ -89,13 +84,12 @@ function SlideCover({ segment, clientName, propId, propDate, totalSlides, idx })
         </div>
       </div>
 
-      {/* TÍTULO PRINCIPAL — esquina inferior izquierda, escala editorial */}
+      {/* TÍTULO + SUBTÍTULO */}
       <div style={{
         position: 'absolute',
-        left: SPACING.paddingX, right: SPACING.paddingX,
-        bottom: 280,
+        top: 280, left: SPACING.paddingX, right: SPACING.paddingX,
         zIndex: 2,
-        maxWidth: 1320,
+        maxWidth: 1500,
       }}>
         <div style={{
           fontFamily: "'Inter Tight', sans-serif",
@@ -105,37 +99,100 @@ function SlideCover({ segment, clientName, propId, propDate, totalSlides, idx })
           marginBottom: 36,
           display: 'flex', alignItems: 'center', gap: 14,
         }}>
-          <span style={{ width: 52, height: 1, background: PALETTE.gold, opacity: 0.7 }} />
-          Propuesta de aromatización profesional
+          <span style={{ width: 52, height: 1, background: PALETTE.gold, opacity: 0.75 }} />
+          Cómo armamos tu propuesta
         </div>
         <div style={{ lineHeight: 0.95 }}>
           <div style={{
             fontFamily: "'Inter Tight', sans-serif",
-            fontSize: 144, fontWeight: 300,
+            fontSize: 124, fontWeight: 300,
             color: PALETTE.bone,
-            letterSpacing: '-0.042em',
+            letterSpacing: '-0.04em',
           }}>
-            {t1}
+            Tu propuesta
           </div>
           <div style={{
             fontFamily: "'Cormorant Garamond', serif",
             fontStyle: 'italic', fontWeight: 400,
-            fontSize: 152,
+            fontSize: 132,
             color: PALETTE.gold,
             letterSpacing: '-0.028em',
-            marginTop: -10,
+            marginTop: -8,
           }}>
-            {t2}
+            personalizada.
           </div>
         </div>
-        <div style={{ marginTop: 28, maxWidth: 760 }}>
-          <Body size={TYPE_SCALE.body - 2} color={PALETTE.boneSoft} weight={300}>
-            {segment.propSubtitle}
-          </Body>
+        <div style={{ marginTop: 28, maxWidth: 920 }}>
+          <span style={{
+            fontFamily: "'Inter Tight', sans-serif",
+            fontSize: TYPE_SCALE.body - 4,
+            color: 'rgba(243,237,227,0.62)',
+            fontWeight: 300,
+            lineHeight: 1.5,
+            display: 'block',
+          }}>
+            Cada propuesta de Olfativa pasa por un flujo de cuatro etapas. El resultado no es un catálogo: es una recomendación calibrada para tu espacio, tu giro y tu marca.
+          </span>
         </div>
       </div>
 
-      {/* BOTTOM STRIP — hairline + meta */}
+      {/* 4 PASOS — fila horizontal con números oversized */}
+      <div style={{
+        position: 'absolute',
+        bottom: 240, left: SPACING.paddingX, right: SPACING.paddingX,
+        zIndex: 2,
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 36,
+        }}>
+          {COVER_STEPS.map((s, i) => (
+            <div key={s.n} style={{
+              position: 'relative',
+              paddingTop: 26,
+              borderTop: '1px solid rgba(199,166,104,0.45)',
+            }}>
+              {/* dot al inicio del hairline */}
+              <span style={{
+                position: 'absolute', top: -5, left: 0,
+                width: 9, height: 9, borderRadius: '50%',
+                background: PALETTE.gold,
+              }} />
+              <div style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontStyle: 'italic', fontWeight: 400,
+                fontSize: 88, lineHeight: 1,
+                color: PALETTE.gold,
+                letterSpacing: '-0.02em',
+                marginBottom: 18,
+              }}>
+                {s.n}
+              </div>
+              <div style={{
+                fontFamily: "'Inter Tight', sans-serif",
+                fontSize: 26, fontWeight: 500,
+                color: PALETTE.bone,
+                letterSpacing: '-0.015em',
+                marginBottom: 10,
+              }}>
+                {s.t}
+              </div>
+              <div style={{
+                fontFamily: "'Inter Tight', sans-serif",
+                fontSize: 16, fontWeight: 300,
+                color: 'rgba(243,237,227,0.55)',
+                lineHeight: 1.5,
+                maxWidth: 360,
+              }}>
+                {s.d}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* BOTTOM STRIP — hairline dorada + meta */}
       <div style={{
         position: 'absolute',
         bottom: 84, left: SPACING.paddingX, right: SPACING.paddingX,
@@ -143,7 +200,7 @@ function SlideCover({ segment, clientName, propId, propDate, totalSlides, idx })
       }}>
         <div style={{
           height: 1,
-          background: 'linear-gradient(90deg, rgba(199,166,104,0.65) 0%, rgba(199,166,104,0.2) 100%)',
+          background: 'linear-gradient(90deg, rgba(199,166,104,0.55) 0%, rgba(199,166,104,0.15) 100%)',
           marginBottom: 24,
         }} />
         <div style={{
