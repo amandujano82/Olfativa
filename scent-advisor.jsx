@@ -25,8 +25,8 @@ const { useState, useMemo, useEffect } = React;
 const SEGMENT_SLIDES = {
   longtail:   ["cover", "promise", "pillars", "scentAdvisor", "catalog", "cotizador", "close"],
   core:       ["cover", "promise", "pillars", "method", "close"],
-  key:        ["cover", "promise", "pillars", "curadora", "method", "trust", "close"],
-  enterprise: ["cover", "promise", "pillars", "curadora", "method", "aroma", "compliance", "trust", "close"],
+  key:        ["cover", "promise", "pillars", "curadora", "method", "close"],
+  enterprise: ["cover", "promise", "pillars", "curadora", "method", "aroma", "compliance", "close"],
 };
 
 const SEGMENTS_META = [
