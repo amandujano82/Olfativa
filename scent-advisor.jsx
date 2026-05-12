@@ -24,9 +24,9 @@ const { useState, useMemo, useEffect } = React;
 // de cargar todo el deck. Si cambia en slides-master.jsx, actualizar aquí.
 const SEGMENT_SLIDES = {
   longtail:   ["cover", "promise", "pillars", "scentAdvisor", "catalog", "cotizador", "close"],
-  core:       ["cover", "promise", "pillars", "method", "aroma", "catalog", "quote", "close"],
-  key:        ["cover", "promise", "pillars", "curadora", "method", "aroma", "catalog", "quote", "trust", "close"],
-  enterprise: ["cover", "promise", "pillars", "curadora", "method", "aroma", "compliance", "quote", "trust", "close"],
+  core:       ["cover", "promise", "pillars", "method", "close"],
+  key:        ["cover", "promise", "pillars", "curadora", "method", "trust", "close"],
+  enterprise: ["cover", "promise", "pillars", "curadora", "method", "aroma", "compliance", "trust", "close"],
 };
 
 const SEGMENTS_META = [
@@ -326,6 +326,53 @@ function StepLicitacionDone({ onRestart }) {
 }
 
 // ============================================================
+// STEP 5 · Pasos del proceso (resumen previo al cotizador)
+// ============================================================
+function StepSummary({ payload, segment, onBack, onContinue }) {
+  const STEPS = [
+    { n: '01', t: 'Diagnóstico',   d: 'Respondiste el triage de tu espacio.' },
+    { n: '02', t: 'Recomendación', d: 'El sistema eligió tu segmento ideal.' },
+    { n: '03', t: 'Selección',     d: 'El ejecutivo armará el deck de láminas.' },
+    { n: '04', t: 'Propuesta',     d: 'Recibirás tu cotización personalizada.' },
+  ];
+  const segMeta = SEGMENTS_META.find(s => s.id === segment);
+  return (
+    <>
+      <StageHead stepLabel="Pasos del proceso" onBack={onBack} />
+      <div className="stage-body">
+        <div className="eyebrow">Listo · resumen del flujo</div>
+        <h1 className="question">
+          Tu propuesta <em>está lista para armarse</em>.
+        </h1>
+        <p className="sub">
+          {payload.clientName ? <><strong style={{ color: 'var(--bone)' }}>{payload.clientName}</strong> · </> : null}
+          Segmento <strong style={{ color: 'var(--bone)' }}>{segMeta?.name || segment}</strong>
+          {payload.propDate ? <> · {payload.propDate}</> : null}
+        </p>
+
+        <div className="step-grid">
+          {STEPS.map(s => (
+            <div key={s.n} className="step-card">
+              <span className="step-card-dot" />
+              <div className="step-num">{s.n}</div>
+              <div className="step-title">{s.t}</div>
+              <div className="step-desc">{s.d}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="actions" style={{ width: '100%', maxWidth: 1120 }}>
+          <button className="btn-link" onClick={onBack}>← Corregir datos</button>
+          <button className="btn-primary" onClick={onContinue}>
+            Ver mi propuesta →
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ============================================================
 // HAND-OFF · escribe LS y abre cotizador
 // ============================================================
 function handoffToCotizador({ segment, clientName, propDate, account, lead, stage }) {
@@ -355,6 +402,8 @@ function App() {
   const [lead, setLead] = useState(null);
   const [stage, setStage] = useState(null);
   const [segment, setSegment] = useState(null);
+  // Datos capturados en el step de "data" para usar en el "summary"
+  const [dataPayload, setDataPayload] = useState(null);
 
   const trail = useMemo(() => {
     const t = [];
@@ -365,7 +414,9 @@ function App() {
     return t;
   }, [lead, stage, segment]);
 
-  const reset = () => { setStep('lead'); setLead(null); setStage(null); setSegment(null); };
+  const reset = () => {
+    setStep('lead'); setLead(null); setStage(null); setSegment(null); setDataPayload(null);
+  };
 
   if (step === 'lead') {
     return (
@@ -421,10 +472,27 @@ function App() {
     return (
       <div className="stage">
         <StepData
-          initial={{}}
+          initial={dataPayload || {}}
           trail={trail}
           onBack={() => { setSegment(null); setStep('segment'); }}
-          onSubmit={({ clientName, propDate, account }) => {
+          onSubmit={(payload) => {
+            setDataPayload(payload);
+            setStep('summary');
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (step === 'summary') {
+    return (
+      <div className="stage">
+        <StepSummary
+          payload={dataPayload || {}}
+          segment={segment}
+          onBack={() => setStep('data')}
+          onContinue={() => {
+            const { clientName, propDate, account } = dataPayload || {};
             handoffToCotizador({ segment, clientName, propDate, account, lead, stage });
           }}
         />
