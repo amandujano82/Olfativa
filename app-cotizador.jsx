@@ -260,17 +260,11 @@ function App() {
     document.title = `Cotización · ${client.clientName} · ${client.propId}`;
   }, [client.clientName, client.propId]);
 
-  // El deck se renderiza en el orden canónico de KIND_ORDER (no manual).
-  // Kinds que no están en KIND_ORDER se ponen al final (futureproof).
-  const activeSlides = useMemo(() => {
-    const enabled = selected.filter(s => s.enabled);
-    const byOrder = KIND_ORDER
-      .map(k => enabled.find(s => s.kind === k))
-      .filter(Boolean);
-    const known = new Set(KIND_ORDER);
-    const unknown = enabled.filter(s => !known.has(s.kind));
-    return [...byOrder, ...unknown];
-  }, [selected]);
+  // El deck se renderiza en el orden del draft (definido por el ejecutivo
+  // arrastrando en la sección "Vista previa y orden" del picker). KIND_ORDER
+  // solo sirve para el orden inicial de los tipos cuando se cargan desde
+  // un segmento del triage.
+  const activeSlides = useMemo(() => selected.filter(s => s.enabled), [selected]);
   const total = activeSlides.length;
 
   const updateClient = (k, v) => setClient(c => ({ ...c, [k]: v }));
@@ -655,6 +649,9 @@ function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply
   const [draft, setDraft] = useState(() => normalizeSelected(selected.map(s => ({ ...s }))));
   // fullPreviewTarget: { kind, segment } | null
   const [fullPreviewTarget, setFullPreviewTarget] = useState(null);
+  // Drag&drop reorder state (solo para el strip "Vista previa y orden")
+  const [dragKind, setDragKind] = useState(null);
+  const [overKind, setOverKind] = useState(null);
   const getRow = (kind) => draft.find(d => d.kind === kind);
 
   // Variantes disponibles para un tipo de slide (segmentos que tienen copy)
@@ -663,6 +660,40 @@ function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply
   const defaultVariantFor = (kind) => {
     const vs = variantsFor(kind);
     return (triageSegment && vs.includes(triageSegment)) ? triageSegment : vs[0];
+  };
+
+  // Reordena el draft moviendo `fromKind` justo antes de `toKind`. Si toKind
+  // viene después, queda justo después en la práctica (drop at end / between).
+  const reorderActive = (fromKind, toKind) => {
+    if (!fromKind || fromKind === toKind) return;
+    setDraft(prev => {
+      const fromIdx = prev.findIndex(d => d.kind === fromKind);
+      const toIdx = prev.findIndex(d => d.kind === toKind);
+      if (fromIdx < 0 || toIdx < 0) return prev;
+      const next = prev.slice();
+      const [item] = next.splice(fromIdx, 1);
+      const adjustedTo = fromIdx < toIdx ? toIdx - 1 : toIdx;
+      next.splice(adjustedTo, 0, item);
+      return next;
+    });
+  };
+
+  const onDragStart = (kind) => (e) => {
+    setDragKind(kind);
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', kind); } catch {}
+  };
+  const onDragOver = (kind) => (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (overKind !== kind) setOverKind(kind);
+  };
+  const onDragEnd = () => { setDragKind(null); setOverKind(null); };
+  const onDrop = (toKind) => (e) => {
+    e.preventDefault();
+    const from = dragKind;
+    setDragKind(null); setOverKind(null);
+    reorderActive(from, toKind);
   };
 
   // ── Handlers ──────────────────────────────────────────────
@@ -845,6 +876,58 @@ function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply
               </section>
             );
           })}
+
+          {/* ── Vista previa y orden · arrastra para reordenar ── */}
+          <section className="picker-order-section">
+            <div className="picker-order-head">
+              <span className="picker-order-eyebrow">Vista previa y orden</span>
+              <h3 className="picker-order-title">Orden del deck</h3>
+              <span className="picker-order-count">
+                {enabledCount} {enabledCount === 1 ? 'lámina' : 'láminas'}
+              </span>
+              <span className="picker-order-hint">
+                {enabledCount > 1 ? 'Arrastra para reordenar' : 'Activa al menos 2 tipos para reordenar'}
+              </span>
+            </div>
+            {enabledCount === 0 ? (
+              <div className="picker-order-empty">
+                Aún no incluiste ninguna lámina. Activa tipos arriba y aparecerán aquí en el orden en que se mostrarán.
+              </div>
+            ) : (
+              <div className="picker-order-strip">
+                {draft.filter(d => d.enabled).map((row, i) => {
+                  const Renderer = SLIDE_RENDERERS[row.kind];
+                  const slideProps = buildSlideProps(row.kind, row.segment);
+                  const isDragging = dragKind === row.kind;
+                  const isDragOver = overKind === row.kind && dragKind !== row.kind;
+                  return (
+                    <div key={row.uid || row.kind}
+                         draggable
+                         onDragStart={onDragStart(row.kind)}
+                         onDragOver={onDragOver(row.kind)}
+                         onDragEnd={onDragEnd}
+                         onDrop={onDrop(row.kind)}
+                         className={`picker-order-item ${isDragging ? 'is-dragging' : ''} ${isDragOver ? 'is-dragover' : ''}`}
+                         title="Arrastra para mover">
+                      <div className="picker-order-num">#{String(i + 1).padStart(2,'0')}</div>
+                      <div className="picker-order-grip" aria-hidden="true">⋮⋮</div>
+                      <SlidePreview
+                        Renderer={Renderer}
+                        slideProps={slideProps}
+                      />
+                      <div className="picker-order-foot">
+                        <span className="picker-order-name">{SLIDE_LABELS[row.kind] || row.kind}</span>
+                        <span className="picker-order-seg">
+                          <span className="picker-order-dot" style={{ background: SEG_COLOR[row.segment] }} />
+                          {SEG_SHORT[row.segment] || row.segment}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
         </div>
 
         <div className="picker-footer">

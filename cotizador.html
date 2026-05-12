@@ -746,6 +746,122 @@
   .prices-notas:focus { border-color: #CC6633; }
 
   /* ── Print: ocultar topbar y overlays ───────────────────── */
+  /* Vista previa y orden · drag&drop reorder strip */
+  .picker-order-section {
+    border-top: 1px solid rgba(243, 237, 227, 0.12);
+    padding-top: 22px;
+    margin-top: 8px;
+  }
+  .picker-order-head {
+    display: flex; align-items: baseline; gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .picker-order-eyebrow {
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 600; color: #CC6633;
+  }
+  .picker-order-title {
+    margin: 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 500; color: #F5F0E8;
+    letter-spacing: -0.01em;
+  }
+  .picker-order-count {
+    font-size: 12px; color: rgba(243, 237, 227, 0.5);
+    letter-spacing: 0.04em;
+  }
+  .picker-order-hint {
+    margin-left: auto;
+    font-size: 11px; color: rgba(243, 237, 227, 0.45);
+    letter-spacing: 0.04em;
+  }
+  .picker-order-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .picker-order-item {
+    position: relative;
+    background: rgba(243, 237, 227, 0.035);
+    border: 1px solid rgba(204, 102, 51, 0.30);
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    transition: transform 160ms, box-shadow 160ms, border-color 160ms, opacity 160ms;
+  }
+  .picker-order-item:hover {
+    border-color: rgba(204, 102, 51, 0.55);
+    transform: translateY(-1px);
+  }
+  .picker-order-item:active { cursor: grabbing; }
+  .picker-order-item.is-dragging {
+    opacity: 0.35;
+    transform: scale(0.96);
+    cursor: grabbing;
+  }
+  .picker-order-item.is-dragover {
+    border-color: #CC6633;
+    box-shadow: 0 0 0 2px rgba(204, 102, 51, 0.45),
+                0 8px 20px rgba(0,0,0,0.35);
+    transform: translateY(-2px);
+  }
+  .picker-order-num {
+    position: absolute; top: 7px; left: 7px;
+    background: rgba(0, 0, 0, 0.72);
+    color: #CC6633;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 4px 8px;
+    border-radius: 3px;
+    z-index: 3;
+    backdrop-filter: blur(6px);
+    font-variant-numeric: tabular-nums;
+  }
+  .picker-order-grip {
+    position: absolute; top: 7px; right: 7px;
+    background: rgba(0, 0, 0, 0.55);
+    color: rgba(243, 237, 227, 0.6);
+    font-size: 14px;
+    width: 26px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 3px;
+    z-index: 3;
+    backdrop-filter: blur(6px);
+    letter-spacing: -3px; font-weight: 700;
+  }
+  .picker-order-item:hover .picker-order-grip { color: #F5F0E8; }
+  .picker-order-foot {
+    padding: 8px 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+    border-top: 1px solid rgba(243, 237, 227, 0.05);
+  }
+  .picker-order-name {
+    font-size: 11.5px; color: #F5F0E8; font-weight: 600;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    flex: 1; min-width: 0;
+  }
+  .picker-order-seg {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 9.5px; color: rgba(243, 237, 227, 0.6);
+    letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .picker-order-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    display: inline-block;
+  }
+  .picker-order-empty {
+    padding: 28px 24px;
+    border: 1px dashed rgba(243, 237, 227, 0.14);
+    border-radius: 6px;
+    color: rgba(243, 237, 227, 0.5);
+    font-size: 13px; text-align: center;
+    line-height: 1.55;
+  }
+
   /* DOWNLOAD REVIEW MODAL — resumen de slides activos antes de descargar */
   .download-summary {
     flex: 1; overflow-y: auto;
