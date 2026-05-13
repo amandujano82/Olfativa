@@ -19,7 +19,7 @@
   // helpers
   // ----------------------------------------------------------
   function readDemo() {
-    return fetch('scent-iq-demo.json?v=20260513i').then(r => r.ok ? r.json() : null).catch(() => null);
+    return fetch('scent-iq-demo.json?v=20260513j').then(r => r.ok ? r.json() : null).catch(() => null);
   }
 
   function copyToClipboard(text) {
@@ -485,6 +485,10 @@
     const [errMsg, setErrMsg] = useState('');
     const [usingDemo, setUsingDemo] = useState(false);
     const evidenceRef = useRef(null);
+    // Modal interno de pre-envio WhatsApp (fallback desktop)
+    const [shareData, setShareData] = useState(null); // { imageUrl, blob, text }
+    const [copiedImg, setCopiedImg] = useState(false);
+    const [copiedTxt, setCopiedTxt] = useState(false);
 
     const close = () => { onClose && onClose(); };
 
@@ -566,10 +570,7 @@
 
     const onShareWhatsApp = async () => {
       if (!output || !evidenceRef.current) return;
-      const texto = buildScentNarrative(output, client);
-      const cliente = (client?.clientName || 'cliente').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
-      const fileName = `Olfativa-${cliente}.png`;
-
+      const text = buildScentNarrative(output, client);
       try {
         // 1. Capturar la foto/overlay (.siq-designer) como PNG
         const node = evidenceRef.current.querySelector('.siq-designer') || evidenceRef.current;
@@ -586,48 +587,71 @@
         });
         const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 0.95));
         if (!blob) throw new Error('canvas.toBlob devolvió null');
-        const file = new File([blob], fileName, { type: 'image/png' });
+        const imageUrl = URL.createObjectURL(blob);
 
-        // 2. Web Share API con archivos (Android / iOS / Mac con WhatsApp)
+        // 2. Mobile/Mac con WhatsApp app: share sheet nativo del SO
+        const file = new File([blob], 'olfativa-analisis.png', { type: 'image/png' });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           try {
-            await navigator.share({
-              files: [file],
-              title: 'Recomendación olfativa Olfativa',
-              text: texto
-            });
+            await navigator.share({ files: [file], text, title: 'Recomendación olfativa Olfativa' });
+            URL.revokeObjectURL(imageUrl);
             return;
           } catch (shareErr) {
-            if (shareErr && shareErr.name === 'AbortError') return; // usuario cancelo
-            console.warn('navigator.share falló, caigo al fallback', shareErr);
+            if (shareErr && shareErr.name === 'AbortError') { URL.revokeObjectURL(imageUrl); return; }
+            console.warn('navigator.share falló, abro modal interno', shareErr);
           }
         }
 
-        // 3. Fallback desktop: descarga PNG + copia texto al portapapeles + abre wa.me
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = fileName;
-        document.body.appendChild(a); a.click(); a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 800);
-
-        try { await navigator.clipboard.writeText(texto); } catch (_) {}
-
-        // Toast con instruccion clara antes de abrir wa.me
-        try {
-          window.dispatchEvent(new CustomEvent('olfativa:scent-applied', {
-            detail: { __toast: 'Imagen descargada + texto copiado. Adjunta la imagen en WhatsApp y pega el texto.' }
-          }));
-        } catch (_) {}
-
-        setTimeout(() => {
-          window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank', 'noopener,noreferrer');
-        }, 300);
+        // 3. Desktop fallback: modal interno con preview + 3 acciones
+        setShareData({ imageUrl, blob, text });
       } catch (err) {
         console.error('share failed', err);
-        // ultimo recurso: solo abrir wa.me con el texto
-        try { await navigator.clipboard.writeText(texto); } catch (_) {}
-        window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank', 'noopener,noreferrer');
+        alert('No se pudo generar la imagen. Intenta de nuevo.');
       }
+    };
+
+    const copyImageToClipboard = async () => {
+      if (!shareData) return;
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': shareData.blob })]);
+        setCopiedImg(true);
+        setTimeout(() => setCopiedImg(false), 2000);
+      } catch (err) {
+        console.error('clipboard image failed', err);
+        downloadImage();
+        alert('Tu navegador no permite copiar imágenes al portapapeles. Descargamos el PNG para que lo adjuntes manualmente.');
+      }
+    };
+
+    const copyTextToClipboard = async () => {
+      if (!shareData) return;
+      try {
+        await navigator.clipboard.writeText(shareData.text);
+        setCopiedTxt(true);
+        setTimeout(() => setCopiedTxt(false), 2000);
+      } catch (err) {
+        console.error('clipboard text failed', err);
+      }
+    };
+
+    const downloadImage = () => {
+      if (!shareData) return;
+      const cliente = (client?.clientName || 'cliente').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+      const a = document.createElement('a');
+      a.href = shareData.imageUrl;
+      a.download = `olfativa-${cliente}.png`;
+      document.body.appendChild(a); a.click(); a.remove();
+    };
+
+    const openWhatsAppWeb = () => {
+      window.open('https://web.whatsapp.com/', '_blank', 'noopener,noreferrer');
+    };
+
+    const closeShare = () => {
+      if (shareData?.imageUrl) URL.revokeObjectURL(shareData.imageUrl);
+      setShareData(null);
+      setCopiedImg(false);
+      setCopiedTxt(false);
     };
 
     const onReset = () => {
@@ -736,6 +760,51 @@
 
           </div>
         </div>
+
+        {shareData && (
+          <div className="siq-share-overlay" onClick={closeShare}>
+            <div className="siq-share-modal" onClick={e => e.stopPropagation()}>
+              <div className="siq-share-head">
+                <div className="siq-eyebrow">Compartir por WhatsApp</div>
+                <h3>Enviar análisis a tu cliente</h3>
+                <p>WhatsApp no permite adjuntar imágenes desde un link. Hazlo en 3 pasos:</p>
+                <button className="siq-share-close" onClick={closeShare} aria-label="Cerrar">×</button>
+              </div>
+
+              <div className="siq-share-body">
+                <div className="siq-share-preview">
+                  <img src={shareData.imageUrl} alt="Análisis sensorial" />
+                </div>
+                <div className="siq-share-text">
+                  <label>Texto que se enviará:</label>
+                  <textarea readOnly value={shareData.text} rows={14} />
+                </div>
+              </div>
+
+              <div className="siq-share-steps">
+                <button className="siq-share-step" onClick={copyImageToClipboard}>
+                  <span className="siq-share-step-num">1</span>
+                  <span className="siq-share-step-label">{copiedImg ? '✓ Copiada' : 'Copiar imagen'}</span>
+                  <span className="siq-share-step-hint">Luego pega en WhatsApp con Cmd/Ctrl+V</span>
+                </button>
+                <button className="siq-share-step" onClick={copyTextToClipboard}>
+                  <span className="siq-share-step-num">2</span>
+                  <span className="siq-share-step-label">{copiedTxt ? '✓ Copiado' : 'Copiar texto'}</span>
+                  <span className="siq-share-step-hint">Pégalo como mensaje</span>
+                </button>
+                <button className="siq-share-step siq-share-step-go" onClick={openWhatsAppWeb}>
+                  <span className="siq-share-step-num">3</span>
+                  <span className="siq-share-step-label">Abrir WhatsApp Web</span>
+                  <span className="siq-share-step-hint">Elige el contacto y pega</span>
+                </button>
+              </div>
+
+              <div className="siq-share-alt">
+                <button className="btn-secondary" onClick={downloadImage}>↓ Descargar imagen PNG</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
