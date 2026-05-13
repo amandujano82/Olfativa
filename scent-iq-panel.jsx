@@ -19,7 +19,7 @@
   // helpers
   // ----------------------------------------------------------
   function readDemo() {
-    return fetch('scent-iq-demo.json?v=20260513c').then(r => r.ok ? r.json() : null).catch(() => null);
+    return fetch('scent-iq-demo.json?v=20260513d').then(r => r.ok ? r.json() : null).catch(() => null);
   }
 
   function copyToClipboard(text) {
@@ -99,16 +99,11 @@
   }
 
   // ----------------------------------------------------------
-  // Photo evidence — foto subida + overlay estilo Designer
-  // (título + 4 labels infografía + dirección olfativa + logo)
+  // Photo evidence — render estilo Microsoft Designer
+  // (marco crema, foto centrada, 2 columnas de bullets, logo Olfativa)
   // ----------------------------------------------------------
-  // Strategy: el overlay simula el output del prompt Designer
-  // SIN llamar a la API generativa: aplica color grading cálido,
-  // título "sensory space Analysis", 4 labels al borde apuntando
-  // con líneas SVG a anchors aproximados, y firma olfativa abajo.
   function PhotoEvidenceCard({ previewURL, analisis, output }) {
     const [aspect, setAspect] = useState(null);
-
     const onImgLoad = (e) => {
       const w = e.target.naturalWidth, h = e.target.naturalHeight;
       if (w && h) setAspect(w / h);
@@ -121,9 +116,11 @@
     if (analisis.emocion_actual) captionParts.push(analisis.emocion_actual);
     const caption = captionParts.join(' · ');
 
-    const aromaName = output.estrategia_olfativa.aroma_principal;
+    const aromaName  = output.estrategia_olfativa.aroma_principal;
     const familiaOlf = output.estrategia_olfativa.familia_olfativa;
-    const subacorde = output.estrategia_olfativa.subacorde_olfativo;
+    const subacorde  = output.estrategia_olfativa.subacorde_olfativo;
+    const familiaVisualName = fv ? fv.nombre : (analisis.familia_visual || '—');
+
     const mats = Array.isArray(analisis.materiales_principales)
       ? analisis.materiales_principales.slice(0, 3).join(', ')
       : '';
@@ -133,74 +130,70 @@
       `Por eso la dirección olfativa es ${familiaOlf}, encarnada en ${aromaName}.`
     ].filter(Boolean).join(' ');
 
-    // 4 etiquetas infografía. Cada una: posición del texto + anchor
-    // donde apunta la línea (en % del frame). Posiciones por defecto
-    // genéricas que funcionan razonablemente para fotos de interiores.
-    const overlayLabels = [
-      { text: pretty(analisis.tipo_de_luz, 'Natural daylight flow'),                txt: { x: 24, y: 30 }, anc: { x: 42, y: 18 } },
-      { text: pretty(fv ? `Sophisticated ${fv.nombre.toLowerCase()}` : analisis.materialidad, 'Sophisticated palette'), txt: { x: 78, y: 26 }, anc: { x: 70, y: 26 } },
-      { text: pretty(analisis.materialidad, 'Organic material palette'),            txt: { x: 24, y: 60 }, anc: { x: 42, y: 56 } },
-      { text: pretty(analisis.formas, 'Soft architectural curves'),                 txt: { x: 78, y: 70 }, anc: { x: 60, y: 70 } }
+    const leftBullets = [
+      { k: 'Iluminación', v: pretty(analisis.tipo_de_luz, '—') },
+      { k: 'Materiales',  v: pretty(analisis.materialidad, '—') },
+      { k: 'Geometría',   v: pretty(analisis.formas, '—') },
+      { k: 'Aroma',       v: aromaName || '—' }
+    ];
+    const rightBullets = [
+      { k: 'Dirección olfativa', v: subacorde && subacorde !== 'requiere validación' ? `${familiaOlf} · ${subacorde}` : familiaOlf },
+      { k: 'Familia visual',     v: familiaVisualName },
+      { k: 'Densidad',           v: pretty(analisis.densidad, '—') },
+      { k: 'Estilo',             v: 'minimalista premium' }
     ];
 
-    // Footer izquierdo: 2 líneas tipo "Olfactive direction: X / Y"
-    const olfactiveLines = [
-      `Olfactive direction · ${familiaOlf}`,
-      subacorde && subacorde !== 'requiere validación' ? subacorde : `${aromaName} accord`
-    ].filter(Boolean);
-
-    const frameStyle = aspect ? { aspectRatio: String(aspect) } : { aspectRatio: '16 / 10' };
+    const photoStyle = aspect ? { aspectRatio: String(aspect) } : { aspectRatio: '16 / 10' };
 
     return (
       <div className="siq-evidence">
-        {previewURL ? (
-          <div className="siq-photo-frame" style={frameStyle}>
-            <img src={previewURL} className="siq-evidence-img" alt="Espacio del cliente" onLoad={onImgLoad} />
-            <div className="siq-overlay-warm" />
+        <div className="siq-designer">
+          <div className="siq-designer-head">
+            <div className="siq-designer-title">Análisis sensorial del espacio</div>
+            <div className="siq-designer-sub">Lectura visual y dirección olfativa</div>
+          </div>
 
-            <div className="siq-overlay-title">
-              <div className="siq-overlay-title-main">sensory space Analysis</div>
-              <div className="siq-overlay-title-sub">Visual reading and olfactory direction</div>
-            </div>
-
-            <svg className="siq-overlay-lines" preserveAspectRatio="none" viewBox="0 0 100 100" aria-hidden="true">
-              {overlayLabels.map((L, i) => (
-                <g key={i}>
-                  <line x1={L.txt.x} y1={L.txt.y} x2={L.anc.x} y2={L.anc.y} stroke="rgba(255,255,255,0.85)" strokeWidth="0.18" vectorEffect="non-scaling-stroke" />
-                  <circle cx={L.anc.x} cy={L.anc.y} r="0.55" fill="rgba(255,255,255,0.95)" vectorEffect="non-scaling-stroke" />
-                </g>
+          <div className="siq-designer-body">
+            <ul className="siq-designer-bullets siq-designer-bullets-left">
+              {leftBullets.map((b, i) => (
+                <li key={i}>
+                  <span className="siq-bullet-key">{b.k}</span>
+                  <span className="siq-bullet-dot">·</span>
+                  <span className="siq-bullet-val">{b.v}</span>
+                </li>
               ))}
-            </svg>
+            </ul>
 
-            {overlayLabels.map((L, i) => (
-              <div
-                key={i}
-                className={"siq-overlay-label siq-overlay-label-" + (i + 1)}
-                style={{ left: L.txt.x + '%', top: L.txt.y + '%' }}
-              >
-                {L.text}
-              </div>
-            ))}
-
-            <div className="siq-overlay-direction">
-              {olfactiveLines.map((line, i) => <div key={i}>{line}</div>)}
+            <div className="siq-designer-photo" style={photoStyle}>
+              {previewURL ? (
+                <img src={previewURL} className="siq-designer-img" alt="Espacio del cliente" onLoad={onImgLoad} />
+              ) : (
+                <div className="siq-designer-placeholder">
+                  Análisis demo · sin imagen de origen
+                </div>
+              )}
             </div>
 
-            <div className="siq-overlay-logo" title="Olfativa">
-              <span>O</span>
-            </div>
+            <ul className="siq-designer-bullets siq-designer-bullets-right">
+              {rightBullets.map((b, i) => (
+                <li key={i}>
+                  <span className="siq-bullet-key">{b.k}</span>
+                  <span className="siq-bullet-dot">·</span>
+                  <span className="siq-bullet-val">{b.v}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-        ) : (
-          <div className="siq-evidence-photo" style={{ aspectRatio: '16 / 10' }}>
-            <div className="siq-evidence-placeholder">
-              Análisis demo · sin imagen de origen
-            </div>
-          </div>
-        )}
+
+          {caption && (
+            <div className="siq-designer-caption">{caption}</div>
+          )}
+
+          <div className="siq-designer-logo">Olfativa</div>
+        </div>
 
         <div className="siq-evidence-body">
-          <div className="siq-card-eyebrow">Foto de origen</div>
-          {caption && <div className="siq-evidence-caption">{caption}</div>}
+          <div className="siq-card-eyebrow">Lectura sensorial del espacio</div>
           <p className="siq-evidence-brief">{brief}</p>
         </div>
       </div>
@@ -211,7 +204,6 @@
   function pretty(v, fallback) {
     const s = (v == null ? '' : String(v)).trim();
     if (!s || s === '—') return fallback;
-    // capitalizar primera letra
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
 

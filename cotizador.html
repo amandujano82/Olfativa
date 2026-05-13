@@ -817,157 +817,129 @@
     font-style: italic; font-size: 22px;
   }
 
-  /* — Photo evidence banner full-width con overlay estilo Designer — */
+  /* — Photo evidence: render estilo Microsoft Designer (marco crema) — */
   .siq-evidence {
     display: flex; flex-direction: column; gap: 14px;
   }
-  /* Marco con aspect-ratio dinámico al ratio real de la foto */
-  .siq-photo-frame {
+  /* Marco crema, padding generoso, look hospitality premium */
+  .siq-designer {
     position: relative;
-    width: 100%;
-    max-height: 560px;
-    background: #111;
-    border: 1px solid rgba(201,168,76,0.22);
+    background: #f4ede0;
+    color: #1c1a18;
     border-radius: 10px;
-    overflow: hidden;
-    isolation: isolate; /* contiene blend modes */
+    padding: 28px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    container-type: inline-size;
   }
-  /* La imagen llena el marco. Como aspect-ratio del marco == ratio
-     real de la imagen, contain entrega el frame completo sin
-     letterbox y SIN deformar (regla object-fit:contain del proyecto). */
-  .siq-evidence-img {
-    display: block;
-    width: 100%; height: 100%;
-    object-fit: contain;
-    object-position: center;
-    /* Color grading: warm hospitality look (beige/dorado) */
-    filter: brightness(1.06) contrast(1.04) saturate(1.12) sepia(0.16) hue-rotate(-8deg);
-  }
-  /* Overlay calido sobre la foto: gradiente diagonal sutil que une
-     toda la composicion con la paleta beige/dorado de Olfativa */
-  .siq-overlay-warm {
-    position: absolute; inset: 0;
-    background:
-      radial-gradient(ellipse at top, rgba(201,168,76,0.06) 0%, transparent 60%),
-      linear-gradient(180deg, rgba(20,16,12,0.18) 0%, rgba(20,16,12,0) 25%, rgba(20,16,12,0) 65%, rgba(20,16,12,0.42) 100%);
-    pointer-events: none;
-    z-index: 1;
-  }
-  /* Titulo arriba al estilo Designer */
-  .siq-overlay-title {
-    position: absolute; top: 4%; left: 0; right: 0;
+  .siq-designer-head {
     text-align: center;
-    color: #F5F0E8;
-    text-shadow: 0 2px 14px rgba(0,0,0,0.45);
-    z-index: 4;
-    pointer-events: none;
-    padding: 0 24px;
+    margin-bottom: 18px;
   }
-  .siq-overlay-title-main {
-    font-family: 'Libre Baskerville', Georgia, serif;
-    font-style: italic; font-weight: 400;
-    font-size: clamp(20px, 3.6cqw, 44px);
-    line-height: 1.05;
-    letter-spacing: -0.01em;
-  }
-  .siq-overlay-title-sub {
-    font-size: clamp(10px, 1.1cqw, 14px);
-    letter-spacing: 0.08em;
-    opacity: 0.85;
-    margin-top: 4px;
-    font-weight: 400;
-  }
-  /* SVG con las lineas thin elegant que conectan label -> anchor */
-  .siq-overlay-lines {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    z-index: 2;
-    pointer-events: none;
-  }
-  /* Labels infografia. Posicion absoluta en % del frame */
-  .siq-overlay-label {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    color: #F5F0E8;
-    text-shadow: 0 1px 8px rgba(0,0,0,0.55);
-    font-size: clamp(10px, 1.2cqw, 15px);
-    line-height: 1.2;
-    font-weight: 500;
-    max-width: 24%;
-    z-index: 3;
-    pointer-events: none;
-    white-space: normal;
-  }
-  /* Lateralidades para que el texto no salga del frame */
-  .siq-overlay-label-1 { text-align: left;  transform: translate(0, -50%); }
-  .siq-overlay-label-2 { text-align: right; transform: translate(-100%, -50%); }
-  .siq-overlay-label-3 { text-align: left;  transform: translate(0, -50%); }
-  .siq-overlay-label-4 { text-align: right; transform: translate(-100%, -50%); }
-  /* Direccion olfativa abajo izquierda */
-  .siq-overlay-direction {
-    position: absolute; bottom: 4.5%; left: 3%;
-    color: #F5F0E8;
-    text-shadow: 0 1px 8px rgba(0,0,0,0.55);
-    font-size: clamp(10px, 1.05cqw, 13px);
-    line-height: 1.45;
-    z-index: 3;
-    max-width: 60%;
-    pointer-events: none;
-  }
-  .siq-overlay-direction div:first-child { font-weight: 500; letter-spacing: 0.02em; }
-  .siq-overlay-direction div + div { opacity: 0.85; }
-  /* Logo Olfativa abajo derecha */
-  .siq-overlay-logo {
-    position: absolute; bottom: 4.5%; right: 3%;
-    width: clamp(26px, 3cqw, 38px);
-    height: clamp(26px, 3cqw, 38px);
-    border: 1.5px solid rgba(245,240,232,0.85);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    z-index: 3;
-    pointer-events: none;
-    backdrop-filter: blur(2px);
-    background: rgba(20,16,12,0.18);
-  }
-  .siq-overlay-logo span {
+  .siq-designer-title {
     font-family: 'Libre Baskerville', Georgia, serif;
     font-style: italic;
-    color: #F5F0E8;
-    font-size: clamp(14px, 1.7cqw, 22px);
-    line-height: 1;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    font-weight: 400;
+    font-size: clamp(22px, 3.4cqw, 40px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: #1c1a18;
   }
-
-  /* container queries para que cqw escale con el ancho del frame */
-  .siq-photo-frame { container-type: inline-size; }
-
-  /* Estado sin foto (modo demo): placeholder discreto */
-  .siq-evidence-photo {
-    background: #111;
-    border: 1px solid rgba(201,168,76,0.18);
-    border-radius: 10px;
-    padding: 8px;
-    display: flex; align-items: center; justify-content: center;
-    width: 100%;
+  .siq-designer-sub {
+    font-family: 'Public Sans', system-ui, sans-serif;
+    font-size: clamp(11px, 1.1cqw, 14px);
+    letter-spacing: 0.08em;
+    color: rgba(28,26,24,0.6);
+    margin-top: 6px;
+  }
+  /* Body: 3 columnas [bullets izq 22%][foto 56%][bullets der 22%] */
+  .siq-designer-body {
+    display: grid;
+    grid-template-columns: 22% 56% 22%;
+    gap: 16px;
+    align-items: center;
+  }
+  @media (max-width: 900px) {
+    .siq-designer-body {
+      grid-template-columns: 1fr;
+    }
+  }
+  /* Foto al centro: object-fit contain SIEMPRE, fondo crema oscuro */
+  .siq-designer-photo {
+    background: #1c1a18;
+    border-radius: 6px;
     overflow: hidden;
+    width: 100%;
+    max-height: 520px;
+    display: flex; align-items: center; justify-content: center;
   }
-  .siq-evidence-placeholder {
-    color: rgba(243,237,227,0.4);
+  .siq-designer-img {
+    display: block;
+    width: 100%; height: 100%;
+    object-fit: contain;       /* NUNCA cover — regla critica del proyecto */
+    object-position: center;
+  }
+  .siq-designer-placeholder {
+    color: rgba(245,240,232,0.4);
     font-size: 13px;
     font-style: italic;
     text-align: center;
-    padding: 0 16px;
+    padding: 24px;
+  }
+  /* Bullets laterales: tipografía sans, una línea cada uno */
+  .siq-designer-bullets {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column;
+    gap: clamp(14px, 1.8cqw, 22px);
+    font-family: 'Public Sans', system-ui, sans-serif;
+    color: #1c1a18;
+  }
+  .siq-designer-bullets li {
+    display: flex; flex-direction: column;
+    gap: 2px;
+    font-size: clamp(11px, 1.1cqw, 14px);
+    line-height: 1.35;
+  }
+  .siq-designer-bullets-left  { text-align: right; align-items: flex-end; }
+  .siq-designer-bullets-right { text-align: left;  align-items: flex-start; }
+  .siq-bullet-key {
+    font-size: clamp(9px, 0.9cqw, 11px);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(28,26,24,0.55);
+    font-weight: 600;
+  }
+  .siq-bullet-dot { display: none; }
+  .siq-bullet-val {
+    font-size: clamp(12px, 1.2cqw, 15px);
+    font-weight: 500;
+    color: #1c1a18;
+  }
+  /* Caption serif italic debajo del body */
+  .siq-designer-caption {
+    margin-top: 22px;
+    text-align: center;
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-style: italic;
+    font-size: clamp(13px, 1.4cqw, 17px);
+    color: rgba(28,26,24,0.7);
+    line-height: 1.4;
+  }
+  /* Logo Olfativa texto abajo derecha */
+  .siq-designer-logo {
+    position: absolute;
+    right: 28px; bottom: 18px;
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(11px, 1.1cqw, 14px);
+    color: rgba(28,26,24,0.55);
+    letter-spacing: 0.04em;
   }
 
-  /* Body (caption + brief) debajo del frame */
+  /* Body (caption + brief contextual) debajo del marco */
   .siq-evidence-body {
     display: flex; flex-direction: column; gap: 8px;
     padding: 0 4px;
-  }
-  .siq-evidence-caption {
-    font-family: 'Libre Baskerville', Georgia, serif;
-    font-style: italic; font-size: 20px; line-height: 1.25;
-    color: #F5F0E8;
   }
   .siq-evidence-brief {
     font-size: 13.5px; line-height: 1.55;
@@ -1326,15 +1298,15 @@
 <!-- html2pdf · trae html2canvas + jsPDF en un solo bundle -->
 <script src="https://unpkg.com/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
 <script src="deck-stage.js"></script>
-<script src="scent-iq-knowledge.js?v=20260513c"></script>
-<script src="scent-iq-engines.js?v=20260513c"></script>
+<script src="scent-iq-knowledge.js?v=20260513d"></script>
+<script src="scent-iq-engines.js?v=20260513d"></script>
 <script type="text/babel" src="tweaks-panel.jsx"></script>
 <script type="text/babel" src="slides-master.jsx"></script>
 <script type="text/babel" src="slide-views-master.jsx"></script>
 <script type="text/babel" src="hero-difusor.jsx"></script>
 <script type="text/babel" src="catalog-min.jsx"></script>
 <script type="text/babel" src="control-olores.jsx"></script>
-<script type="text/babel" src="scent-iq-panel.jsx?v=20260513c"></script>
+<script type="text/babel" src="scent-iq-panel.jsx?v=20260513d"></script>
 <script type="text/babel" src="app-cotizador.jsx"></script>
 </body>
 </html>
