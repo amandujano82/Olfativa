@@ -1659,6 +1659,14 @@ function SlideScentAnalysis({ segment, clientName, idx, totalSlides, propId, pro
   const vc = o.variables_canonicas || {};
   const meta = o._meta || {};
   const overrides = meta.manual_overrides || {};
+  const aromaFull = meta.aroma_principal_full || {};
+  const difFull = meta.difusor_full || {};
+  // Datos extendidos del aroma (vienen del catalogo, override o auto)
+  const aromaFamiliaName = aromaFull.familia || est.familia_olfativa || '';
+  const aromaDesc        = est.descripcion_principal || aromaFull.descripcion || '';
+  const aromaSubacorde   = est.subacorde_olfativo || vc.subacorde_olfativo
+    || ((aromaFull.acordes || []).filter(Boolean).join(' + ')) || '';
+  const aromaNotas       = est.notas_principal || aromaFull.notas || {};
   const manualBadge = (
     <span style={{
       display: 'inline-block', marginLeft: 12, padding: '4px 12px',
@@ -1773,13 +1781,66 @@ function SlideScentAnalysis({ segment, clientName, idx, totalSlides, propId, pro
           <div>
             <Eyebrow color={PALETTE.gold}>Recomendación olfativa</Eyebrow>
             <HairRule color={PALETTE.rule} style={{ marginTop: 14, marginBottom: 20 }} />
-            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+
+            {/* Nombre + familia + subacorde + badge manual */}
+            <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: 12 }}>
               <SerifH size={TYPE_SCALE.display} italic color={PALETTE.bone}>{aroma}</SerifH>
               {overrides.aroma && manualBadge}
             </div>
-            <Body color={PALETTE.boneSoft} style={{ marginTop: 14 }}>
-              Difundido con <span style={{ color: PALETTE.gold }}>{difusor}</span>{overrides.difusor && manualBadge} · {cant} unidad{cant > 1 ? 'es' : ''}{cobertura ? ` · cobertura ${cobertura}` : ''}.
+            {aromaFamiliaName && (
+              <div style={{
+                fontFamily: 'Cormorant Garamond, serif',
+                fontStyle: 'italic', fontSize: 28,
+                color: PALETTE.boneSoft, marginTop: 4
+              }}>{aromaFamiliaName}</div>
+            )}
+            {aromaSubacorde && (
+              <div style={{
+                marginTop: 10,
+                fontFamily: 'Inter, sans-serif', fontSize: 13,
+                letterSpacing: '0.18em', textTransform: 'uppercase',
+                color: PALETTE.gold, fontWeight: 600
+              }}>{aromaSubacorde}</div>
+            )}
+
+            {/* Descripcion del aroma del catalogo */}
+            {aromaDesc && (
+              <Body color={PALETTE.boneSoft} style={{ marginTop: 18, fontSize: 22, lineHeight: 1.45, fontStyle: 'italic', opacity: 0.92 }}>
+                {aromaDesc}
+              </Body>
+            )}
+
+            {/* Notas: 3 mini-bloques Salida / Corazon / Fondo */}
+            {(aromaNotas && (aromaNotas.salida || aromaNotas.corazon || aromaNotas.fondo)) && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginTop: 22 }}>
+                {[
+                  ['Salida',  aromaNotas.salida],
+                  ['Corazón', aromaNotas.corazon],
+                  ['Fondo',   aromaNotas.fondo]
+                ].filter(([, v]) => v).map(([k, v], i) => (
+                  <div key={i}>
+                    <div style={{
+                      fontFamily: 'Inter, sans-serif',
+                      fontSize: 11, letterSpacing: '0.18em',
+                      textTransform: 'uppercase',
+                      color: PALETTE.goldSoft, fontWeight: 600,
+                      marginBottom: 6
+                    }}>{k}</div>
+                    <div style={{
+                      fontFamily: 'Inter, sans-serif',
+                      fontSize: 15, color: PALETTE.boneSoft,
+                      lineHeight: 1.4
+                    }}>{v}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Difusor info */}
+            <Body color={PALETTE.boneSoft} style={{ marginTop: 22 }}>
+              Difundido con <span style={{ color: PALETTE.gold }}>{difusor}</span>{overrides.difusor && manualBadge} · {cant} unidad{cant > 1 ? 'es' : ''}{cobertura ? ` · cobertura ${cobertura}` : ''}{dif.intensidad ? ` · intensidad ${dif.intensidad}` : ''}.
             </Body>
+
             {o.resumen_comercial && (
               <Body color={PALETTE.boneSoft} size={TYPE_SCALE.small} style={{ marginTop: 16, fontStyle: 'italic', opacity: 0.88 }}>
                 {o.resumen_comercial}
