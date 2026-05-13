@@ -1510,6 +1510,55 @@
     letter-spacing: -3px; font-weight: 700;
   }
   .picker-order-item:hover .picker-order-grip { color: #F5F0E8; }
+
+  /* Botones ▲ ▼ explicitos por miniatura */
+  .picker-order-moves {
+    position: absolute; top: 36px; right: 7px;
+    display: flex; flex-direction: column; gap: 4px;
+    z-index: 4;
+  }
+  .picker-order-move {
+    appearance: none; cursor: pointer; font-family: inherit;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(201, 168, 76, 0.45);
+    color: #C9A84C;
+    width: 22px; height: 22px;
+    border-radius: 4px;
+    font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+    transition: all 160ms;
+    padding: 0; line-height: 1;
+  }
+  .picker-order-move:hover:not(:disabled) {
+    background: rgba(201, 168, 76, 0.22);
+    color: #F5F0E8;
+    border-color: #C9A84C;
+  }
+  .picker-order-move:disabled {
+    opacity: 0.25; cursor: not-allowed;
+  }
+
+  /* Boton "Restablecer al orden por defecto" en el head del picker */
+  .picker-order-reset {
+    appearance: none; cursor: pointer; font-family: inherit;
+    background: transparent;
+    color: rgba(201, 168, 76, 0.85);
+    border: 1px solid rgba(201, 168, 76, 0.4);
+    border-radius: 4px;
+    padding: 5px 11px;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.04em;
+    margin-left: 12px;
+    transition: all 160ms;
+    white-space: nowrap;
+  }
+  .picker-order-reset:hover {
+    background: rgba(201, 168, 76, 0.12);
+    color: #F5F0E8;
+    border-color: #C9A84C;
+  }
+
   .picker-order-foot {
     padding: 8px 10px;
     display: flex; align-items: center; justify-content: space-between;
@@ -1626,16 +1675,16 @@
 <script src="https://unpkg.com/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
 <!-- html2canvas standalone para captura PNG del PhotoEvidenceCard (compartir WhatsApp) -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="deck-stage.js?v=20260513l"></script>
-<script src="scent-iq-knowledge.js?v=20260513l"></script>
-<script src="scent-iq-engines.js?v=20260513l"></script>
-<script type="text/babel" src="tweaks-panel.jsx?v=20260513l"></script>
-<script type="text/babel" src="slides-master.jsx?v=20260513l"></script>
-<script type="text/babel" src="slide-views-master.jsx?v=20260513l"></script>
-<script type="text/babel" src="hero-difusor.jsx?v=20260513l"></script>
-<script type="text/babel" src="catalog-min.jsx?v=20260513l"></script>
-<script type="text/babel" src="control-olores.jsx?v=20260513l"></script>
-<script type="text/babel" src="scent-iq-panel.jsx?v=20260513l"></script>
-<script type="text/babel" src="app-cotizador.jsx?v=20260513l"></script>
+<script src="deck-stage.js?v=20260513m"></script>
+<script src="scent-iq-knowledge.js?v=20260513m"></script>
+<script src="scent-iq-engines.js?v=20260513m"></script>
+<script type="text/babel" src="tweaks-panel.jsx?v=20260513m"></script>
+<script type="text/babel" src="slides-master.jsx?v=20260513m"></script>
+<script type="text/babel" src="slide-views-master.jsx?v=20260513m"></script>
+<script type="text/babel" src="hero-difusor.jsx?v=20260513m"></script>
+<script type="text/babel" src="catalog-min.jsx?v=20260513m"></script>
+<script type="text/babel" src="control-olores.jsx?v=20260513m"></script>
+<script type="text/babel" src="scent-iq-panel.jsx?v=20260513m"></script>
+<script type="text/babel" src="app-cotizador.jsx?v=20260513m"></script>
 </body>
 </html>
