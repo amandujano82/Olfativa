@@ -257,6 +257,11 @@ function App() {
   useEffect(() => {
     const handler = (e) => {
       const d = e.detail || {};
+      // Caso WhatsApp fallback (u otro consumer): mensaje custom, no abre Precios
+      if (d.__toast) {
+        setScentToast(d.__toast);
+        return;
+      }
       const aromaName  = d.aromaName  || 'aroma';
       const difusorName = d.difusorName || 'difusor';
       setScentToast(`Scent Advisor: agregado ${aromaName} + ${difusorName} a la cotización`);

@@ -13,13 +13,13 @@
 //                   El padre lo usa para escribir a prices.lines + LS.
 
 (function (W) {
-  const { useState, useMemo, useRef, useCallback } = W.React;
+  const { useState, useMemo, useRef, useCallback, forwardRef } = W.React;
 
   // ----------------------------------------------------------
   // helpers
   // ----------------------------------------------------------
   function readDemo() {
-    return fetch('scent-iq-demo.json?v=20260513f').then(r => r.ok ? r.json() : null).catch(() => null);
+    return fetch('scent-iq-demo.json?v=20260513h').then(r => r.ok ? r.json() : null).catch(() => null);
   }
 
   function copyToClipboard(text) {
@@ -45,6 +45,92 @@
     a.href = url; a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 500);
+  }
+
+  // Narrativa profesional en espanol que conecta materiales, luz,
+  // geometria, paleta y emocion con el aroma elegido. Tono perfumista
+  // explicando al cliente, NO listado tecnico.
+  function buildScentNarrative(output, client) {
+    const o = output;
+    const av = o.analisis_visual || {};
+    const lectura = o.lectura_emocional || {};
+    const est = o.estrategia_olfativa || {};
+    const dif = o.difusion || {};
+    const cliente = client?.clientName || 'cliente';
+
+    const fvName = (OLF_KNOW.familiasVisuales.find(f => f.id === av.familia_visual) || {}).nombre
+      || av.familia_visual || 'el carácter del espacio';
+    const aroma = est.aroma_principal || 'el aroma recomendado';
+    const familiaOlf = est.familia_olfativa || '';
+    const direccion = est.subacorde_olfativo || '';
+    const luz = av.tipo_de_luz || '';
+    const temp = av.temperatura_visual || '';
+    const paleta = av.paleta_dominante || '';
+    const materiales = av.materialidad
+      || (Array.isArray(av.materiales_principales) ? av.materiales_principales.join(', ') : '');
+    const formas = av.formas || av.geometria || '';
+    const densidad = av.densidad || '';
+    const emocion = lectura.emocion_deseada || av.emocion_deseada || av.emocion_actual || '';
+    const difusor = dif.difusor_recomendado || '';
+    const cant = dif.cantidad || '';
+
+    const lineas = [];
+    lineas.push(`*Olfativa · Recomendación sensorial para ${cliente}*`);
+    lineas.push('');
+    lineas.push(
+      `Tras leer la fotografía del espacio identificamos un carácter *${String(fvName).toLowerCase()}*. ` +
+      `La iluminación ${luz ? String(luz).toLowerCase() : 'observada'}` +
+      `${temp ? ` con temperatura ${String(temp).toLowerCase()}` : ''} ` +
+      `establece un tono envolvente que pide un aroma con cuerpo y sin estridencias.`
+    );
+    lineas.push('');
+    if (materiales) {
+      lineas.push(
+        `Los materiales (${String(materiales).toLowerCase()}) aportan calidez táctil y memoria orgánica; ` +
+        `visual y olfativamente se conectan con notas ${familiaOlf ? String(familiaOlf).toLowerCase() : 'congruentes con la paleta'}, ` +
+        `que prolongan la sensación de la madera, la piedra y los textiles en el aire.`
+      );
+    }
+    if (paleta) {
+      lineas.push(
+        `La paleta ${String(paleta).toLowerCase()} pide un perfume de baja saturación y alta profundidad — ` +
+        `exactamente lo que entrega *${aroma}*.`
+      );
+    }
+    if (formas) {
+      lineas.push(
+        `La geometría ${String(formas).toLowerCase()} se acompaña mejor de un aroma sin aristas, fluido, ` +
+        `que respete la cadencia visual del espacio.`
+      );
+    }
+    if (densidad) {
+      lineas.push(
+        `La densidad ${String(densidad).toLowerCase()} permite que el aroma se distribuya sin saturar, ` +
+        `manteniendo la sensación de amplitud.`
+      );
+    }
+    lineas.push('');
+    if (emocion) {
+      lineas.push(
+        `La emoción deseada — *${emocion}* — encuentra en ${aroma} su contraparte olfativa: ` +
+        `${direccion ? `una dirección ${String(direccion).toLowerCase()}` : 'una composición congruente'} ` +
+        `que sostiene la atmósfera buscada sin imponerse.`
+      );
+    }
+    lineas.push('');
+    lineas.push(
+      `*Recomendación final:* ${aroma}` +
+      `${familiaOlf ? ` (familia ${String(familiaOlf).toLowerCase()})` : ''}, ` +
+      `difundido con ${difusor || 'el equipo recomendado'}` +
+      `${cant ? ` (${cant} unidad${cant > 1 ? 'es' : ''})` : ''}.`
+    );
+    if (o.resumen_comercial) {
+      lineas.push('');
+      lineas.push(o.resumen_comercial);
+    }
+    lineas.push('');
+    lineas.push('— Olfativa · diseño de identidad olfativa');
+    return lineas.join('\n');
   }
 
   // ----------------------------------------------------------
@@ -101,8 +187,9 @@
   // ----------------------------------------------------------
   // Photo evidence — render estilo Microsoft Designer
   // (marco crema, foto centrada, 2 columnas de bullets, logo Olfativa)
+  // forwardRef para que el parent pueda capturarlo con html2canvas.
   // ----------------------------------------------------------
-  function PhotoEvidenceCard({ previewURL, analisis, output }) {
+  const PhotoEvidenceCard = forwardRef(function PhotoEvidenceCard({ previewURL, analisis, output }, ref) {
     const [aspect, setAspect] = useState(null);
     const onImgLoad = (e) => {
       const w = e.target.naturalWidth, h = e.target.naturalHeight;
@@ -146,7 +233,7 @@
     const photoStyle = aspect ? { aspectRatio: String(aspect) } : { aspectRatio: '16 / 10' };
 
     return (
-      <div className="siq-evidence">
+      <div className="siq-evidence" ref={ref}>
         <div className="siq-designer">
           <div className="siq-designer-head">
             <div className="siq-designer-title">Análisis sensorial del espacio</div>
@@ -198,7 +285,7 @@
         </div>
       </div>
     );
-  }
+  });
 
   // helper local: trim + fallback si valor está vacío
   function pretty(v, fallback) {
@@ -396,6 +483,7 @@
     const [applied, setApplied] = useState(false);
     const [errMsg, setErrMsg] = useState('');
     const [usingDemo, setUsingDemo] = useState(false);
+    const evidenceRef = useRef(null);
 
     const close = () => { onClose && onClose(); };
 
@@ -475,51 +563,70 @@
       setTimeout(() => { onClose && onClose(); }, 900);
     };
 
-    const onShareWhatsApp = () => {
-      if (!output) return;
-      const o = output;
-      const meta = o._meta || {};
-      const difFull = meta.difusor_full || {};
-      const av = o.analisis_visual || {};
-      const lectura = o.lectura_emocional || {};
-      const est = o.estrategia_olfativa || {};
-      const dif = o.difusion || {};
-      const cliente = client?.clientName || 'cliente';
-      const propId = client?.propId || '';
-      const fvName = (OLF_KNOW.familiasVisuales.find(f => f.id === av.familia_visual) || {}).nombre || av.familia_visual || '';
-      const familiaAroma = meta.aroma_principal_full?.familia || '';
-      const cobertura = (difFull.cobertura_min_m2 != null && difFull.cobertura_max_m2 != null)
-        ? `${difFull.cobertura_min_m2}–${difFull.cobertura_max_m2} m²`
-        : '';
-      const lineas = [
-        `*Olfativa · Recomendación olfativa para ${cliente}*`,
-        propId ? `Cotización: ${propId}` : '',
-        '',
-        `*Lectura del espacio*`,
-        fvName ? `• Familia visual: ${fvName}` : '',
-        av.tipo_de_luz ? `• Iluminación: ${av.tipo_de_luz}` : '',
-        av.materialidad ? `• Materiales: ${av.materialidad}` : '',
-        lectura.emocion_deseada ? `• Emoción deseada: ${lectura.emocion_deseada}` : '',
-        '',
-        `*Estrategia olfativa*`,
-        est.familia_olfativa ? `• Dirección: ${est.familia_olfativa}` : '',
-        est.aroma_principal ? `• Aroma principal: *${est.aroma_principal}*${familiaAroma ? ` (${familiaAroma})` : ''}` : '',
-        est.aroma_alternativo && est.aroma_alternativo !== 'requiere validación' ? `• Alternativo: ${est.aroma_alternativo}` : '',
-        '',
-        `*Difusión*`,
-        dif.difusor_recomendado ? `• Equipo recomendado: ${dif.difusor_recomendado}` : '',
-        dif.cantidad ? `• Cantidad: ${dif.cantidad}` : '',
-        cobertura ? `• Cobertura: ${cobertura}` : '',
-        dif.intensidad ? `• Intensidad: ${dif.intensidad}` : '',
-        '',
-        `*Resumen*`,
-        o.resumen_comercial || '',
-        '',
-        `Generado con Scent Advisor de Olfativa`,
-        'https://amandujano82.github.io/Olfativa/'
-      ].filter(Boolean).join('\n');
-      const url = 'https://wa.me/?text=' + encodeURIComponent(lineas);
-      window.open(url, '_blank', 'noopener,noreferrer');
+    const onShareWhatsApp = async () => {
+      if (!output || !evidenceRef.current) return;
+      const texto = buildScentNarrative(output, client);
+      const cliente = (client?.clientName || 'cliente').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+      const fileName = `Olfativa-${cliente}.png`;
+
+      try {
+        // 1. Capturar la foto/overlay (.siq-designer) como PNG
+        const node = evidenceRef.current.querySelector('.siq-designer') || evidenceRef.current;
+        if (typeof window.html2canvas !== 'function') {
+          throw new Error('html2canvas no disponible');
+        }
+        const canvas = await window.html2canvas(node, {
+          backgroundColor: '#f4ede0',
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          windowWidth: node.scrollWidth,
+          windowHeight: node.scrollHeight
+        });
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 0.95));
+        if (!blob) throw new Error('canvas.toBlob devolvió null');
+        const file = new File([blob], fileName, { type: 'image/png' });
+
+        // 2. Web Share API con archivos (Android / iOS / Mac con WhatsApp)
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'Recomendación olfativa Olfativa',
+              text: texto
+            });
+            return;
+          } catch (shareErr) {
+            if (shareErr && shareErr.name === 'AbortError') return; // usuario cancelo
+            console.warn('navigator.share falló, caigo al fallback', shareErr);
+          }
+        }
+
+        // 3. Fallback desktop: descarga PNG + copia texto al portapapeles + abre wa.me
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = fileName;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 800);
+
+        try { await navigator.clipboard.writeText(texto); } catch (_) {}
+
+        // Toast con instruccion clara antes de abrir wa.me
+        try {
+          window.dispatchEvent(new CustomEvent('olfativa:scent-applied', {
+            detail: { __toast: 'Imagen descargada + texto copiado. Adjunta la imagen en WhatsApp y pega el texto.' }
+          }));
+        } catch (_) {}
+
+        setTimeout(() => {
+          window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank', 'noopener,noreferrer');
+        }, 300);
+      } catch (err) {
+        console.error('share failed', err);
+        // ultimo recurso: solo abrir wa.me con el texto
+        try { await navigator.clipboard.writeText(texto); } catch (_) {}
+        window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank', 'noopener,noreferrer');
+      }
     };
 
     const onReset = () => {
@@ -578,7 +685,7 @@
                   </div>
                 )}
 
-                <PhotoEvidenceCard previewURL={previewURL} analisis={analisis} output={output} />
+                <PhotoEvidenceCard ref={evidenceRef} previewURL={previewURL} analisis={analisis} output={output} />
 
                 <div className="siq-grid">
                   <VisualAnalysisCard a={analisis} />
