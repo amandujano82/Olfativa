@@ -15,7 +15,7 @@ const PALETTE = window.PALETTE;
 const {
   SlideCover, SlidePromise, SlidePillars, SlideMethod, SlideAroma,
   SlideCatalog, SlideQuote, SlideCuradora, SlideCompliance, SlideTrust, SlideClose,
-  SlideScentAdvisor,
+  SlideScentAdvisor, SlideScentAnalysis,
 } = window;
 
 // Slide dinámico de precios - definido más abajo
@@ -25,6 +25,7 @@ const SLIDE_RENDERERS = {
   cover: SlideCover, promise: SlidePromise, pillars: SlidePillars,
   curadora: SlideCuradora, method: SlideMethod, aroma: SlideAroma,
   scentAdvisor: SlideScentAdvisor,
+  scentAnalysis: SlideScentAnalysis,
   catalog: SlideCatalog,
   // 'cotizacion' (legacy) y 'cotizador' (new kind del segmento Long Tail)
   // ambos renderizan el slide editable dinámico de precios.
@@ -41,6 +42,7 @@ const SLIDE_LABELS = {
   method: "Metodología (6 fases)",
   aroma: "Arquitectura olfativa",
   scentAdvisor: "Scent Advisor · IA",
+  scentAnalysis: "Lectura sensorial · Scent Advisor",
   catalog: "Catálogo de equipos",
   cotizacion: "Cotización · precios dinámicos",
   cotizador: "Cotización · precios dinámicos",
@@ -57,6 +59,7 @@ const SLIDE_DESCRIPTIONS = {
   method: "Las fases que eliminan la incertidumbre",
   aroma: "Tiers olfativos · arquitectura por zona",
   scentAdvisor: "Foto del local → motor olfativo IA → aroma recomendado",
+  scentAnalysis: "Foto real del espacio + lectura visual + recomendación olfativa",
   catalog: "Los difusores que operamos · precios por mes",
   cotizacion: "Calculadora dinámica · difusores + descuento + IVA",
   cotizador: "Calculadora dinámica · difusores + descuento + IVA",
@@ -251,6 +254,21 @@ function App() {
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [scentIQOpen, setScentIQOpen] = useState(false);
   const [scentToast, setScentToast] = useState(null);
+  // Datos del último análisis Scent Advisor aplicado a esta cotización.
+  // Se persiste por propId para que el slide del deck sobreviva refresh.
+  const [scentData, setScentData] = useState(() => {
+    try {
+      const pid = (typeof loadState === 'function' ? (loadState()?.client?.propId) : '') || 'default';
+      const v = localStorage.getItem('olf:scentData:' + pid);
+      return v ? JSON.parse(v) : null;
+    } catch (_) { return null; }
+  });
+  useEffect(() => {
+    const key = 'olf:scentData:' + (client?.propId || 'default');
+    try {
+      if (scentData) localStorage.setItem(key, JSON.stringify(scentData));
+    } catch (_) {}
+  }, [scentData, client?.propId]);
 
   // Toast cuando Scent Advisor aplica una recomendacion: muestra mensaje
   // + auto-abre Precios para que el usuario vea la nueva linea.
@@ -432,6 +450,7 @@ function App() {
                   totalSlides={total}
                   idx={i}
                   prices={prices}
+                  scentData={entry.kind === 'scentAnalysis' ? scentData : undefined}
                 />
               </section>
             );
@@ -554,10 +573,32 @@ function App() {
             const fpNotas = p.fpNotas ? `${p.fpNotas}\n${extraNote}` : extraNote;
             return { ...p, lines: [...p.lines, newLine], nextId: p.nextId + 1, fpNotas };
           });
+          // 1. Guardar scentData para que el slide del deck lo pueda leer
+          setScentData({
+            previewURL: rec.full?._meta?.previewURL || null,
+            output: rec.full,
+            timestamp: Date.now()
+          });
+
+          // 2. Asegurar slide de cotización + insertar slide scentAnalysis JUSTO antes
           setSelected(prev => {
-            const exists = prev.some(s => s.kind === 'cotizacion');
-            if (exists) return prev.map(s => s.kind === 'cotizacion' ? { ...s, enabled: true } : s);
-            return [...prev, { uid: `s-cotizacion-${Date.now()}`, kind: 'cotizacion', segment: 'master', enabled: true }];
+            let arr = [...prev];
+            const hasCot = arr.some(s => s.kind === 'cotizacion' || s.kind === 'cotizador');
+            if (!hasCot) {
+              arr.push({ uid: `s-cotizacion-${Date.now()}`, kind: 'cotizacion', segment: 'master', enabled: true });
+            } else {
+              arr = arr.map(s => (s.kind === 'cotizacion' || s.kind === 'cotizador') ? { ...s, enabled: true } : s);
+            }
+            const hasScent = arr.some(s => s.kind === 'scentAnalysis');
+            if (!hasScent) {
+              const cotIdx = arr.findIndex(s => s.kind === 'cotizacion' || s.kind === 'cotizador');
+              const newSlide = { uid: `s-scentAnalysis-${Date.now()}`, kind: 'scentAnalysis', segment: 'master', enabled: true };
+              if (cotIdx > 0) arr.splice(cotIdx, 0, newSlide);
+              else arr.push(newSlide);
+            } else {
+              arr = arr.map(s => s.kind === 'scentAnalysis' ? { ...s, enabled: true } : s);
+            }
+            return arr;
           });
         }
       })}

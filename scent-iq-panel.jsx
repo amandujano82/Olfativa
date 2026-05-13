@@ -19,7 +19,7 @@
   // helpers
   // ----------------------------------------------------------
   function readDemo() {
-    return fetch('scent-iq-demo.json?v=20260513j').then(r => r.ok ? r.json() : null).catch(() => null);
+    return fetch('scent-iq-demo.json?v=20260513k').then(r => r.ok ? r.json() : null).catch(() => null);
   }
 
   function copyToClipboard(text) {
@@ -546,9 +546,26 @@
       downloadJson(`scent-iq_${clientSlug}_${stamp}.json`, output);
     };
 
-    const onApplyToCotizacion = () => {
+    const onApplyToCotizacion = async () => {
       if (!output) return;
       const meta = output._meta || {};
+      // Convertir el archivo subido a dataURL para que la foto del
+      // slide del deck sobreviva refresh (blob: URLs son session-scoped).
+      let dataURL = null;
+      if (file) {
+        try {
+          dataURL = await new Promise((res, rej) => {
+            const fr = new FileReader();
+            fr.onload = e => res(e.target.result);
+            fr.onerror = rej;
+            fr.readAsDataURL(file);
+          });
+        } catch (_) { /* si falla, dejamos el blob URL como mejor esfuerzo */ }
+      }
+      const fullWithPreview = {
+        ...output,
+        _meta: { ...meta, previewURL: dataURL || previewURL || null }
+      };
       const payload = {
         difusorKey:  meta.cotizador_key,           // null si no priced
         difusorName: output.difusion.difusor_recomendado,
@@ -556,15 +573,13 @@
         aromaName:   output.estrategia_olfativa.aroma_principal,
         cantidad:    output.difusion.cantidad,
         fromScentIQ: true,
-        full: output
+        full: fullWithPreview
       };
       onApply && onApply(payload);
       setApplied(true);
-      // Toast + apertura automatica del panel Precios (lo gestiona el cotizador via evento global)
       try {
         window.dispatchEvent(new CustomEvent('olfativa:scent-applied', { detail: payload }));
       } catch (_) {}
-      // Auto-cerrar el modal para que el usuario vea donde quedo
       setTimeout(() => { onClose && onClose(); }, 900);
     };
 

@@ -1622,8 +1622,162 @@ function SlideQuote({ segment, clientName, idx, totalSlides, propId, propDate, f
   );
 }
 
+// ============================================================
+// SlideScentAnalysis — lectura sensorial del Scent Advisor IA
+// ============================================================
+function SlideScentAnalysis({ segment, clientName, idx, totalSlides, propId, propDate, scentData }) {
+  // Placeholder elegante si no hay analisis cargado
+  if (!scentData || !scentData.output) {
+    return (
+      <SlideFrame>
+        <SlideChrome
+          index={idx} total={totalSlides} segment={segment}
+          clientName={clientName} propId={propId} propDate={propDate}
+          eyebrow="Scent Advisor · Lectura sensorial"
+        />
+        <div style={{
+          position: 'absolute', inset: 0,
+          padding: `${SPACING.paddingTop + 80}px ${SPACING.paddingX}px ${SPACING.paddingBottom}px`,
+          display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start'
+        }}>
+          <Eyebrow color={PALETTE.gold}>Aún sin análisis cargado</Eyebrow>
+          <div style={{ height: 24 }} />
+          <SerifH size={TYPE_SCALE.title} italic>Sube una foto del espacio</SerifH>
+          <div style={{ height: 18 }} />
+          <Body color={PALETTE.boneSoft} style={{ maxWidth: 980 }}>
+            Cuando el cliente comparta una imagen de su local, esta lámina se llenará con la lectura visual y la recomendación olfativa generadas por Scent Advisor.
+          </Body>
+        </div>
+      </SlideFrame>
+    );
+  }
+
+  const o = scentData.output;
+  const av = o.analisis_visual || {};
+  const est = o.estrategia_olfativa || {};
+  const dif = o.difusion || {};
+  const vc = o.variables_canonicas || {};
+  const meta = o._meta || {};
+  const fvName = (window.OLF_KNOW?.familiasVisuales?.find(f => f.id === av.familia_visual) || {}).nombre
+    || vc.familia_visual || av.familia_visual || '—';
+  const aroma = est.aroma_principal || '—';
+  const difusor = dif.difusor_recomendado || '—';
+  const cant = dif.cantidad || 1;
+  const cobertura = meta.difusor_full
+    ? `${meta.difusor_full.cobertura_min_m2}–${meta.difusor_full.cobertura_max_m2} m²`
+    : '';
+
+  const rows = [
+    ['Tipo de luz',       vc.tipo_de_luz || av.tipo_de_luz],
+    ['Materialidad',      vc.materialidad || av.materialidad],
+    ['Formas',            vc.formas || av.formas],
+    ['Densidad',          vc.densidad || av.densidad],
+    ['Familia visual',    fvName],
+    ['Familia olfativa',  vc.familia_olfativa || est.familia_olfativa],
+    ['Subacorde',         vc.subacorde_olfativo || est.subacorde_olfativo],
+    ['Aroma',             aroma]
+  ];
+
+  return (
+    <SlideFrame>
+      <SlideChrome
+        index={idx} total={totalSlides} segment={segment}
+        clientName={clientName} propId={propId} propDate={propDate}
+        eyebrow={`Scent Advisor · Lectura sensorial de ${clientName || 'el espacio'}`}
+      />
+      <div style={{
+        position: 'absolute', inset: 0,
+        padding: `${SPACING.paddingTop + 56}px ${SPACING.paddingX}px ${SPACING.paddingBottom}px`,
+        display: 'grid', gridTemplateColumns: '1.25fr 1fr', columnGap: 72, alignItems: 'start'
+      }}>
+        {/* Columna izquierda: foto + carácter visual */}
+        <div>
+          <div style={{
+            position: 'relative',
+            borderRadius: 6,
+            overflow: 'hidden',
+            border: `1px solid ${PALETTE.rule}`,
+            background: PALETTE.inkSoft,
+            aspectRatio: '4 / 3',
+            boxShadow: '0 28px 80px rgba(0,0,0,0.55)'
+          }}>
+            {scentData.previewURL ? (
+              <img
+                src={scentData.previewURL}
+                alt="Espacio analizado"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            ) : (
+              <div style={{
+                width: '100%', height: '100%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: PALETTE.boneSoft, fontFamily: 'Cormorant Garamond, serif',
+                fontStyle: 'italic', fontSize: 32, opacity: 0.55
+              }}>
+                Análisis demo · sin imagen de origen
+              </div>
+            )}
+            <div style={{ position: 'absolute', bottom: 22, right: 22, opacity: 0.85 }}>
+              <OlfativaMark color={PALETTE.bone} height={28} />
+            </div>
+          </div>
+
+          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <Eyebrow color={PALETTE.gold}>Carácter visual</Eyebrow>
+            <SerifH size={TYPE_SCALE.display} italic color={PALETTE.bone}>{fvName}</SerifH>
+            {av.emocion_deseada && (
+              <Body color={PALETTE.boneSoft} size={TYPE_SCALE.body} style={{ marginTop: 4 }}>
+                {av.emocion_deseada}
+              </Body>
+            )}
+          </div>
+        </div>
+
+        {/* Columna derecha: 8 variables + recomendación */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+          <div>
+            <Eyebrow color={PALETTE.gold}>Lectura del espacio</Eyebrow>
+            <HairRule color={PALETTE.rule} style={{ marginTop: 14, marginBottom: 20 }} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 36, rowGap: 22 }}>
+              {rows.map(([k, v], i) => (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{
+                    fontFamily: 'Inter, sans-serif',
+                    fontSize: 13, letterSpacing: '0.18em',
+                    textTransform: 'uppercase', color: PALETTE.goldSoft,
+                    fontWeight: 500
+                  }}>{k}</div>
+                  <div style={{
+                    fontFamily: 'Cormorant Garamond, serif',
+                    fontSize: 26, fontStyle: 'italic',
+                    color: PALETTE.bone, lineHeight: 1.2
+                  }}>{v || '—'}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Eyebrow color={PALETTE.gold}>Recomendación olfativa</Eyebrow>
+            <HairRule color={PALETTE.rule} style={{ marginTop: 14, marginBottom: 20 }} />
+            <SerifH size={TYPE_SCALE.display} italic color={PALETTE.bone}>{aroma}</SerifH>
+            <Body color={PALETTE.boneSoft} style={{ marginTop: 14 }}>
+              Difundido con <span style={{ color: PALETTE.gold }}>{difusor}</span> · {cant} unidad{cant > 1 ? 'es' : ''}{cobertura ? ` · cobertura ${cobertura}` : ''}.
+            </Body>
+            {o.resumen_comercial && (
+              <Body color={PALETTE.boneSoft} size={TYPE_SCALE.small} style={{ marginTop: 16, fontStyle: 'italic', opacity: 0.88 }}>
+                {o.resumen_comercial}
+              </Body>
+            )}
+          </div>
+        </div>
+      </div>
+    </SlideFrame>
+  );
+}
+
 // expose to global
-Object.assign(window, { SlideCover, SlidePromise, SlidePillars, SlideMethod, SlideAroma, SlideCatalog, SlideCuradora, SlideCompliance, SlideTrust, SlideClose, SlideQuote, SlideScentAdvisor, SlideCotizador });
+Object.assign(window, { SlideCover, SlidePromise, SlidePillars, SlideMethod, SlideAroma, SlideCatalog, SlideCuradora, SlideCompliance, SlideTrust, SlideClose, SlideQuote, SlideScentAdvisor, SlideCotizador, SlideScentAnalysis });
 
 
 // ============================================================
