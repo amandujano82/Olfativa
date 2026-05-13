@@ -1,0 +1,30 @@
+{
+  "label": "Spa wellness · Riviera Maya",
+  "descripcion": "Espacio biophilic con curvas suaves, paleta arena/verde, vegetación y luz cálida difusa.",
+  "analisis": {
+    "familia_visual": "organico_biophilic",
+    "familia_visual_secundaria": "minimalista_calmo",
+    "objetivo_comercial": "bienestar",
+    "tipo_de_luz": "warm diffused light",
+    "temperatura_visual": "cálida",
+    "paleta_dominante": "verdes suaves, arena, blancos rotos",
+    "saturacion": "baja",
+    "contraste": "bajo",
+    "materialidad": "natural wood and stone",
+    "materiales_principales": ["madera clara", "piedra", "lino", "vegetación"],
+    "formas": "soft curves",
+    "geometria": "curvas",
+    "densidad": "low density",
+    "nivel_premium": "medio-alto",
+    "presencia_naturaleza": "alta",
+    "tipo_de_espacio": "spa · wellness retreat",
+    "emocion_actual": "calma incipiente, restauración",
+    "emocion_deseada": "respiración profunda, pausa restauradora",
+    "m2_estimados": 60,
+    "altura_estimada_m": 3.0,
+    "espacio_cerrado": true,
+    "ventilacion": "media",
+    "flujo_personas": "bajo",
+    "tiempo_permanencia": "largo"
+  }
+}
