@@ -613,7 +613,46 @@ function App() {
         <AdminPanel
           customSlides={customSlides}
           onClose={() => setAdminOpen(false)}
-          onSave={(arr) => setCustomSlides(arr)}
+          onSave={(nextArr) => {
+            // Diff con el array anterior: cualquier kind nuevo se agrega
+            // automaticamente al deck (selected) con enabled:true.
+            // Los kinds eliminados se sacan del deck.
+            const oldKinds = new Set(customSlides.map(c => c.kind));
+            const newKinds = new Set(nextArr.map(c => c.kind));
+            const added = nextArr.filter(c => !oldKinds.has(c.kind));
+            const removedKinds = customSlides
+              .filter(c => !newKinds.has(c.kind))
+              .map(c => c.kind);
+
+            setCustomSlides(nextArr);
+
+            setSelected(prev => {
+              let arr = prev.filter(s => !removedKinds.includes(s.kind));
+              added.forEach(c => {
+                if (!arr.some(s => s.kind === c.kind)) {
+                  arr.push({
+                    uid: `s-${c.kind}-${Date.now()}`,
+                    kind: c.kind,
+                    segment: 'master',
+                    enabled: true,
+                  });
+                }
+              });
+              return arr;
+            });
+
+            // Toast confirmando que se agrego al deck
+            if (added.length > 0) {
+              const n = added.length;
+              const titles = added.slice(0, 2).map(c => `"${c.title}"`).join(', ');
+              const extra = n > 2 ? ` y ${n - 2} más` : '';
+              try {
+                window.dispatchEvent(new CustomEvent('olfativa:scent-applied', {
+                  detail: { __toast: `Admin: ${titles}${extra} agregado${n > 1 ? 's' : ''} al deck.` }
+                }));
+              } catch (_) {}
+            }
+          }}
         />
       )}
 
