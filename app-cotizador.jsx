@@ -411,8 +411,25 @@ function App() {
   };
 
   const reset = () => {
-    if (!confirm("Restablecer al machote MASTER completo?")) return;
+    if (!confirm("Restablecer TODO la cotización (cliente, líneas, Scent Advisor, deck)?")) return;
     setSelected(defaultSelected());
+    setClient({ ...CLIENT_DEFAULTS });
+    setPrices({
+      ...PRICES_DEFAULTS,
+      lines: [{ id: 1, difusor: 'aspen', cant: 1, descuento: 0 }],
+      fp: { ...PRICES_DEFAULTS.fp },
+      fpNotas: '',
+      nextId: 2,
+    });
+    // Limpiar scentData del state + LS (por propId actual y por 'default')
+    setScentData(null);
+    try {
+      const pid = client?.propId || 'default';
+      localStorage.removeItem('olf:scentData:' + pid);
+      localStorage.removeItem('olf:scentData:default');
+      // Migraciones viejas
+      localStorage.removeItem('olfativa.cotizador.v1');
+    } catch (_) {}
   };
 
   return (
@@ -881,6 +898,23 @@ function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply
     });
   };
 
+  // Move slide up/down within the enabled list. Disabled rows are
+  // pushed to the end so the enabled order is the authoritative one.
+  const moveEnabled = (kind, delta) => {
+    setDraft(prev => {
+      const enabled = prev.filter(d => d.enabled);
+      const disabled = prev.filter(d => !d.enabled);
+      const i = enabled.findIndex(d => d.kind === kind);
+      const j = i + delta;
+      if (i < 0 || j < 0 || j >= enabled.length) return prev;
+      const next = [...enabled];
+      [next[i], next[j]] = [next[j], next[i]];
+      return [...next, ...disabled];
+    });
+  };
+  const moveUp   = (kind) => moveEnabled(kind, -1);
+  const moveDown = (kind) => moveEnabled(kind, +1);
+
   // Alterna incluir / no incluir un tipo. Si se incluye y no había draft,
   // se inserta con la variante recomendada (o la primera disponible).
   const toggleKindEnabled = (kind) => {
@@ -1047,7 +1081,7 @@ function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply
             );
           })}
 
-          {/* ── Vista previa y orden · arrastra para reordenar ── */}
+          {/* ── Vista previa y orden · arrastra o usa ▲ ▼ para reordenar ── */}
           <section className="picker-order-section">
             <div className="picker-order-head">
               <span className="picker-order-eyebrow">Vista previa y orden</span>
@@ -1056,8 +1090,19 @@ function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply
                 {enabledCount} {enabledCount === 1 ? 'lámina' : 'láminas'}
               </span>
               <span className="picker-order-hint">
-                {enabledCount > 1 ? 'Arrastra para reordenar' : 'Activa al menos 2 tipos para reordenar'}
+                {enabledCount > 1 ? 'Arrastra o usa ▲ ▼ para reordenar' : 'Activa al menos 2 tipos para reordenar'}
               </span>
+              <button
+                className="picker-order-reset"
+                onClick={() => {
+                  if (confirm('Restablecer el orden del deck al machote MASTER?')) {
+                    setDraft(defaultSelected());
+                  }
+                }}
+                title="Volver al orden por defecto del machote master"
+              >
+                ↺ Restablecer orden por defecto
+              </button>
             </div>
             {enabledCount === 0 ? (
               <div className="picker-order-empty">
@@ -1070,6 +1115,8 @@ function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply
                   const slideProps = buildSlideProps(row.kind, row.segment);
                   const isDragging = dragKind === row.kind;
                   const isDragOver = overKind === row.kind && dragKind !== row.kind;
+                  const isFirst = i === 0;
+                  const isLast = i === enabledCount - 1;
                   return (
                     <div key={row.uid || row.kind}
                          draggable
@@ -1078,9 +1125,25 @@ function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply
                          onDragEnd={onDragEnd}
                          onDrop={onDrop(row.kind)}
                          className={`picker-order-item ${isDragging ? 'is-dragging' : ''} ${isDragOver ? 'is-dragover' : ''}`}
-                         title="Arrastra para mover">
+                         title="Arrastra o usa ▲ ▼ para mover">
                       <div className="picker-order-num">#{String(i + 1).padStart(2,'0')}</div>
                       <div className="picker-order-grip" aria-hidden="true">⋮⋮</div>
+                      <div className="picker-order-moves">
+                        <button
+                          className="picker-order-move"
+                          disabled={isFirst}
+                          onClick={(e) => { e.stopPropagation(); moveUp(row.kind); }}
+                          title="Subir"
+                          aria-label="Subir"
+                        >▲</button>
+                        <button
+                          className="picker-order-move"
+                          disabled={isLast}
+                          onClick={(e) => { e.stopPropagation(); moveDown(row.kind); }}
+                          title="Bajar"
+                          aria-label="Bajar"
+                        >▼</button>
+                      </div>
                       <SlidePreview
                         Renderer={Renderer}
                         slideProps={slideProps}
