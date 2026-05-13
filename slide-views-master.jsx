@@ -1658,6 +1658,19 @@ function SlideScentAnalysis({ segment, clientName, idx, totalSlides, propId, pro
   const dif = o.difusion || {};
   const vc = o.variables_canonicas || {};
   const meta = o._meta || {};
+  const overrides = meta.manual_overrides || {};
+  const manualBadge = (
+    <span style={{
+      display: 'inline-block', marginLeft: 12, padding: '4px 12px',
+      fontFamily: 'Inter, sans-serif', fontSize: 11, letterSpacing: '0.18em',
+      textTransform: 'uppercase', fontWeight: 600,
+      background: 'rgba(199, 166, 104, 0.18)',
+      color: PALETTE.gold,
+      border: `1px solid ${PALETTE.goldSoft}`,
+      borderRadius: 999,
+      verticalAlign: 'middle'
+    }}>Selección manual</span>
+  );
   const fvName = (window.OLF_KNOW?.familiasVisuales?.find(f => f.id === av.familia_visual) || {}).nombre
     || vc.familia_visual || av.familia_visual || '—';
   const aroma = est.aroma_principal || '—';
@@ -1760,9 +1773,12 @@ function SlideScentAnalysis({ segment, clientName, idx, totalSlides, propId, pro
           <div>
             <Eyebrow color={PALETTE.gold}>Recomendación olfativa</Eyebrow>
             <HairRule color={PALETTE.rule} style={{ marginTop: 14, marginBottom: 20 }} />
-            <SerifH size={TYPE_SCALE.display} italic color={PALETTE.bone}>{aroma}</SerifH>
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+              <SerifH size={TYPE_SCALE.display} italic color={PALETTE.bone}>{aroma}</SerifH>
+              {overrides.aroma && manualBadge}
+            </div>
             <Body color={PALETTE.boneSoft} style={{ marginTop: 14 }}>
-              Difundido con <span style={{ color: PALETTE.gold }}>{difusor}</span> · {cant} unidad{cant > 1 ? 'es' : ''}{cobertura ? ` · cobertura ${cobertura}` : ''}.
+              Difundido con <span style={{ color: PALETTE.gold }}>{difusor}</span>{overrides.difusor && manualBadge} · {cant} unidad{cant > 1 ? 'es' : ''}{cobertura ? ` · cobertura ${cobertura}` : ''}.
             </Body>
             {o.resumen_comercial && (
               <Body color={PALETTE.boneSoft} size={TYPE_SCALE.small} style={{ marginTop: 16, fontStyle: 'italic', opacity: 0.88 }}>
