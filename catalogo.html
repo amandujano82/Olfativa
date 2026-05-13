@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo Olfativa · Difusores & Aromas</title>
+<style>
+  :root {
+    --negro: #0e0e0e;
+    --dorado: #C9A84C;
+    --naranja: #C47A48;
+    --gris: #1a1a1a;
+    --gris2: #2a2a2a;
+    --texto: #e8e8e8;
+    --muted: #888;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--negro); color: var(--texto); font-family: 'Georgia', serif; min-height: 100vh; }
+
+  /* NAV */
+  nav {
+    position: fixed; top:0; left:0; right:0; z-index:100;
+    background: rgba(14,14,14,0.97); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 64px;
+  }
+  .nav-logo { font-size: 22px; font-style: italic; color: #fff; letter-spacing: 1px; }
+  .nav-logo span { color: var(--dorado); }
+  .nav-tabs { display: flex; gap: 8px; }
+  .nav-tab {
+    padding: 8px 20px; border-radius: 4px; cursor: pointer;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    border: 1px solid transparent; transition: all 0.2s; font-family: sans-serif;
+    background: transparent; color: var(--muted);
+  }
+  .nav-tab.active { background: var(--naranja); color: #fff; border-color: var(--naranja); }
+  .nav-tab:hover:not(.active) { border-color: rgba(201,168,76,0.3); color: var(--dorado); }
+
+  /* HERO */
+  .hero {
+    padding: 140px 80px 80px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .hero-eyebrow {
+    font-size: 10px; letter-spacing: 4px; color: var(--naranja);
+    font-family: sans-serif; text-transform: uppercase; margin-bottom: 20px;
+  }
+  .hero h1 { font-size: clamp(42px,5vw,72px); color: #fff; line-height: 1.05; margin-bottom: 16px; }
+  .hero h1 em { color: var(--dorado); font-style: italic; }
+  .hero p { font-size: 15px; color: var(--muted); max-width: 560px; line-height: 1.7; font-family: sans-serif; }
+
+  /* SECTION */
+  .section { padding: 80px; }
+  .section-header { margin-bottom: 48px; }
+  .section-eyebrow {
+    font-size: 10px; letter-spacing: 4px; color: var(--naranja);
+    font-family: sans-serif; text-transform: uppercase; margin-bottom: 12px;
+  }
+  .section-title { font-size: 32px; color: #fff; margin-bottom: 8px; }
+  .section-sub { font-size: 13px; color: var(--muted); font-family: sans-serif; }
+
+  /* DIFUSORES GRID */
+  .difusores-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+  }
+  .dif-card {
+    background: var(--gris); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px; overflow: hidden; transition: border-color 0.3s, transform 0.2s;
+    cursor: pointer;
+  }
+  .dif-card:hover { border-color: rgba(201,168,76,0.35); transform: translateY(-2px); }
+  .dif-img {
+    width: 100%; height: 220px; object-fit: cover;
+    background: var(--gris2); display: block;
+  }
+  .dif-body { padding: 24px; }
+  .dif-tag {
+    display: inline-block; font-size: 9px; letter-spacing: 2px;
+    padding: 3px 10px; border-radius: 2px; margin-bottom: 10px;
+    font-family: sans-serif; text-transform: uppercase;
+  }
+  .tag-entrada { background: rgba(100,100,100,0.3); color: #aaa; border: 1px solid #444; }
+  .tag-premium { background: rgba(201,168,76,0.15); color: var(--dorado); border: 1px solid rgba(201,168,76,0.3); }
+  .tag-enterprise { background: rgba(196,122,72,0.15); color: var(--naranja); border: 1px solid rgba(196,122,72,0.3); }
+  .dif-nombre { font-size: 22px; color: #fff; margin-bottom: 6px; }
+  .dif-tier { font-size: 11px; color: var(--muted); letter-spacing: 1px; font-family: sans-serif; margin-bottom: 12px; }
+  .dif-specs { display: flex; gap: 20px; margin-bottom: 16px; }
+  .dif-spec { font-family: sans-serif; }
+  .dif-spec-val { font-size: 18px; color: var(--dorado); font-weight: bold; }
+  .dif-spec-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .dif-suited { font-size: 12px; color: var(--muted); font-family: sans-serif; line-height: 1.5; margin-bottom: 16px; }
+  .dif-precio {
+    font-size: 13px; font-family: sans-serif; color: #fff;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;
+  }
+  .dif-precio-val { font-size: 20px; color: var(--naranja); font-weight: bold; }
+  .dif-precio-lbl { font-size: 10px; color: var(--muted); }
+
+  /* AROMAS GRID */
+  .aromas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+  .aroma-card {
+    background: var(--gris); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px; overflow: hidden; transition: border-color 0.3s, transform 0.2s;
+    cursor: pointer;
+  }
+  .aroma-card:hover { border-color: rgba(201,168,76,0.35); transform: translateY(-2px); }
+  .aroma-img {
+    width: 100%; height: 180px; object-fit: cover;
+    background: var(--gris2); display: block;
+  }
+  .aroma-body { padding: 20px; }
+  .aroma-familia {
+    font-size: 9px; letter-spacing: 2px; color: var(--naranja);
+    font-family: sans-serif; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .aroma-nombre { font-size: 17px; color: #fff; margin-bottom: 4px; line-height: 1.3; }
+  .aroma-notas { font-size: 12px; color: var(--dorado); font-family: sans-serif; margin-bottom: 8px; }
+  .aroma-desc { font-size: 12px; color: var(--muted); font-family: sans-serif; line-height: 1.6; margin-bottom: 14px; }
+  .aroma-precios { display: flex; gap: 8px; flex-wrap: wrap; }
+  .aroma-precio-chip {
+    font-size: 10px; font-family: sans-serif;
+    padding: 4px 10px; border-radius: 20px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    color: #ccc;
+  }
+
+  /* FILTER BAR */
+  .filter-bar {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 36px;
+  }
+  .filter-btn {
+    padding: 7px 18px; border-radius: 20px; cursor: pointer;
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    border: 1px solid rgba(255,255,255,0.12); background: transparent;
+    color: var(--muted); font-family: sans-serif; transition: all 0.2s;
+  }
+  .filter-btn.active { background: var(--naranja); border-color: var(--naranja); color: #fff; }
+  .filter-btn:hover:not(.active) { border-color: var(--dorado); color: var(--dorado); }
+
+  /* HIDDEN */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* DIVIDER */
+  hr.gold { border: none; border-top: 1px solid rgba(201,168,76,0.2); margin: 0 80px; }
+
+  /* FOOTER */
+  footer {
+    padding: 48px 80px; text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    color: var(--muted); font-size: 12px; font-family: sans-serif;
+  }
+  footer strong { color: var(--dorado); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Olfativa<span>®</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPanel('difusores',this)">Difusores</button>
+    <button class="nav-tab" onclick="showPanel('aromas',this)">Aromas</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Catálogo profesional · 2026</div>
+  <h1>Equipos & aromas<br><em>para tu espacio.</em></h1>
+  <p>Tecnología de difusión en frío. Instalación en 7 días. Sin calibración, sin recargas manuales. Tú eliges el aroma, nosotros operamos.</p>
+</div>
+
+<!-- PANEL DIFUSORES -->
+<div id="panel-difusores" class="panel active">
+  <div class="section">
+    <div class="section-header">
+      <div class="section-eyebrow">Hardware profesional</div>
+      <div class="section-title">Difusores</div>
+      <div class="section-sub">Cobertura desde 50 hasta 900 m² · Todos incluyen instalación y soporte técnico</div>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterDif('all',this)">Todos</button>
+      <button class="filter-btn" onclick="filterDif('Manual',this)">Manual</button>
+      <button class="filter-btn" onclick="filterDif('Premium',this)">Premium · App</button>
+      <button class="filter-btn" onclick="filterDif('Enterprise',this)">Enterprise</button>
+    </div>
+    <div class="difusores-grid" id="dif-grid"></div>
+  </div>
+</div>
+
+<!-- PANEL AROMAS -->
+<div id="panel-aromas" class="panel">
+  <div class="section">
+    <div class="section-header">
+      <div class="section-eyebrow">Colección 2025–2026</div>
+      <div class="section-title">Aromas</div>
+      <div class="section-sub">Fragancias desarrolladas por Manuela P. Fleischhacker · 30+ años de curaduría olfativa</div>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterAroma('all',this)">Todos</button>
+      <button class="filter-btn" onclick="filterAroma('frutal',this)">Frutal</button>
+      <button class="filter-btn" onclick="filterAroma('floral',this)">Floral</button>
+      <button class="filter-btn" onclick="filterAroma('amaderado',this)">Amaderado</button>
+      <button class="filter-btn" onclick="filterAroma('citrico',this)">Cítrico</button>
+      <button class="filter-btn" onclick="filterAroma('ocasion',this)">Ocasión</button>
+    </div>
+    <div class="aromas-grid" id="aroma-grid"></div>
+  </div>
+</div>
+
+<footer>
+  <strong>Olfativa®</strong> · Casa Olfativa · México · ventas@olfativa.com
+</footer>
+
+<script>
+const DIFUSORES = [
+  { id:"fitz",        nombre:"Fitz",         tier:"Manual",       tag:"ENTRADA",    m2:50,  m3:150, suited:"Boutique · oficina pequeña · sala de espera",    precio:"$1,620/mes", imagen:"https://amandujano82.github.io/Olfativa/photos/difusor-fitz.png" },
+  { id:"moai",        nombre:"Moai",         tier:"Manual",       tag:"EQUILIBRIO", m2:80,  m3:250, suited:"Oficina · lobby · recepción comercial",           precio:"$1,800/mes", imagen:"https://amandujano82.github.io/Olfativa/photos/difusor-moai.png" },
+  { id:"aspen",       nombre:"Aspen",        tier:"Premium · App",tag:"PREMIUM",    m2:160, m3:400, suited:"Boutique premium · café · estudio de diseño",     precio:"$2,000/mes", imagen:"https://amandujano82.github.io/Olfativa/photos/difusor-aspen.png" },
+  { id:"montblanc",   nombre:"Montblanc",    tier:"Premium · App",tag:"VERSÁTIL",   m2:120, m3:450, suited:"Retail mediano · agencia · clínica privada",      precio:"$2,000/mes", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/difusor-montblanc-difusores-688543.jpg?v=1776123937" },
+  { id:"montblancXl", nombre:"Montblanc XL", tier:"Premium · App",tag:"GRANDE",     m2:250, m3:700, suited:"Hotel · sede corporativa · flagship retail",      precio:"$2,400/mes", imagen:"https://amandujano82.github.io/Olfativa/photos/difusor-montblanc.png" },
+  { id:"liberty",     nombre:"Liberty",      tier:"Premium · App",tag:"FLAGSHIP",   m2:300, m3:900, suited:"Flagship · experiencia de marca · museo",         precio:"$2,800/mes", imagen:"https://amandujano82.github.io/Olfativa/photos/difusor-liberty.png" },
+  { id:"ural",        nombre:"Ural",         tier:"Enterprise",   tag:"ESCALA",     m2:400, m3:1200,suited:"Cadena retail · campus universitario",            precio:"$3,200/mes", imagen:"https://amandujano82.github.io/Olfativa/photos/difusor-ural.png" },
+  { id:"empire",      nombre:"Empire",       tier:"Enterprise",   tag:"MACRO",      m2:600, m3:1800,suited:"Centro comercial · aeropuerto · hospital",        precio:"$3,800/mes", imagen:"https://amandujano82.github.io/Olfativa/photos/difusor-empire.png" },
+  { id:"everest",     nombre:"Everest",      tier:"Enterprise",   tag:"ULTRA",      m2:900, m3:2700,suited:"Multi-sede · gran formato · corporativo",         precio:"$4,500/mes", imagen:"https://amandujano82.github.io/Olfativa/photos/difusor-everest.png" }
+];
+
+const AROMAS = [
+  { nombre:"Blooms",             notas:"Bergamota, Jazmín",         familia:"frutal",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/5-BLOOMS2025.png?v=1730933609",          desc:"Frescura luminosa con toque vibrante de jengibre, suavizada por la delicadeza del jazmín." },
+  { nombre:"Lumiere",            notas:"Bambú, Bergamota",          familia:"citrico",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/lumiere.png",                             desc:"Claridad aromática que evoca espacios minimalistas y modernos." },
+  { nombre:"Faraway",            notas:"Cítricos, Eucalipto",       familia:"citrico",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/faraway.png",                             desc:"Frescura abierta que transporta a paisajes naturales despejados." },
+  { nombre:"Mille Rêves",        notas:"Cardamomo, Pachulí",        familia:"amaderado", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/mille-reves.png",                         desc:"Profundidad oriental con especias cálidas y base amaderada." },
+  { nombre:"Principal Pleasure", notas:"Sándalo, Orquídea, Coco",   familia:"floral",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/principal-pleasure.png",                  desc:"Sensualidad sofisticada con flores exóticas sobre base cremosa." },
+  { nombre:"Amber Pomander",     notas:"Ámbar, Especias",           familia:"amaderado", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/amber-pomander.png",                      desc:"Calidez envolvente que crea atmósferas acogedoras y memorables." },
+  { nombre:"Azur",               notas:"Eucalipto, Violetas",       familia:"floral",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/azur.png",                                desc:"Frescura marina con toque floral delicado y limpio." },
+  { nombre:"ZenPet",             notas:"Cítrico, Floral",           familia:"citrico",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/zenpet.png",                              desc:"Aroma fresco y neutro, ideal para espacios con mascotas." },
+  { nombre:"Citrus Agave",       notas:"Cítrico, Agave",            familia:"citrico",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/citrus-agave.png",                        desc:"Autenticidad mexicana con frescura cítrica y carácter mineral." },
+  { nombre:"Capital Soleil",     notas:"Frescura Tropical",         familia:"frutal",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/capital-soleil.png",                      desc:"Exclusividad tropical que evoca destinos de lujo y verano." },
+  { nombre:"Dune",               notas:"Oud Wood, Incienso",        familia:"amaderado", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/dune.png",                                desc:"Misterio desértico con madera de oud y resinas sagradas." },
+  { nombre:"Apfelstrudel",       notas:"Manzana, Canela",           familia:"ocasion",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/apfelstrudel.png",                        desc:"Calidez vienesa con manzana horneada y especias dulces." },
+  { nombre:"Christmas in Paris", notas:"Menta, Chocolate",          familia:"ocasion",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/8-CHRISTMASINPARIS2025.png?v=1730936321", desc:"Elegancia navideña con frescor de menta y dulzura de chocolate." },
+  { nombre:"Mille Rêves Auto",   notas:"Cardamomo, Pachulí",        familia:"amaderado", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/mille-reves.png",                         desc:"Versión compacta para vehículos. Sofisticación en movimiento." },
+  { nombre:"Azur Auto",          notas:"Eucalipto, Violetas",       familia:"floral",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/azur.png",                                desc:"Frescura marina para habitáculos. Limpieza aromática en trayecto." }
+];
+
+function tagClass(tag) {
+  if (tag === 'ENTRADA' || tag === 'EQUILIBRIO') return 'tag-entrada';
+  if (tag === 'ESCALA' || tag === 'MACRO' || tag === 'ULTRA') return 'tag-enterprise';
+  return 'tag-premium';
+}
+
+function renderDifusores(filter) {
+  const grid = document.getElementById('dif-grid');
+  const list = filter === 'all' ? DIFUSORES : DIFUSORES.filter(d => d.tier.includes(filter));
+  grid.innerHTML = list.map(d => `
+    <div class="dif-card">
+      <img class="dif-img" src="${d.imagen}" alt="${d.nombre}" onerror="this.style.background='#1a1a1a';this.style.display='block'">
+      <div class="dif-body">
+        <span class="dif-tag ${tagClass(d.tag)}">${d.tag}</span>
+        <div class="dif-nombre">${d.nombre}</div>
+        <div class="dif-tier">${d.tier.toUpperCase()}</div>
+        <div class="dif-specs">
+          <div class="dif-spec"><div class="dif-spec-val">${d.m2}</div><div class="dif-spec-lbl">m² máx</div></div>
+          <div class="dif-spec"><div class="dif-spec-val">${d.m3}</div><div class="dif-spec-lbl">m³ máx</div></div>
+        </div>
+        <div class="dif-suited">${d.suited}</div>
+        <div class="dif-precio">
+          <div><div class="dif-precio-lbl">RENTA MENSUAL</div><div class="dif-precio-val">${d.precio}</div></div>
+          <div style="font-size:11px;color:var(--muted)">Incluye instalación<br>y soporte técnico</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderAromas(filter) {
+  const grid = document.getElementById('aroma-grid');
+  const list = filter === 'all' ? AROMAS : AROMAS.filter(a => a.familia === filter);
+  grid.innerHTML = list.map(a => `
+    <div class="aroma-card">
+      <img class="aroma-img" src="${a.imagen}" alt="${a.nombre}" onerror="this.style.background='#1a1a1a'">
+      <div class="aroma-body">
+        <div class="aroma-familia">${a.familia}</div>
+        <div class="aroma-nombre">${a.nombre}</div>
+        <div class="aroma-notas">${a.notas}</div>
+        <div class="aroma-desc">${a.desc}</div>
+        <div class="aroma-precios">
+          <span class="aroma-precio-chip">10 ml · $250</span>
+          <span class="aroma-precio-chip">100 ml · $1,219</span>
+          <span class="aroma-precio-chip">200 ml · $2,225</span>
+          <span class="aroma-precio-chip">500 ml · $4,799</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function filterDif(tier, btn) {
+  document.querySelectorAll('#panel-difusores .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDifusores(tier);
+}
+
+function filterAroma(familia, btn) {
+  document.querySelectorAll('#panel-aromas .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAromas(familia);
+}
+
+renderDifusores('all');
+renderAromas('all');
+</script>
+</body>
+</html>
