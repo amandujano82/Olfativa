@@ -250,6 +250,28 @@ function App() {
   const [pricesOpen, setPricesOpen] = useState(false);
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [scentIQOpen, setScentIQOpen] = useState(false);
+  const [scentToast, setScentToast] = useState(null);
+
+  // Toast cuando Scent Advisor aplica una recomendacion: muestra mensaje
+  // + auto-abre Precios para que el usuario vea la nueva linea.
+  useEffect(() => {
+    const handler = (e) => {
+      const d = e.detail || {};
+      const aromaName  = d.aromaName  || 'aroma';
+      const difusorName = d.difusorName || 'difusor';
+      setScentToast(`Scent Advisor: agregado ${aromaName} + ${difusorName} a la cotización`);
+      // Pequeno delay para que el toast se vea antes que se abra el modal Precios
+      setTimeout(() => setPricesOpen(true), 950);
+    };
+    window.addEventListener('olfativa:scent-applied', handler);
+    return () => window.removeEventListener('olfativa:scent-applied', handler);
+  }, []);
+
+  useEffect(() => {
+    if (!scentToast) return;
+    const t = setTimeout(() => setScentToast(null), 4000);
+    return () => clearTimeout(t);
+  }, [scentToast]);
 
   useEffect(() => {
     saveState({ selected, client, prices });
@@ -519,6 +541,7 @@ function App() {
               aroma: rec.aromaKey || null,
               cant: Math.max(1, Number(rec.cantidad) || 1),
               descuento: 0,
+              fromScentIQ: rec.fromScentIQ === true,
             };
             const extraNote = rec.difusorKey
               ? `Scent Advisor · ${rec.difusorName} + ${rec.aromaName}.`
@@ -533,6 +556,14 @@ function App() {
           });
         }
       })}
+
+      {scentToast && (
+        <div className="olf-toast" role="status">
+          <span className="check">✓</span>
+          <span>{scentToast}</span>
+          <button className="close" onClick={() => setScentToast(null)} aria-label="Cerrar">×</button>
+        </div>
+      )}
     </>
   );
 }
@@ -1164,12 +1195,15 @@ function PricesModal({ prices, onChange, onClose, onApply }) {
               return (
                 <div key={line.id} className={`prices-line ${isUnit ? 'is-unit' : ''} ${lineAuth ? 'is-warn' : ''}`}>
                   <button className="prices-line-rm" onClick={() => removeLine(line.id)}>×</button>
-                  <select className="prices-line-sel" value={line.difusor}
-                          onChange={e => updateLine(line.id, { difusor: e.target.value })}>
-                    {DIFUSORES_PRECIO.map(d => (
-                      <option key={d.id} value={d.id}>{d.name} · {fmtMx(d.precio)}/mes</option>
-                    ))}
-                  </select>
+                  <div className="prices-line-sel-wrap">
+                    <select className="prices-line-sel" value={line.difusor}
+                            onChange={e => updateLine(line.id, { difusor: e.target.value })}>
+                      {DIFUSORES_PRECIO.map(d => (
+                        <option key={d.id} value={d.id}>{d.name} · {fmtMx(d.precio)}/mes</option>
+                      ))}
+                    </select>
+                    {line.fromScentIQ && <span className="siq-badge" title="Agregado por Scent Advisor">Scent IQ</span>}
+                  </div>
                   <input type="number" min="1" value={line.cant} className="prices-line-cant"
                          onChange={e => updateLine(line.id, { cant: Math.max(1, +e.target.value || 1) })} />
                   {isUnit && (
