@@ -121,6 +121,37 @@ function thumbFor(kind, seg) {
 // El picker agrupa POR TIPO. Dentro de cada tipo el vendedor elige
 // la variante (qué copy de qué segmento usar). El deck respeta este
 // orden y no se reordena manualmente.
+// Custom slides — alta manual desde Admin (persisten en LS)
+const CUSTOM_LS = 'olfativa.customSlides';
+function loadCustomSlides() {
+  try { const v = localStorage.getItem(CUSTOM_LS); return v ? JSON.parse(v) : []; }
+  catch (_) { return []; }
+}
+function saveCustomSlides(arr) {
+  try { localStorage.setItem(CUSTOM_LS, JSON.stringify(arr || [])); } catch (_) {}
+}
+// Lookup helpers: si un kind es 'custom-XXX' busca en customSlides
+function rendererFor(kind, customSlides) {
+  if (SLIDE_RENDERERS[kind]) return SLIDE_RENDERERS[kind];
+  if (typeof kind === 'string' && kind.startsWith('custom-')) {
+    const slide = (customSlides || []).find(c => c.kind === kind);
+    if (slide && window.CustomSlide) {
+      return (props) => window.CustomSlide({ ...props, slide });
+    }
+  }
+  return null;
+}
+function labelFor(kind, customSlides) {
+  if (SLIDE_LABELS[kind]) return SLIDE_LABELS[kind];
+  const s = (customSlides || []).find(c => c.kind === kind);
+  return s?.title || kind;
+}
+function descFor(kind, customSlides) {
+  if (SLIDE_DESCRIPTIONS[kind]) return SLIDE_DESCRIPTIONS[kind];
+  const s = (customSlides || []).find(c => c.kind === kind);
+  return s?.subtitle || s?.eyebrow || 'Slide personalizado';
+}
+
 const KIND_ORDER = [
   'cover', 'promise', 'pillars',
   'curadora', 'method', 'aroma',
@@ -253,7 +284,10 @@ function App() {
   const [pricesOpen, setPricesOpen] = useState(false);
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [scentIQOpen, setScentIQOpen] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
   const [scentToast, setScentToast] = useState(null);
+  const [customSlides, setCustomSlides] = useState(() => loadCustomSlides());
+  useEffect(() => { saveCustomSlides(customSlides); window.OLF_CUSTOM_SLIDES = customSlides; }, [customSlides]);
   // Datos del último análisis Scent Advisor aplicado a esta cotización.
   // Se persiste por propId para que el slide del deck sobreviva refresh.
   const [scentData, setScentData] = useState(() => {
@@ -322,7 +356,7 @@ function App() {
     const to = 'automation.sales@olfativa.com,clopez@olfativa.com';
     const segName = (triageSegment && SEG_LABEL[triageSegment]) || '—';
     const slidesList = activeSlides
-      .map((s, i) => `  ${String(i + 1).padStart(2,'0')}. ${SLIDE_LABELS[s.kind] || s.kind} (${SEG_SHORT[s.segment] || s.segment})`)
+      .map((s, i) => `  ${String(i + 1).padStart(2,'0')}. ${labelFor(s.kind, customSlides)} (${SEG_SHORT[s.segment] || s.segment})`)
       .join('\n');
     const subject = `Nueva cotización: ${client.clientName || '—'} · ${client.propId || '—'}`;
     const body = [
@@ -411,7 +445,14 @@ function App() {
   };
 
   const reset = () => {
-    if (!confirm("Restablecer TODO la cotización (cliente, líneas, Scent Advisor, deck)?")) return;
+    if (!confirm("Esto borra TODO · cliente, propId, precios, líneas, deck, Scent Advisor y datos guardados. Continuar?")) return;
+    // Barrido HARD: cualquier clave en LS que sea olfativa/scent del proyecto
+    try {
+      Object.keys(localStorage).forEach((k) => {
+        if (/^olf:|^olfativa\./.test(k)) localStorage.removeItem(k);
+      });
+    } catch (_) {}
+    // Setters a defaults
     setSelected(defaultSelected());
     setClient({ ...CLIENT_DEFAULTS });
     setPrices({
@@ -421,15 +462,15 @@ function App() {
       fpNotas: '',
       nextId: 2,
     });
-    // Limpiar scentData del state + LS (por propId actual y por 'default')
     setScentData(null);
+    setCustomSlides([]);
+    // UX feedback
     try {
-      const pid = client?.propId || 'default';
-      localStorage.removeItem('olf:scentData:' + pid);
-      localStorage.removeItem('olf:scentData:default');
-      // Migraciones viejas
-      localStorage.removeItem('olfativa.cotizador.v1');
+      window.dispatchEvent(new CustomEvent('olfativa:scent-applied', {
+        detail: { __toast: 'Cotización restablecida · cliente, deck, precios y Scent Advisor reiniciados.' }
+      }));
     } catch (_) {}
+    try { window.scrollTo(0, 0); } catch (_) {}
   };
 
   return (
@@ -442,6 +483,7 @@ function App() {
         onOpenClient={() => setClientOpen(true)}
         onOpenPrices={() => setPricesOpen(true)}
         onOpenScentIQ={() => setScentIQOpen(true)}
+        onOpenAdmin={() => setAdminOpen(true)}
         onDownload={() => setDownloadOpen(true)}
         onReset={reset}
       />
@@ -449,10 +491,10 @@ function App() {
       <div className="deck-area">
         <deck-stage>
           {activeSlides.map((entry, i) => {
-            const Renderer = SLIDE_RENDERERS[entry.kind];
+            const Renderer = rendererFor(entry.kind, customSlides);
             const segObj = SEGMENTS[entry.segment] || SEGMENTS.master;
             if (!Renderer) return null;
-            const segLabel = SLIDE_LABELS[entry.kind] || entry.kind;
+            const segLabel = labelFor(entry.kind, customSlides);
             const label = `${String(i+1).padStart(2,'0')} ${segLabel}`;
             return (
               <section key={entry.uid} data-screen-label={label} data-om-validate>
@@ -507,6 +549,7 @@ function App() {
           client={client}
           prices={prices}
           triageSegment={triageSegment}
+          customSlides={customSlides}
           onClose={() => setPickerOpen(false)}
           onApply={(next) => { setSelected(next); setPickerOpen(false); }}
         />
@@ -563,6 +606,14 @@ function App() {
           triageSegment={triageSegment}
           onClose={() => setDownloadOpen(false)}
           onConfirm={confirmDownload}
+        />
+      )}
+
+      {adminOpen && (
+        <AdminPanel
+          customSlides={customSlides}
+          onClose={() => setAdminOpen(false)}
+          onSave={(arr) => setCustomSlides(arr)}
         />
       )}
 
@@ -634,7 +685,7 @@ function App() {
 // ============================================================
 // Top Bar — siempre visible
 // ============================================================
-function TopBar({ total, totalAvailable, client, onOpenPicker, onOpenClient, onOpenPrices, onOpenScentIQ, onDownload, onReset }) {
+function TopBar({ total, totalAvailable, client, onOpenPicker, onOpenClient, onOpenPrices, onOpenScentIQ, onOpenAdmin, onDownload, onReset }) {
   return (
     <div className="topbar">
       <div className="topbar-left">
@@ -661,6 +712,9 @@ function TopBar({ total, totalAvailable, client, onOpenPicker, onOpenClient, onO
         <button className="btn-secondary btn-edit" onClick={onOpenScentIQ} title="Análisis olfativo por foto del espacio (Scent Advisor)">
           <span className="btn-icon">⌖</span> Scent Advisor
         </button>
+        <button className="btn-secondary btn-edit" onClick={onOpenAdmin} title="Admin · slides personalizados">
+          <span className="btn-icon">⚙</span> Admin
+        </button>
         <button className="btn-primary" onClick={onOpenPicker}>
           <span className="btn-icon">▦</span>
           Láminas <span className="btn-counter">{total} / {totalAvailable}</span>
@@ -668,7 +722,7 @@ function TopBar({ total, totalAvailable, client, onOpenPicker, onOpenClient, onO
         <button className="btn-download" onClick={onDownload} title="Revisar resumen y descargar la cotización">
           <span className="btn-icon">↓</span> Descargar cotización
         </button>
-        <button className="btn-tertiary" onClick={onReset} title="Restablecer al Master completo">
+        <button className="btn-tertiary" onClick={onReset} title="Reset total · cliente, deck, precios y Scent Advisor">
           ↻
         </button>
       </div>
@@ -734,7 +788,7 @@ function FullPreview({ kind, segmentName, Renderer, slideProps, enabled, onToggl
     <div className="full-preview-overlay" onClick={onClose}>
       <div className="full-preview-stage" ref={stageRef} onClick={e => e.stopPropagation()}>
         <div className="full-preview-meta">
-          {SLIDE_LABELS[kind] || kind}
+          {labelFor(kind, window.OLF_CUSTOM_SLIDES || [])}
           {segmentName && <span className="full-preview-meta-seg"> · {segmentName}</span>}
         </div>
         <button className="full-preview-close" onClick={onClose} aria-label="Cerrar">×</button>
@@ -751,6 +805,142 @@ function FullPreview({ kind, segmentName, Renderer, slideProps, enabled, onToggl
     </div>
   );
 }
+
+// ============================================================
+// AdminPanel — CRUD de slides personalizados (custom-XXX)
+// ============================================================
+function AdminPanel({ customSlides, onSave, onClose }) {
+  const [draft, setDraft] = useState(customSlides);
+  const [editing, setEditing] = useState(null); // null | { ...slide, isNew: bool }
+
+  const startNew = () => setEditing({
+    id: 'custom-' + Date.now(),
+    kind: 'custom-' + Date.now(),
+    title: '',
+    eyebrow: '',
+    subtitle: '',
+    body: '',
+    imageUrl: '',
+    layout: 'left-image',
+    enabled: true,
+    createdAt: Date.now(),
+    isNew: true,
+  });
+  const startEdit = (s) => setEditing({ ...s, isNew: false });
+  const saveEditing = () => {
+    if (!editing) return;
+    if (!editing.title.trim()) { alert('El título es requerido'); return; }
+    const clean = { ...editing };
+    delete clean.isNew;
+    setDraft(prev => {
+      const i = prev.findIndex(x => x.id === clean.id);
+      if (i === -1) return [...prev, clean];
+      const next = [...prev]; next[i] = clean; return next;
+    });
+    setEditing(null);
+  };
+  const deleteSlide = (id) => {
+    if (!confirm('Eliminar este slide personalizado?')) return;
+    setDraft(prev => prev.filter(x => x.id !== id));
+    if (editing && editing.id === id) setEditing(null);
+  };
+  const apply = () => { onSave(draft); onClose(); };
+
+  return (
+    <div className="picker-overlay" onClick={onClose}>
+      <div className="picker-modal admin-modal" onClick={e => e.stopPropagation()}>
+        <div className="picker-header">
+          <div>
+            <div className="picker-eyebrow">Admin · Slides personalizados</div>
+            <h2 className="picker-title">Crea slides extra para tu propuesta</h2>
+            <div className="picker-sub">Los slides personalizados se inyectan al deck igual que los del machote. Puedes activarlos, reordenarlos y editarlos en cualquier momento.</div>
+          </div>
+          <button className="picker-close" onClick={onClose} aria-label="Cerrar">×</button>
+        </div>
+
+        <div className="admin-body">
+          <div className="admin-list">
+            <div className="admin-list-head">
+              <span>Slides existentes ({draft.length})</span>
+              <button className="btn-primary" onClick={startNew}>+ Nuevo slide</button>
+            </div>
+            {draft.length === 0 ? (
+              <div className="admin-empty">Aún no tienes slides personalizados. Click en "+ Nuevo slide" para crear el primero.</div>
+            ) : draft.map(s => (
+              <div key={s.id} className={"admin-row" + (editing?.id === s.id ? ' is-editing' : '')}>
+                <div className="admin-row-thumb" onClick={() => startEdit(s)}>
+                  {s.imageUrl
+                    ? <img src={s.imageUrl} alt={s.title} />
+                    : <div className="admin-row-thumb-empty">{(s.title || 'S')[0]}</div>}
+                </div>
+                <div className="admin-row-info" onClick={() => startEdit(s)}>
+                  <div className="admin-row-title">{s.title || 'Sin título'}</div>
+                  <div className="admin-row-meta">{s.layout} · {s.kind}</div>
+                </div>
+                <div className="admin-row-actions">
+                  <button className="btn-secondary" onClick={() => startEdit(s)}>Editar</button>
+                  <button className="admin-row-del" onClick={() => deleteSlide(s.id)} title="Eliminar">×</button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {editing && (
+            <div className="admin-form">
+              <div className="admin-form-head">
+                <div className="picker-eyebrow">{editing.isNew ? 'Nuevo slide' : 'Editar slide'}</div>
+                <h3>{editing.title || '(sin título)'}</h3>
+              </div>
+              <div className="admin-field">
+                <label>Título <span className="admin-req">*</span></label>
+                <input value={editing.title} onChange={e => setEditing({...editing, title: e.target.value})} placeholder="Casos de éxito" />
+              </div>
+              <div className="admin-field">
+                <label>Eyebrow (texto pequeño arriba)</label>
+                <input value={editing.eyebrow} onChange={e => setEditing({...editing, eyebrow: e.target.value})} placeholder="Resultados" />
+              </div>
+              <div className="admin-field">
+                <label>Subtítulo</label>
+                <input value={editing.subtitle} onChange={e => setEditing({...editing, subtitle: e.target.value})} placeholder="Lo que dicen nuestros clientes" />
+              </div>
+              <div className="admin-field">
+                <label>Cuerpo (saltos de línea = párrafos)</label>
+                <textarea rows={6} value={editing.body} onChange={e => setEditing({...editing, body: e.target.value})} placeholder={'Párrafo 1...\nPárrafo 2...'} />
+              </div>
+              <div className="admin-field">
+                <label>Imagen URL</label>
+                <input value={editing.imageUrl} onChange={e => setEditing({...editing, imageUrl: e.target.value})} placeholder="https://..." />
+              </div>
+              <div className="admin-field">
+                <label>Layout</label>
+                <select value={editing.layout} onChange={e => setEditing({...editing, layout: e.target.value})}>
+                  <option value="left-image">Foto izquierda + texto derecha</option>
+                  <option value="right-image">Texto izquierda + foto derecha</option>
+                  <option value="full-bleed">Foto a sangre + texto encima</option>
+                  <option value="text-only">Solo texto (centrado)</option>
+                </select>
+              </div>
+              <div className="admin-form-actions">
+                <button className="btn-secondary" onClick={() => setEditing(null)}>Cancelar</button>
+                {!editing.isNew && <button className="admin-row-del-btn" onClick={() => deleteSlide(editing.id)}>Eliminar</button>}
+                <button className="btn-primary" onClick={saveEditing}>Guardar slide</button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="picker-footer">
+          <span className="picker-footer-info">Los slides personalizados se persisten en tu navegador.</span>
+          <div className="picker-footer-btns">
+            <button className="btn-secondary" onClick={onClose}>Cancelar</button>
+            <button className="btn-download" onClick={apply}>Aplicar cambios</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 // ============================================================
 // ============================================================
@@ -795,11 +985,11 @@ function DownloadReviewModal({ activeSlides, client, prices, triageSegment, onCl
                 <div key={s.uid || `${s.kind}-${i}`} className="download-summary-card">
                   <div className="download-summary-num">#{String(i + 1).padStart(2,'0')}</div>
                   <SlidePreview
-                    Renderer={SLIDE_RENDERERS[s.kind]}
+                    Renderer={rendererFor(s.kind, window.OLF_CUSTOM_SLIDES || [])}
                     slideProps={slideProps}
                   />
                   <div className="download-summary-foot">
-                    <span className="download-summary-name">{SLIDE_LABELS[s.kind] || s.kind}</span>
+                    <span className="download-summary-name">{labelFor(s.kind, window.OLF_CUSTOM_SLIDES || [])}</span>
                     <span className="download-summary-seg" style={{ '--seg-color': SEG_COLOR[s.segment] }}>
                       <span className="download-summary-dot" />
                       {SEG_SHORT[s.segment] || s.segment}
@@ -832,7 +1022,7 @@ function DownloadReviewModal({ activeSlides, client, prices, triageSegment, onCl
   );
 }
 
-function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply }) {
+function SlidePicker({ selected, client, prices, triageSegment, customSlides = [], onClose, onApply }) {
   const [draft, setDraft] = useState(() => normalizeSelected(selected.map(s => ({ ...s }))));
   // fullPreviewTarget: { kind, segment } | null
   const [fullPreviewTarget, setFullPreviewTarget] = useState(null);
@@ -957,10 +1147,12 @@ function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply
     });
   };
 
-  // Lista de tipos a mostrar en el picker, en orden canónico.
-  const kindList = useMemo(() => (
-    KIND_ORDER.filter(k => !!SLIDE_RENDERERS[k])
-  ), []);
+  // Lista de tipos a mostrar en el picker, en orden canónico + customs al final.
+  const kindList = useMemo(() => {
+    const base = KIND_ORDER.filter(k => !!SLIDE_RENDERERS[k]);
+    const customs = (customSlides || []).map(c => c.kind);
+    return [...base, ...customs];
+  }, [customSlides]);
 
   const enabledCount = useMemo(() => (
     draft.filter(d => d.enabled).length
@@ -1016,20 +1208,22 @@ function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply
             const row = getRow(kind);
             const isEnabled = !!row?.enabled;
             const currentSegment = row?.segment;
-            const variants = variantsFor(kind);
+            const isCustom = typeof kind === 'string' && kind.startsWith('custom-');
+            const variants = isCustom ? ['master'] : variantsFor(kind);
             const recommended = (triageSegment && variants.includes(triageSegment)) ? triageSegment : null;
-            const Renderer = SLIDE_RENDERERS[kind];
+            const Renderer = rendererFor(kind, customSlides);
+            if (!Renderer) return null;
             return (
               <section key={kind} className={`picker-kind ${isEnabled ? 'is-on' : 'is-off'}`}>
                 <header className="picker-kind-head">
                   <div className="picker-kind-info">
                     <div className="picker-kind-title-row">
-                      <h3 className="picker-kind-title">{SLIDE_LABELS[kind]}</h3>
+                      <h3 className="picker-kind-title">{labelFor(kind, customSlides)}</h3>
                       {isEnabled
                         ? <span className="picker-kind-status on">Incluida en la cotización</span>
                         : <span className="picker-kind-status off">No incluida</span>}
                     </div>
-                    <div className="picker-kind-desc">{SLIDE_DESCRIPTIONS[kind]}</div>
+                    <div className="picker-kind-desc">{descFor(kind, customSlides)}</div>
                   </div>
                   <div className="picker-kind-actions">
                     <button
@@ -1111,7 +1305,8 @@ function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply
             ) : (
               <div className="picker-order-strip">
                 {draft.filter(d => d.enabled).map((row, i) => {
-                  const Renderer = SLIDE_RENDERERS[row.kind];
+                  const Renderer = rendererFor(row.kind, customSlides);
+                  if (!Renderer) return null;
                   const slideProps = buildSlideProps(row.kind, row.segment);
                   const isDragging = dragKind === row.kind;
                   const isDragOver = overKind === row.kind && dragKind !== row.kind;
@@ -1149,7 +1344,7 @@ function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply
                         slideProps={slideProps}
                       />
                       <div className="picker-order-foot">
-                        <span className="picker-order-name">{SLIDE_LABELS[row.kind] || row.kind}</span>
+                        <span className="picker-order-name">{labelFor(row.kind, customSlides)}</span>
                         <span className="picker-order-seg">
                           <span className="picker-order-dot" style={{ background: SEG_COLOR[row.segment] }} />
                           {SEG_SHORT[row.segment] || row.segment}
@@ -1183,7 +1378,7 @@ function SlidePicker({ selected, client, prices, triageSegment, onClose, onApply
             <FullPreview
               kind={kind}
               segmentName={SEG_LABEL[segment] || segment}
-              Renderer={SLIDE_RENDERERS[kind]}
+              Renderer={rendererFor(kind, customSlides)}
               slideProps={buildSlideProps(kind, segment)}
               enabled={isSelectedVariant}
               onToggle={() => setVariantForKind(kind, segment)}

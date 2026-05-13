@@ -1865,8 +1865,118 @@ function SlideScentAnalysis({ segment, clientName, idx, totalSlides, propId, pro
   );
 }
 
+// ============================================================
+// CustomSlide — slide creado desde Admin (4 layouts)
+//   layout: 'left-image' | 'right-image' | 'full-bleed' | 'text-only'
+// ============================================================
+function CustomSlide({ segment, clientName, idx, totalSlides, propId, propDate, slide }) {
+  const s = slide || {};
+  const layout = s.layout || 'text-only';
+  const eyebrow = s.eyebrow || (segment && segment.name) || '';
+  const title = s.title || '';
+  const subtitle = s.subtitle || '';
+  const body = s.body || '';
+  const img = s.imageUrl || '';
+
+  const bodyLines = String(body).split('\n').filter(l => l.length > 0);
+
+  // Componente reutilizable: titulo + subtitulo + body
+  const textBlock = (alignCenter) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, textAlign: alignCenter ? 'center' : 'left', alignItems: alignCenter ? 'center' : 'flex-start' }}>
+      {eyebrow && <Eyebrow color={PALETTE.gold}>{eyebrow}</Eyebrow>}
+      {title && <SerifH size={TYPE_SCALE.display} italic color={PALETTE.bone}>{title}</SerifH>}
+      {subtitle && (
+        <div style={{
+          fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic',
+          fontSize: 28, color: PALETTE.boneSoft, marginTop: -6, maxWidth: 900
+        }}>{subtitle}</div>
+      )}
+      {bodyLines.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 6, maxWidth: alignCenter ? 1100 : 900 }}>
+          {bodyLines.map((line, i) => (
+            <div key={i} style={{
+              fontFamily: 'Inter, sans-serif', fontSize: 17, lineHeight: 1.5,
+              color: PALETTE.boneSoft
+            }}>{line}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const photoBlock = (
+    <div style={{
+      position: 'relative',
+      borderRadius: 6,
+      overflow: 'hidden',
+      border: `1px solid ${PALETTE.rule}`,
+      background: PALETTE.inkSoft,
+      width: '100%', aspectRatio: '4 / 3',
+      boxShadow: '0 28px 80px rgba(0,0,0,0.55)'
+    }}>
+      {img ? (
+        <img src={img} alt={title || 'Slide custom'} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      ) : (
+        <div style={{
+          width: '100%', height: '100%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: PALETTE.boneSoft, fontFamily: 'Cormorant Garamond, serif',
+          fontStyle: 'italic', fontSize: 28, opacity: 0.5
+        }}>Sin imagen</div>
+      )}
+    </div>
+  );
+
+  return (
+    <SlideFrame>
+      <SlideChrome
+        index={idx} total={totalSlides} segment={segment}
+        clientName={clientName} propId={propId} propDate={propDate}
+        eyebrow={eyebrow || 'Personalizado'}
+      />
+      <div style={{
+        position: 'absolute', inset: 0,
+        padding: `${SPACING.paddingTop + 40}px ${SPACING.paddingX}px ${SPACING.paddingBottom}px`,
+      }}>
+        {layout === 'full-bleed' && img && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+            <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(14,14,14,0.35) 0%, rgba(14,14,14,0.75) 100%)' }} />
+          </div>
+        )}
+
+        {layout === 'left-image' && (
+          <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: '1.25fr 1fr', columnGap: 72, alignItems: 'center', height: '100%' }}>
+            {photoBlock}
+            <div>{textBlock(false)}</div>
+          </div>
+        )}
+
+        {layout === 'right-image' && (
+          <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: '1fr 1.25fr', columnGap: 72, alignItems: 'center', height: '100%' }}>
+            <div>{textBlock(false)}</div>
+            {photoBlock}
+          </div>
+        )}
+
+        {layout === 'full-bleed' && (
+          <div style={{ position: 'relative', zIndex: 1, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+            {textBlock(false)}
+          </div>
+        )}
+
+        {layout === 'text-only' && (
+          <div style={{ position: 'relative', zIndex: 1, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+            {textBlock(true)}
+          </div>
+        )}
+      </div>
+    </SlideFrame>
+  );
+}
+
 // expose to global
-Object.assign(window, { SlideCover, SlidePromise, SlidePillars, SlideMethod, SlideAroma, SlideCatalog, SlideCuradora, SlideCompliance, SlideTrust, SlideClose, SlideQuote, SlideScentAdvisor, SlideCotizador, SlideScentAnalysis });
+Object.assign(window, { SlideCover, SlidePromise, SlidePillars, SlideMethod, SlideAroma, SlideCatalog, SlideCuradora, SlideCompliance, SlideTrust, SlideClose, SlideQuote, SlideScentAdvisor, SlideCotizador, SlideScentAnalysis, CustomSlide });
 
 
 // ============================================================
