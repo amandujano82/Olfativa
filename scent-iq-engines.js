@@ -498,14 +498,22 @@
     ].join('\n');
   }
 
-  // Labels: 5 etiquetas cortas para overlays
+  // Labels: 5 etiquetas descriptivas cortas del espacio (no etiquetas
+  // de seccion). Cada label es una frase tag que el cliente lee y
+  // entiende directamente.
   function makeLabels(analisis, estrategia) {
+    const aroma = estrategia.aroma_principal?.nombre || '';
+    const cap = (s) => {
+      const t = (s == null ? '' : String(s)).trim();
+      if (!t) return '';
+      return t.charAt(0).toUpperCase() + t.slice(1);
+    };
     return [
-      `Iluminación · ${shortify(analisis.tipo_de_luz)}`,
-      `Materiales · ${shortify(analisis.materialidad)}`,
-      `Geometría · ${shortify(analisis.formas)}`,
-      `Aroma · ${estrategia.aroma_principal?.nombre || '—'}`,
-      `Dirección · ${shortify(estrategia.familia_olfativa, 30)}`
+      shortify(cap(analisis.tipo_de_luz), 28),
+      shortify(cap(analisis.materialidad), 28),
+      shortify(cap(analisis.formas), 28),
+      shortify(cap(analisis.densidad), 28),
+      aroma ? `Aroma: ${shortify(aroma, 18)}` : shortify(cap(analisis.familia_visual), 28)
     ];
   }
   function shortify(s, max = 22) {
@@ -580,6 +588,23 @@
       designer: {
         labels,
         prompt_final: prompt
+      },
+      // 8 variables canonicas del playbook: las 7 directas + 5 labels
+      // expuestas planas para que cualquier consumer pueda leer el
+      // contrato fijo sin navegar la estructura completa.
+      variables_canonicas: {
+        tipo_de_luz: analisis.tipo_de_luz || '',
+        materialidad: analisis.materialidad || '',
+        formas: analisis.formas || '',
+        densidad: analisis.densidad || '',
+        familia_visual: analisis.familia_visual || '',
+        familia_olfativa: estrategia.familia_olfativa || '',
+        subacorde_olfativo: estrategia.subacorde_olfativo || '',
+        label_1: labels[0] || '',
+        label_2: labels[1] || '',
+        label_3: labels[2] || '',
+        label_4: labels[3] || '',
+        label_5: labels[4] || ''
       },
       resumen_comercial: resumen,
       _meta: {

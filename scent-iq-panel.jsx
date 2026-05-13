@@ -19,7 +19,7 @@
   // helpers
   // ----------------------------------------------------------
   function readDemo() {
-    return fetch('scent-iq-demo.json?v=20260513h').then(r => r.ok ? r.json() : null).catch(() => null);
+    return fetch('scent-iq-demo.json?v=20260513i').then(r => r.ok ? r.json() : null).catch(() => null);
   }
 
   function copyToClipboard(text) {
@@ -217,17 +217,18 @@
       `Por eso la dirección olfativa es ${familiaOlf}, encarnada en ${aromaName}.`
     ].filter(Boolean).join(' ');
 
+    // Bullets reflejan exactamente las 8 variables canonicas del playbook
     const leftBullets = [
-      { k: 'Iluminación', v: pretty(analisis.tipo_de_luz, '—') },
-      { k: 'Materiales',  v: pretty(analisis.materialidad, '—') },
-      { k: 'Geometría',   v: pretty(analisis.formas, '—') },
-      { k: 'Aroma',       v: aromaName || '—' }
+      { k: 'Tipo de luz',  v: pretty(analisis.tipo_de_luz, '—') },
+      { k: 'Materialidad', v: pretty(analisis.materialidad, '—') },
+      { k: 'Formas',       v: pretty(analisis.formas, '—') },
+      { k: 'Densidad',     v: pretty(analisis.densidad, '—') }
     ];
     const rightBullets = [
-      { k: 'Dirección olfativa', v: subacorde && subacorde !== 'requiere validación' ? `${familiaOlf} · ${subacorde}` : familiaOlf },
-      { k: 'Familia visual',     v: familiaVisualName },
-      { k: 'Densidad',           v: pretty(analisis.densidad, '—') },
-      { k: 'Estilo',             v: 'minimalista premium' }
+      { k: 'Familia visual',     v: familiaVisualName || '—' },
+      { k: 'Familia olfativa',   v: familiaOlf || '—' },
+      { k: 'Subacorde olfativo', v: subacorde || '—' },
+      { k: 'Aroma',              v: aromaName || '—' }
     ];
 
     const photoStyle = aspect ? { aspectRatio: String(aspect) } : { aspectRatio: '16 / 10' };
