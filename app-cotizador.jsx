@@ -249,6 +249,7 @@ function App() {
   const [clientOpen, setClientOpen] = useState(false);
   const [pricesOpen, setPricesOpen] = useState(false);
   const [downloadOpen, setDownloadOpen] = useState(false);
+  const [scentIQOpen, setScentIQOpen] = useState(false);
 
   useEffect(() => {
     saveState({ selected, client, prices });
@@ -378,6 +379,7 @@ function App() {
         onOpenPicker={() => setPickerOpen(true)}
         onOpenClient={() => setClientOpen(true)}
         onOpenPrices={() => setPricesOpen(true)}
+        onOpenScentIQ={() => setScentIQOpen(true)}
         onDownload={() => setDownloadOpen(true)}
         onReset={reset}
       />
@@ -500,6 +502,37 @@ function App() {
           onConfirm={confirmDownload}
         />
       )}
+
+      {scentIQOpen && window.ScentIQPanel && React.createElement(window.ScentIQPanel, {
+        client,
+        onClose: () => setScentIQOpen(false),
+        onApply: (rec) => {
+          // rec = { difusorKey, difusorName, aromaKey, aromaName, cantidad, full }
+          // Política: si el difusor recomendado tiene cotizador_key (priced),
+          // se agrega como nueva línea con aroma. Si no, se agrega el aroma
+          // sobre una línea con difusor placeholder ('aspen') y notas explicativas.
+          setPrices(p => {
+            const safeDifKey = rec.difusorKey || 'aspen';
+            const newLine = {
+              id: p.nextId,
+              difusor: safeDifKey,
+              aroma: rec.aromaKey || null,
+              cant: Math.max(1, Number(rec.cantidad) || 1),
+              descuento: 0,
+            };
+            const extraNote = rec.difusorKey
+              ? `Scent Advisor · ${rec.difusorName} + ${rec.aromaName}.`
+              : `Scent Advisor · recomienda ${rec.difusorName} (sin precio cargado · validar) + ${rec.aromaName}.`;
+            const fpNotas = p.fpNotas ? `${p.fpNotas}\n${extraNote}` : extraNote;
+            return { ...p, lines: [...p.lines, newLine], nextId: p.nextId + 1, fpNotas };
+          });
+          setSelected(prev => {
+            const exists = prev.some(s => s.kind === 'cotizacion');
+            if (exists) return prev.map(s => s.kind === 'cotizacion' ? { ...s, enabled: true } : s);
+            return [...prev, { uid: `s-cotizacion-${Date.now()}`, kind: 'cotizacion', segment: 'master', enabled: true }];
+          });
+        }
+      })}
     </>
   );
 }
@@ -507,7 +540,7 @@ function App() {
 // ============================================================
 // Top Bar — siempre visible
 // ============================================================
-function TopBar({ total, totalAvailable, client, onOpenPicker, onOpenClient, onOpenPrices, onDownload, onReset }) {
+function TopBar({ total, totalAvailable, client, onOpenPicker, onOpenClient, onOpenPrices, onOpenScentIQ, onDownload, onReset }) {
   return (
     <div className="topbar">
       <div className="topbar-left">
@@ -530,6 +563,9 @@ function TopBar({ total, totalAvailable, client, onOpenPicker, onOpenClient, onO
         </button>
         <button className="btn-secondary btn-edit" onClick={onOpenPrices} title="Calcular precios y generar slide de cotización">
           <span className="btn-icon">$</span> Precios
+        </button>
+        <button className="btn-secondary btn-edit" onClick={onOpenScentIQ} title="Análisis olfativo por foto del espacio (Scent Advisor)">
+          <span className="btn-icon">⌖</span> Scent Advisor
         </button>
         <button className="btn-primary" onClick={onOpenPicker}>
           <span className="btn-icon">▦</span>
