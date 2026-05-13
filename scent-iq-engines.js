@@ -457,55 +457,55 @@
     const lab = labels || [];
     while (lab.length < 5) lab.push('');
     return [
-      'Create a premium architectural analysis visualization based on a real interior photo.',
-      'Enhance the original image with professional lighting correction, improved sharpness and depth, while maintaining a realistic photographic look.',
+      'Crea una visualización arquitectónica premium basada en una foto real de interior.',
+      'Mejora la imagen original con corrección de iluminación profesional, nitidez y profundidad realzadas, manteniendo un look fotográfico realista.',
       '',
-      'Overlay style:',
-      '- thin elegant neutral lines',
-      '- architectural callouts',
-      '- minimalist luxury layout',
-      '- high-end hospitality presentation style',
+      'Estilo del overlay:',
+      '- líneas finas y elegantes en tono neutro',
+      '- llamadas arquitectónicas (callouts)',
+      '- layout minimalista de lujo',
+      '- estética de presentación hospitality high-end',
       '',
-      'Highlight:',
-      `1. Lighting: ${analisis.tipo_de_luz || '—'}`,
-      `2. Materials: ${analisis.materialidad || '—'}`,
-      `3. Geometry: ${analisis.formas || '—'}`,
-      `4. Spatial density: ${analisis.densidad || '—'}`,
-      `5. Style: ${familiaVisualName}`,
+      'Resaltar:',
+      `1. Iluminación: ${analisis.tipo_de_luz || '—'}`,
+      `2. Materiales: ${analisis.materialidad || '—'}`,
+      `3. Geometría: ${analisis.formas || '—'}`,
+      `4. Densidad espacial: ${analisis.densidad || '—'}`,
+      `5. Estilo: ${familiaVisualName}`,
       '',
-      'Title:',
-      'Sensory Space Analysis',
+      'Título:',
+      'Análisis sensorial del espacio',
       '',
-      'Subtitle:',
-      'Visual reading and olfactory direction',
+      'Subtítulo:',
+      'Lectura visual y dirección olfativa',
       '',
-      'Labels:',
+      'Etiquetas:',
       lab[0], lab[1], lab[2], lab[3], lab[4],
       '',
-      'Olfactive direction:',
+      'Dirección olfativa:',
       estrategia.familia_olfativa,
       estrategia.subacorde_olfativo,
       '',
-      'Design style:',
-      '- minimalist luxury',
-      '- neutral palette',
-      '- soft shadows',
-      '- premium hospitality look',
-      '- small elegant Olfativa logo in bottom right corner',
+      'Estilo de diseño:',
+      '- minimalismo de lujo',
+      '- paleta neutra (cremas y maderas suaves)',
+      '- sombras suaves',
+      '- estética hospitality premium',
+      '- logo Olfativa pequeño y elegante en la esquina inferior derecha',
       '',
       'Output:',
-      'Create a clean, premium, presentation-ready visual.'
+      'Genera un visual limpio, premium y listo para presentación al cliente.'
     ].join('\n');
   }
 
   // Labels: 5 etiquetas cortas para overlays
   function makeLabels(analisis, estrategia) {
     return [
-      `Light · ${shortify(analisis.tipo_de_luz)}`,
-      `Materials · ${shortify(analisis.materialidad)}`,
-      `Geometry · ${shortify(analisis.formas)}`,
+      `Iluminación · ${shortify(analisis.tipo_de_luz)}`,
+      `Materiales · ${shortify(analisis.materialidad)}`,
+      `Geometría · ${shortify(analisis.formas)}`,
       `Aroma · ${estrategia.aroma_principal?.nombre || '—'}`,
-      `Direction · ${shortify(estrategia.familia_olfativa, 30)}`
+      `Dirección · ${shortify(estrategia.familia_olfativa, 30)}`
     ];
   }
   function shortify(s, max = 22) {
