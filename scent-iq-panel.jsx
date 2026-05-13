@@ -19,7 +19,7 @@
   // helpers
   // ----------------------------------------------------------
   function readDemo() {
-    return fetch('scent-iq-demo.json?v=20260513').then(r => r.ok ? r.json() : null).catch(() => null);
+    return fetch('scent-iq-demo.json?v=20260513b').then(r => r.ok ? r.json() : null).catch(() => null);
   }
 
   function copyToClipboard(text) {
@@ -93,6 +93,48 @@
           <span className="siq-uploader-note">
             Adapter actual: <b>mock</b> · genera análisis razonable para validar el flujo. Conectar vision real desde <code>scent-iq-engines.js</code>.
           </span>
+        </div>
+      </div>
+    );
+  }
+
+  // ----------------------------------------------------------
+  // Photo evidence — foto subida + caption + brief al inicio del result
+  // ----------------------------------------------------------
+  function PhotoEvidenceCard({ previewURL, analisis, output }) {
+    const fv = OLF_KNOW.familiasVisuales.find(f => f.id === analisis.familia_visual);
+    const captionParts = [];
+    if (analisis.tipo_de_espacio) captionParts.push(analisis.tipo_de_espacio);
+    if (fv) captionParts.push(fv.nombre);
+    if (analisis.emocion_actual) captionParts.push(analisis.emocion_actual);
+    const caption = captionParts.join(' · ');
+
+    const aromaName = output.estrategia_olfativa.aroma_principal;
+    const familiaOlf = output.estrategia_olfativa.familia_olfativa;
+    const mats = Array.isArray(analisis.materiales_principales)
+      ? analisis.materiales_principales.slice(0, 3).join(', ')
+      : '';
+    const brief = [
+      `Este espacio se lee como ${fv ? fv.nombre.toLowerCase() : 'ambiguo'}${mats ? `: ${mats}` : ''}.`,
+      analisis.emocion_deseada ? `Buscamos ${String(analisis.emocion_deseada).toLowerCase()}.` : '',
+      `Por eso la dirección olfativa es ${familiaOlf}, encarnada en ${aromaName}.`
+    ].filter(Boolean).join(' ');
+
+    return (
+      <div className="siq-card siq-evidence">
+        <div className="siq-evidence-photo">
+          {previewURL ? (
+            <img src={previewURL} alt="Espacio del cliente" />
+          ) : (
+            <div className="siq-evidence-placeholder">
+              Análisis demo · sin imagen de origen
+            </div>
+          )}
+        </div>
+        <div className="siq-evidence-body">
+          <div className="siq-card-eyebrow">Foto de origen</div>
+          {caption && <div className="siq-evidence-caption">{caption}</div>}
+          <p className="siq-evidence-brief">{brief}</p>
         </div>
       </div>
     );
@@ -415,12 +457,17 @@
                   </div>
                 )}
 
-                <div className="siq-grid">
+                <div className="siq-top">
+                  <PhotoEvidenceCard previewURL={previewURL} analisis={analisis} output={output} />
                   <VisualAnalysisCard a={analisis} />
+                </div>
+
+                <div className="siq-grid">
                   <OlfactoryRecommendationCard est={output.estrategia_olfativa} principalFull={principalFull} alternativoFull={alternativoFull} />
                   <DiffuserRecommendationCard dif={{...output.difusion, _meta: output._meta?.difusor_full}} />
-                  <DesignerPromptCard designer={output.designer} onCopy={onCopyPrompt} copied={copied} />
                 </div>
+
+                <DesignerPromptCard designer={output.designer} onCopy={onCopyPrompt} copied={copied} />
 
                 <div className="siq-summary">
                   <div className="siq-eyebrow">Resumen comercial</div>

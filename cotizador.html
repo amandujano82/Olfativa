@@ -817,6 +817,55 @@
     font-style: italic; font-size: 22px;
   }
 
+  /* — Top row: foto evidencia + análisis visual lado a lado — */
+  .siq-top {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+  }
+  @media (max-width: 980px) { .siq-top { grid-template-columns: 1fr; } }
+  /* La photo card hereda .siq-card y se reescribe a layout vertical */
+  .siq-evidence {
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .siq-evidence-photo {
+    background: #111;
+    border: 1px solid rgba(201,168,76,0.18);
+    border-radius: 8px;
+    padding: 8px;
+    display: flex; align-items: center; justify-content: center;
+    aspect-ratio: 16 / 10;
+    max-height: 320px;
+    width: 100%;
+    overflow: hidden;
+  }
+  .siq-evidence-photo img {
+    max-width: 100%; max-height: 100%;
+    width: auto; height: auto;
+    object-fit: contain;       /* NUNCA cover — regla critica del proyecto */
+    object-position: center;
+    border-radius: 4px;
+    display: block;
+  }
+  .siq-evidence-placeholder {
+    color: rgba(243,237,227,0.4);
+    font-size: 13px;
+    font-style: italic;
+    text-align: center;
+    padding: 0 16px;
+  }
+  .siq-evidence-body {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .siq-evidence-caption {
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-style: italic; font-size: 19px; line-height: 1.25;
+    color: #F5F0E8;
+  }
+  .siq-evidence-brief {
+    font-size: 13.5px; line-height: 1.55;
+    color: rgba(243,237,227,0.85);
+    margin: 0;
+  }
+
   /* — Result grid — */
   .siq-result { display: flex; flex-direction: column; gap: 20px; }
   .siq-warning {
@@ -1167,15 +1216,15 @@
 <!-- html2pdf · trae html2canvas + jsPDF en un solo bundle -->
 <script src="https://unpkg.com/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
 <script src="deck-stage.js"></script>
-<script src="scent-iq-knowledge.js?v=20260513"></script>
-<script src="scent-iq-engines.js?v=20260513"></script>
+<script src="scent-iq-knowledge.js?v=20260513b"></script>
+<script src="scent-iq-engines.js?v=20260513b"></script>
 <script type="text/babel" src="tweaks-panel.jsx"></script>
 <script type="text/babel" src="slides-master.jsx"></script>
 <script type="text/babel" src="slide-views-master.jsx"></script>
 <script type="text/babel" src="hero-difusor.jsx"></script>
 <script type="text/babel" src="catalog-min.jsx"></script>
 <script type="text/babel" src="control-olores.jsx"></script>
-<script type="text/babel" src="scent-iq-panel.jsx?v=20260513"></script>
+<script type="text/babel" src="scent-iq-panel.jsx?v=20260513b"></script>
 <script type="text/babel" src="app-cotizador.jsx"></script>
 </body>
 </html>
