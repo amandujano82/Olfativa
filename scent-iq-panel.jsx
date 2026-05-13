@@ -19,7 +19,7 @@
   // helpers
   // ----------------------------------------------------------
   function readDemo() {
-    return fetch('scent-iq-demo.json?v=20260513m').then(r => r.ok ? r.json() : null).catch(() => null);
+    return fetch('scent-iq-demo.json?v=20260513n').then(r => r.ok ? r.json() : null).catch(() => null);
   }
 
   function copyToClipboard(text) {
@@ -50,19 +50,38 @@
   // Narrativa profesional en espanol que conecta materiales, luz,
   // geometria, paleta y emocion con el aroma elegido. Tono perfumista
   // explicando al cliente, NO listado tecnico.
+  // CRITICO: lee SIEMPRE los datos del aroma/difusor desde
+  // output._meta.aroma_principal_full y output._meta.difusor_full
+  // para que los overrides manuales arrastren descripcion/acordes/etc.
   function buildScentNarrative(output, client) {
-    const o = output;
+    const o = output || {};
     const av = o.analisis_visual || {};
     const lectura = o.lectura_emocional || {};
     const est = o.estrategia_olfativa || {};
     const dif = o.difusion || {};
+    const meta = o._meta || {};
+    const aromaFull = meta.aroma_principal_full || {};
+    const difFull = meta.difusor_full || {};
+    const overrides = meta.manual_overrides || {};
     const cliente = client?.clientName || 'cliente';
 
     const fvName = (OLF_KNOW.familiasVisuales.find(f => f.id === av.familia_visual) || {}).nombre
       || av.familia_visual || 'el carácter del espacio';
-    const aroma = est.aroma_principal || 'el aroma recomendado';
-    const familiaOlf = est.familia_olfativa || '';
-    const direccion = est.subacorde_olfativo || '';
+
+    // Aroma: leer del catalogo (aroma_principal_full) con fallback al campo plano
+    const aromaNombre  = aromaFull.nombre        || est.aroma_principal       || 'el aroma recomendado';
+    const aromaFamilia = aromaFull.familia       || est.familia_olfativa      || '';
+    const aromaDesc    = aromaFull.descripcion   || est.descripcion_principal || '';
+    const aromaAcordes = (aromaFull.acordes || []).filter(Boolean).join(' / ');
+    const isManualAroma = !!(aromaFull.manual_override || overrides.aroma);
+
+    // Difusor: leer del _meta con fallback al campo plano
+    const difModelo     = difFull.modelo            || dif.difusor_recomendado || '';
+    const difCobMax     = difFull.cobertura_max_m2;
+    const difIntensidad = difFull.intensidad        || dif.intensidad          || '';
+    const cobertura     = (difCobMax != null && difCobMax !== '') ? `cobertura hasta ${difCobMax} m²` : '';
+    const isManualDif   = !!(difFull.manual_override || overrides.difusor);
+
     const luz = av.tipo_de_luz || '';
     const temp = av.temperatura_visual || '';
     const paleta = av.paleta_dominante || '';
@@ -71,9 +90,7 @@
     const formas = av.formas || av.geometria || '';
     const densidad = av.densidad || '';
     const emocion = lectura.emocion_deseada || av.emocion_deseada || av.emocion_actual || '';
-    const difusor = dif.difusor_recomendado || '';
     const cant = dif.cantidad || '';
-    const overrides = (o._meta && o._meta.manual_overrides) || {};
 
     const lineas = [];
     lineas.push(`*Olfativa · Recomendación sensorial para ${cliente}*`);
@@ -88,20 +105,31 @@
     if (materiales) {
       lineas.push(
         `Los materiales (${String(materiales).toLowerCase()}) aportan calidez táctil y memoria orgánica; ` +
-        `visual y olfativamente se conectan con notas ${familiaOlf ? String(familiaOlf).toLowerCase() : 'congruentes con la paleta'}, ` +
+        `visual y olfativamente se conectan con notas ${aromaFamilia ? String(aromaFamilia).toLowerCase() : 'congruentes con la paleta'}, ` +
         `que prolongan la sensación de la madera, la piedra y los textiles en el aire.`
       );
     }
-    if (overrides.aroma) {
+
+    // Bloque del aroma SIEMPRE desde el catalogo
+    lineas.push('');
+    if (isManualAroma) {
       lineas.push(
-        `*Aroma seleccionado: ${aroma}* — elección manual del especialista, que complementa la lectura visual del espacio.`
+        `Aroma seleccionado para este espacio: *${aromaNombre}*` +
+        `${aromaFamilia ? ` (familia ${String(aromaFamilia).toLowerCase()})` : ''}.`
       );
-    } else if (paleta) {
-      lineas.push(
-        `La paleta ${String(paleta).toLowerCase()} pide un perfume de baja saturación y alta profundidad — ` +
-        `exactamente lo que entrega *${aroma}*.`
-      );
+      if (aromaDesc) lineas.push(aromaDesc);
+      if (aromaAcordes) lineas.push(`Acordes principales: ${aromaAcordes}.`);
+    } else {
+      if (paleta) {
+        lineas.push(
+          `La paleta ${String(paleta).toLowerCase()} pide un perfume de baja saturación y alta profundidad — ` +
+          `exactamente lo que entrega *${aromaNombre}*.`
+        );
+      }
+      if (aromaDesc) lineas.push(aromaDesc);
+      if (aromaAcordes) lineas.push(`Acordes principales: ${aromaAcordes}.`);
     }
+
     if (formas) {
       lineas.push(
         `La geometría ${String(formas).toLowerCase()} se acompaña mejor de un aroma sin aristas, fluido, ` +
@@ -114,22 +142,22 @@
         `manteniendo la sensación de amplitud.`
       );
     }
-    lineas.push('');
-    if (emocion) {
+    if (emocion && !isManualAroma) {
+      lineas.push('');
       lineas.push(
-        `La emoción deseada — *${emocion}* — encuentra en ${aroma} su contraparte olfativa: ` +
-        `${direccion ? `una dirección ${String(direccion).toLowerCase()}` : 'una composición congruente'} ` +
-        `que sostiene la atmósfera buscada sin imponerse.`
+        `La emoción deseada — *${emocion}* — encuentra en ${aromaNombre} su contraparte olfativa.`
       );
     }
     lineas.push('');
     lineas.push(
-      `*Recomendación final:* ${aroma}` +
-      `${familiaOlf ? ` (familia ${String(familiaOlf).toLowerCase()})` : ''}` +
-      `${overrides.aroma ? ' · selección manual' : ''}, ` +
-      `difundido con ${difusor || 'el equipo recomendado'}` +
-      `${cant ? ` (${cant} unidad${cant > 1 ? 'es' : ''})` : ''}` +
-      `${overrides.difusor ? ' · equipo seleccionado manualmente por el especialista' : ''}.`
+      `*Recomendación final:* ${aromaNombre}` +
+      `${aromaFamilia ? ` (familia ${String(aromaFamilia).toLowerCase()})` : ''}` +
+      `${isManualAroma ? ' · selección manual' : ''}, ` +
+      `difundido con ${difModelo || 'el equipo recomendado'}` +
+      `${cobertura ? ` (${cobertura})` : ''}` +
+      `${difIntensidad ? ` con intensidad ${String(difIntensidad).toLowerCase()}` : ''}` +
+      `${cant ? ` · ${cant} unidad${cant > 1 ? 'es' : ''}` : ''}` +
+      `${isManualDif ? ' · equipo seleccionado manualmente por el especialista' : ''}.`
     );
     if (o.resumen_comercial) {
       lineas.push('');
@@ -751,23 +779,52 @@
         } catch (_) { /* si falla, dejamos el blob URL como mejor esfuerzo */ }
       }
 
-      // Aplicar overrides manuales (deep clone para no mutar el state)
+      // Aplicar overrides manuales (deep clone para no mutar el state).
+      // CRITICO: reemplaza TODOS los campos derivados del aroma/difusor
+      // (familia, subacorde, descripcion, notas, intensidad, cobertura...)
+      // para que el slide #08 y el WhatsApp sean coherentes con el catalogo.
       const base = JSON.parse(JSON.stringify(output));
+      base.estrategia_olfativa = base.estrategia_olfativa || {};
+      base.difusion = base.difusion || {};
       base._meta = base._meta || {};
+
       if (aromaOverride) {
-        base.estrategia_olfativa.aroma_principal = aromaOverride.nombre;
-        base._meta.aroma_principal_full = { ...aromaOverride, manual_override: true };
+        const ao = aromaOverride;
+        base.estrategia_olfativa.aroma_principal      = ao.nombre || '';
+        base.estrategia_olfativa.familia_olfativa     = ao.familia || base.estrategia_olfativa.familia_olfativa || '';
+        base.estrategia_olfativa.subacorde_olfativo   = (ao.acordes || []).filter(Boolean).join(' + ') || base.estrategia_olfativa.subacorde_olfativo || '';
+        base.estrategia_olfativa.descripcion_principal = ao.descripcion || '';
+        base.estrategia_olfativa.notas_principal      = ao.notas || null;
+        base.estrategia_olfativa.inspiracion_principal = ao.inspiracion || null;
+        base._meta.aroma_principal_full = { ...ao, manual_override: true };
       }
       if (difusorOverride) {
-        base.difusion.difusor_recomendado = difusorOverride.modelo;
-        base.difusion.difusor_key = difusorOverride.key;
-        base.difusion.cotizador_key = difusorOverride.cotizador_key || null;
-        base._meta.difusor_full = { ...difusorOverride, manual_override: true };
-        base._meta.difusor_key = difusorOverride.key;
-        base._meta.cotizador_key = difusorOverride.cotizador_key || null;
+        const dor = difusorOverride;
+        base.difusion.difusor_recomendado = dor.modelo || '';
+        base.difusion.difusor_key         = dor.key || null;
+        base.difusion.cotizador_key       = dor.cotizador_key || null;
+        // intensidad se sobreescribe; cantidad y ubicacion_sugerida quedan
+        // como las calculo la IA segun m² del espacio (las mantenemos).
+        base.difusion.intensidad          = dor.intensidad || base.difusion.intensidad || '';
+        base._meta.difusor_full = {
+          modelo:           dor.modelo,
+          cobertura_min_m2: dor.cobertura_min_m2,
+          cobertura_max_m2: dor.cobertura_max_m2,
+          configuracion:    dor.configuracion,
+          nivel_premium:    dor.nivel_premium,
+          imagen_url:       dor.imagen_url,
+          url_producto:     dor.url_producto,
+          precio_renta_mxn: dor.precio_renta_mxn,
+          categoria:        dor.categoria,
+          tamano:           dor.tamano,
+          intensidad:       dor.intensidad,
+          manual_override:  true
+        };
+        base._meta.difusor_key     = dor.key || null;
+        base._meta.cotizador_key   = dor.cotizador_key || null;
       }
       base._meta.manual_overrides = {
-        aroma: !!aromaOverride,
+        aroma:   !!aromaOverride,
         difusor: !!difusorOverride
       };
       base._meta.previewURL = dataURL || previewURL || null;
