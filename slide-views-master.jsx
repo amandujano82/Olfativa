@@ -1784,35 +1784,47 @@ function SlideScentAnalysis({ segment, clientName, idx, totalSlides, propId, pro
 
             {/* Nombre + familia + subacorde + badge manual */}
             <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: 12 }}>
-              <SerifH size={TYPE_SCALE.display} italic color={PALETTE.bone}>{aroma}</SerifH>
+              <SerifH size={TYPE_SCALE.display - 8} italic color={PALETTE.bone}>{aroma}</SerifH>
               {overrides.aroma && manualBadge}
             </div>
             {aromaFamiliaName && (
               <div style={{
                 fontFamily: 'Cormorant Garamond, serif',
-                fontStyle: 'italic', fontSize: 28,
+                fontStyle: 'italic', fontSize: 24,
                 color: PALETTE.boneSoft, marginTop: 4
               }}>{aromaFamiliaName}</div>
             )}
             {aromaSubacorde && (
               <div style={{
-                marginTop: 10,
+                marginTop: 8,
                 fontFamily: 'Inter, sans-serif', fontSize: 13,
                 letterSpacing: '0.18em', textTransform: 'uppercase',
                 color: PALETTE.gold, fontWeight: 600
               }}>{aromaSubacorde}</div>
             )}
 
-            {/* Descripcion del aroma del catalogo */}
+            {/* Descripcion del aroma del catalogo (clamp 4 lineas para no desbordar) */}
             {aromaDesc && (
-              <Body color={PALETTE.boneSoft} style={{ marginTop: 18, fontSize: 22, lineHeight: 1.45, fontStyle: 'italic', opacity: 0.92 }}>
+              <div style={{
+                marginTop: 14,
+                fontFamily: 'Inter, sans-serif',
+                fontSize: 17,
+                lineHeight: 1.4,
+                fontStyle: 'italic',
+                color: PALETTE.boneSoft,
+                opacity: 0.92,
+                display: '-webkit-box',
+                WebkitLineClamp: 4,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
+              }}>
                 {aromaDesc}
-              </Body>
+              </div>
             )}
 
             {/* Notas: 3 mini-bloques Salida / Corazon / Fondo */}
             {(aromaNotas && (aromaNotas.salida || aromaNotas.corazon || aromaNotas.fondo)) && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginTop: 22 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginTop: 16 }}>
                 {[
                   ['Salida',  aromaNotas.salida],
                   ['Corazón', aromaNotas.corazon],
@@ -1828,21 +1840,21 @@ function SlideScentAnalysis({ segment, clientName, idx, totalSlides, propId, pro
                     }}>{k}</div>
                     <div style={{
                       fontFamily: 'Inter, sans-serif',
-                      fontSize: 15, color: PALETTE.boneSoft,
-                      lineHeight: 1.4
+                      fontSize: 14, color: PALETTE.boneSoft,
+                      lineHeight: 1.35
                     }}>{v}</div>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Difusor info */}
-            <Body color={PALETTE.boneSoft} style={{ marginTop: 22 }}>
+            {/* Difusor info (compacto, tamano small) */}
+            <Body color={PALETTE.boneSoft} size={TYPE_SCALE.small} style={{ marginTop: 14 }}>
               Difundido con <span style={{ color: PALETTE.gold }}>{difusor}</span>{overrides.difusor && manualBadge} · {cant} unidad{cant > 1 ? 'es' : ''}{cobertura ? ` · cobertura ${cobertura}` : ''}{dif.intensidad ? ` · intensidad ${dif.intensidad}` : ''}.
             </Body>
 
             {o.resumen_comercial && (
-              <Body color={PALETTE.boneSoft} size={TYPE_SCALE.small} style={{ marginTop: 16, fontStyle: 'italic', opacity: 0.88 }}>
+              <Body color={PALETTE.boneSoft} size={TYPE_SCALE.small} style={{ marginTop: 12, fontStyle: 'italic', opacity: 0.88 }}>
                 {o.resumen_comercial}
               </Body>
             )}
