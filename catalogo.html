@@ -5,52 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Catálogo Olfativa · Difusores & Aromas</title>
 <style>
-  :root {
-    --negro: #0e0e0e;
-    --dorado: #C9A84C;
-    --naranja: #C47A48;
-    --gris: #1a1a1a;
-    --gris2: #2a2a2a;
-    --texto: #e8e8e8;
-    --muted: #888;
-  }
+  :root { --negro:#0e0e0e; --dorado:#C9A84C; --naranja:#C47A48; --gris:#1a1a1a; --gris2:#2a2a2a; --texto:#e8e8e8; --muted:#888; }
   * { margin:0; padding:0; box-sizing:border-box; }
-  html { scroll-behavior: smooth; }
-  body { background: var(--negro); color: var(--texto); font-family: 'Georgia', serif; min-height: 100vh; }
-  nav {
-    position: fixed; top:0; left:0; right:0; z-index:100;
-    background: rgba(14,14,14,0.97); backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(201,168,76,0.15);
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 48px; height: 64px;
-  }
-  .nav-logo { font-size: 22px; font-style: italic; color: #fff; letter-spacing: 1px; }
-  .nav-logo span { color: var(--dorado); }
-  .nav-tabs { display: flex; gap: 8px; }
-  .nav-tab {
-    padding: 8px 20px; border-radius: 4px; cursor: pointer;
-    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
-    border: 1px solid transparent; transition: all 0.2s; font-family: sans-serif;
-    background: transparent; color: var(--muted);
-  }
-  .nav-tab.active { background: var(--naranja); color: #fff; border-color: var(--naranja); }
-  .nav-tab:hover:not(.active) { border-color: rgba(201,168,76,0.3); color: var(--dorado); }
-  .hero { padding: 140px 80px 80px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-  .hero-eyebrow { font-size: 10px; letter-spacing: 4px; color: var(--naranja); font-family: sans-serif; text-transform: uppercase; margin-bottom: 20px; }
-  .hero h1 { font-size: clamp(42px,5vw,72px); color: #fff; line-height: 1.05; margin-bottom: 16px; }
-  .hero h1 em { color: var(--dorado); font-style: italic; }
-  .hero p { font-size: 15px; color: var(--muted); max-width: 560px; line-height: 1.7; font-family: sans-serif; }
-  .section { padding: 80px; }
-  .section-header { margin-bottom: 48px; }
-  .section-eyebrow { font-size: 10px; letter-spacing: 4px; color: var(--naranja); font-family: sans-serif; text-transform: uppercase; margin-bottom: 12px; }
-  .section-title { font-size: 32px; color: #fff; margin-bottom: 8px; }
-  .section-sub { font-size: 13px; color: var(--muted); font-family: sans-serif; }
-  .difusores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
-  .dif-card { background: var(--gris); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; overflow: hidden; transition: border-color 0.3s, transform 0.2s; }
-  .dif-card:hover { border-color: rgba(201,168,76,0.35); transform: translateY(-2px); }
+  html { scroll-behavior:smooth; }
+  body { background:var(--negro); color:var(--texto); font-family:'Georgia',serif; min-height:100vh; }
+  nav { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(14,14,14,0.97); backdrop-filter:blur(12px); border-bottom:1px solid rgba(201,168,76,0.15); display:flex; align-items:center; justify-content:space-between; padding:0 48px; height:64px; }
+  .nav-logo { font-size:22px; font-style:italic; color:#fff; letter-spacing:1px; }
+  .nav-logo span { color:var(--dorado); }
+  .nav-tabs { display:flex; gap:8px; }
+  .nav-tab { padding:8px 20px; border-radius:4px; cursor:pointer; font-size:11px; letter-spacing:2px; text-transform:uppercase; border:1px solid transparent; transition:all 0.2s; font-family:sans-serif; background:transparent; color:var(--muted); }
+  .nav-tab.active { background:var(--naranja); color:#fff; border-color:var(--naranja); }
+  .nav-tab:hover:not(.active) { border-color:rgba(201,168,76,0.3); color:var(--dorado); }
+  .hero { padding:140px 80px 80px; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .hero-eyebrow { font-size:10px; letter-spacing:4px; color:var(--naranja); font-family:sans-serif; text-transform:uppercase; margin-bottom:20px; }
+  .hero h1 { font-size:clamp(42px,5vw,72px); color:#fff; line-height:1.05; margin-bottom:16px; }
+  .hero h1 em { color:var(--dorado); font-style:italic; }
+  .hero p { font-size:15px; color:var(--muted); max-width:560px; line-height:1.7; font-family:sans-serif; }
+  .section { padding:80px; }
+  .section-header { margin-bottom:48px; }
+  .section-eyebrow { font-size:10px; letter-spacing:4px; color:var(--naranja); font-family:sans-serif; text-transform:uppercase; margin-bottom:12px; }
+  .section-title { font-size:32px; color:#fff; margin-bottom:8px; }
+  .section-sub { font-size:13px; color:var(--muted); font-family:sans-serif; }
+  .difusores-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px,1fr)); gap:24px; }
+  .dif-card { background:var(--gris); border:1px solid rgba(255,255,255,0.07); border-radius:8px; overflow:hidden; transition:border-color 0.3s, transform 0.2s; }
+  .dif-card:hover { border-color:rgba(201,168,76,0.35); transform:translateY(-2px); }
   .dif-img-wrap { width:100%; height:220px; background:#111; overflow:hidden; display:flex; align-items:center; justify-content:center; }
   .dif-img { width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
-  .dif-body { padding: 24px; }
+  .dif-body { padding:24px; }
   .dif-tag { display:inline-block; font-size:9px; letter-spacing:2px; padding:3px 10px; border-radius:2px; margin-bottom:10px; font-family:sans-serif; text-transform:uppercase; }
   .tag-entrada { background:rgba(100,100,100,0.3); color:#aaa; border:1px solid #444; }
   .tag-premium { background:rgba(201,168,76,0.15); color:var(--dorado); border:1px solid rgba(201,168,76,0.3); }
@@ -65,10 +46,10 @@
   .dif-precio { font-size:13px; font-family:sans-serif; color:#fff; display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px; }
   .dif-precio-val { font-size:20px; color:var(--naranja); font-weight:bold; }
   .dif-precio-lbl { font-size:10px; color:var(--muted); }
-  .aromas-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:20px; }
+  .aromas-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:20px; }
   .aroma-card { background:var(--gris); border:1px solid rgba(255,255,255,0.07); border-radius:8px; overflow:hidden; transition:border-color 0.3s, transform 0.2s; }
   .aroma-card:hover { border-color:rgba(201,168,76,0.35); transform:translateY(-2px); }
-  .aroma-img-wrap { width:100%; height:200px; background:#111; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .aroma-img-wrap { width:100%; height:200px; background:#111; overflow:hidden; position:relative; }
   .aroma-img { width:100%; height:100%; object-fit:cover; object-position:center top; display:block; }
   .aroma-body { padding:20px; }
   .aroma-familia { font-size:9px; letter-spacing:2px; color:var(--naranja); font-family:sans-serif; text-transform:uppercase; margin-bottom:8px; }
@@ -138,100 +119,51 @@
 <script>
 const DIFUSORES = [
   { id:"fitz",        nombre:"Fitz",         tier:"Manual",       tag:"ENTRADA",    m2:50,  m3:150,  suited:"Boutique · oficina pequeña · sala de espera",    precio:"$1,620/mes", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/DifusorFitzSetPremiumcon6aromasde200ml_MSI.jpg?v=1759938291" },
-  { id:"moai",        nombre:"Moai",         tier:"Manual",       tag:"EQUILIBRIO", m2:80,  m3:250,  suited:"Oficina · lobby · recepción comercial",           precio:"$1,800/mes", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/DifusorMoai.jpg?v=1759938280" },
-  { id:"aspen",       nombre:"Aspen",        tier:"Premium · App",tag:"PREMIUM",    m2:160, m3:400,  suited:"Boutique premium · café · estudio de diseño",     precio:"$2,000/mes", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/DifusorAspen.jpg?v=1759938260" },
+  { id:"moai",        nombre:"Moai",         tier:"Manual",       tag:"EQUILIBRIO", m2:80,  m3:250,  suited:"Oficina · lobby · recepción comercial",           precio:"$1,800/mes", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/DifusorMoai.jpg?v=1776567823" },
+  { id:"aspen",       nombre:"Aspen",        tier:"Premium · App",tag:"PREMIUM",    m2:160, m3:400,  suited:"Boutique premium · café · estudio de diseño",     precio:"$2,000/mes", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/DifusorAspen.jpg?v=1776567822" },
   { id:"montblanc",   nombre:"Montblanc",    tier:"Premium · App",tag:"VERSÁTIL",   m2:120, m3:450,  suited:"Retail mediano · agencia · clínica privada",      precio:"$2,000/mes", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/difusor-montblanc-difusores-688543.jpg?v=1776123937" },
   { id:"montblancXl", nombre:"Montblanc XL", tier:"Premium · App",tag:"GRANDE",     m2:250, m3:700,  suited:"Hotel · sede corporativa · flagship retail",      precio:"$2,400/mes", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/DifusorMontblancXLSetPremiumcon4aromasde500ml_MSI_2.jpg?v=1759938255" },
-  { id:"liberty",     nombre:"Liberty",      tier:"Premium · App",tag:"FLAGSHIP",   m2:300, m3:900,  suited:"Flagship · experiencia de marca · museo",         precio:"$2,800/mes", imagen:"https://amandujano82.github.io/Olfativa/photos/difusor-liberty.png" },
-  { id:"ural",        nombre:"Ural",         tier:"Enterprise",   tag:"ESCALA",     m2:400, m3:1200, suited:"Cadena retail · campus universitario",            precio:"$3,200/mes", imagen:"https://amandujano82.github.io/Olfativa/photos/difusor-ural.png" },
+  { id:"liberty",     nombre:"Liberty",      tier:"Premium · App",tag:"FLAGSHIP",   m2:300, m3:900,  suited:"Flagship · experiencia de marca · museo",         precio:"$2,800/mes", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/DifusorEmpireSetPremiumcon4aromasde500ml_MSI.jpg?v=1759938265" },
+  { id:"ural",        nombre:"Ural",         tier:"Enterprise",   tag:"ESCALA",     m2:400, m3:1200, suited:"Cadena retail · campus universitario",            precio:"$3,200/mes", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/DifusorMontblancXLSetPremiumcon4aromasde500ml_MSI_2.jpg?v=1759938255" },
   { id:"empire",      nombre:"Empire",       tier:"Enterprise",   tag:"MACRO",      m2:600, m3:1800, suited:"Centro comercial · aeropuerto · hospital",        precio:"$3,800/mes", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/DifusorEmpireSetPremiumcon4aromasde500ml_MSI.jpg?v=1759938265" },
-  { id:"everest",     nombre:"Everest",      tier:"Enterprise",   tag:"ULTRA",      m2:900, m3:2700, suited:"Multi-sede · gran formato · corporativo",         precio:"$4,500/mes", imagen:"https://amandujano82.github.io/Olfativa/photos/difusor-everest.png" }
+  { id:"everest",     nombre:"Everest",      tier:"Enterprise",   tag:"ULTRA",      m2:900, m3:2700, suited:"Multi-sede · gran formato · corporativo",         precio:"$4,500/mes", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/DifusorMontblancSetPremiumcon6aromasde200ml_MSI.jpg?v=1759938273" }
 ];
 
 const AROMAS = [
-  { nombre:"Blooms",           notas:"Bergamota, Jazmín",        familia:"frutal",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/5-BLOOMS2025.png?v=1730933609",          desc:"Frescura luminosa con bergamota y la delicadeza del jazmín. Ambientes chic y modernos." },
-  { nombre:"Lumiere",          notas:"Bambú, Bergamota",         familia:"floral",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/4-LUMIERE2025.png?v=1730931191",          desc:"Claridad aromática que evoca espacios minimalistas, limpios y sofisticados." },
-  { nombre:"Faraway",          notas:"Cítricos, Eucalipto",      familia:"citrico",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/2-FARAWAY2025.png?v=1730929752",          desc:"Frescura abierta que transporta a paisajes naturales despejados y libres." },
-  { nombre:"Mille Rêves",      notas:"Cardamomo, Pachulí",       familia:"amaderado", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/3-MILLEREVES2025.png?v=1730929877",       desc:"Profundidad oriental con especias cálidas y base amaderada. Espacios ejecutivos." },
-  { nombre:"Pleasure",         notas:"Sándalo, Orquídea, Coco",  familia:"floral",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/1-PRINCIPALPLEASURE2025.png?v=1730928958", desc:"Sensualidad sofisticada con flores exóticas sobre base cremosa. Hotelería de lujo." },
-  { nombre:"Amber Pomander",   notas:"Ámbar, Especias",          familia:"amaderado", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/AMBERPOMANDER.png?v=1776125475",          desc:"Calidez envolvente que crea atmósferas acogedoras y memorables. Lobbies y spas." },
-  { nombre:"Azur",             notas:"Eucalipto, Violetas",      familia:"floral",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/AZUR.png?v=1776125471",                   desc:"Frescura marina con toque floral delicado. Clínicas, consultorios y wellness." },
-  { nombre:"ZenPet",           notas:"Cítrico, Floral",          familia:"citrico",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/ZENPET.png?v=1776125467",                 desc:"Aroma fresco y neutro. Ideal para veterinarias, pet shops y espacios con mascotas." },
-  { nombre:"Citrus Agave",     notas:"Cítrico, Agave",           familia:"citrico",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/CITRUSAGAVE.png?v=1776125463",             desc:"Autenticidad mexicana con frescura cítrica y carácter mineral. Retail y restaurantes." },
-  { nombre:"Capital Soleil",   notas:"Frescura Tropical",        familia:"frutal",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/CAPITALSOLEIL.png?v=1776125459",           desc:"Exclusividad tropical. Evoca destinos de lujo y verano eterno." },
-  { nombre:"Dune",             notas:"Oud Wood, Incienso",       familia:"amaderado", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/DUNE.png?v=1776125455",                   desc:"Misterio desértico con madera de oud y resinas sagradas. Boutiques de lujo." },
-  { nombre:"Apfelstrudel",     notas:"Manzana, Canela",          familia:"ocasion",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/APFELSTRUDEL.png?v=1776125451",            desc:"Calidez vienesa con manzana horneada y especias dulces. Temporal de temporada." },
-  { nombre:"Christmas in Paris",notas:"Menta, Chocolate",        familia:"ocasion",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/8-CHRISTMASINPARIS2025.png?v=1730936321",  desc:"Elegancia navideña. Frescor de menta y dulzura de chocolate. Edición especial." },
-  { nombre:"Mille Rêves Auto", notas:"Cardamomo, Pachulí",       familia:"amaderado", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/3-MILLEREVES2025.png?v=1730929877",        desc:"Sofisticación en movimiento. Versión compacta para vehículos ejecutivos." },
-  { nombre:"Azur Auto",        notas:"Eucalipto, Violetas",      familia:"floral",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/AZUR.png?v=1776125471",                   desc:"Frescura marina para habitáculos. Limpieza aromática en cada trayecto." }
+  { nombre:"Blooms",            notas:"Bergamota, Jazmín",        familia:"frutal",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/5-BLOOMS2025.png?v=1730933609",          desc:"Frescura luminosa con bergamota y la delicadeza del jazmín. Ambientes chic y modernos." },
+  { nombre:"Lumiere",           notas:"Bambú, Bergamota",         familia:"floral",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/4-LUMIERE2025.png?v=1730931191",          desc:"Claridad aromática que evoca espacios minimalistas, limpios y sofisticados." },
+  { nombre:"Faraway",           notas:"Cítricos, Eucalipto",      familia:"citrico",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/2-FARAWAY2025.png?v=1730929752",          desc:"Frescura abierta que transporta a paisajes naturales despejados y libres." },
+  { nombre:"Mille Rêves",       notas:"Cardamomo, Pachulí",       familia:"amaderado", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/3-MILLEREVES2025.png?v=1730929877",       desc:"Profundidad oriental con especias cálidas y base amaderada. Espacios ejecutivos." },
+  { nombre:"Pleasure",          notas:"Sándalo, Orquídea, Coco",  familia:"floral",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/1-PRINCIPALPLEASURE2025.png?v=1730928958", desc:"Sensualidad sofisticada con flores exóticas sobre base cremosa. Hotelería de lujo." },
+  { nombre:"Amber Pomander",    notas:"Ámbar, Especias",          familia:"amaderado", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/COLECCION_2025_VARIAS_BLOG_SPY_HOME_3.jpg?v=1773255575", desc:"Calidez envolvente que crea atmósferas acogedoras y memorables. Lobbies y spas." },
+  { nombre:"Azur",              notas:"Eucalipto, Violetas",      familia:"floral",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/AZUR_fcde1d9e-c515-4fe6-9afb-38375a939c32.png?v=1743542660", desc:"Frescura marina con toque floral delicado. Clínicas, consultorios y wellness." },
+  { nombre:"ZenPet",            notas:"Cítrico, Floral",          familia:"citrico",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/ZENPET.png?v=1776125467",                 desc:"Aroma fresco y neutro. Ideal para veterinarias, pet shops y espacios con mascotas." },
+  { nombre:"Citrus Agave",      notas:"Cítrico, Agave",           familia:"citrico",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/suscripcion-citrus-agave-limon-agave-suscripcion-743561_36a9eebe-cdb7-4746-b0eb-bdd656cdd0b7.jpg?v=1770142693", desc:"Autenticidad mexicana con frescura cítrica y carácter mineral. Retail y restaurantes." },
+  { nombre:"Capital Soleil",    notas:"Frescura Tropical",        familia:"frutal",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/capitalsoleil_6c5a972e-d27a-424b-a059-c7502a97329b.png?v=1770142440", desc:"Exclusividad tropical. Evoca destinos de lujo y verano eterno." },
+  { nombre:"Dune",              notas:"Oud Wood, Incienso",       familia:"amaderado", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/bf6234ba-c6cd-495a-8e3c-ca732285122e.jpg?v=1767729602", desc:"Misterio desértico con madera de oud y resinas sagradas. Boutiques de lujo." },
+  { nombre:"Apfelstrudel",      notas:"Manzana, Canela",          familia:"ocasion",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/8-CHRISTMASINPARIS2025.png?v=1730936321",  desc:"Calidez vienesa con manzana horneada y especias dulces. Temporal de temporada." },
+  { nombre:"Christmas in Paris",notas:"Menta, Chocolate",         familia:"ocasion",   imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/8-CHRISTMASINPARIS2025.png?v=1730936321",  desc:"Elegancia navideña. Frescor de menta y dulzura de chocolate. Edición especial." },
+  { nombre:"Mille Rêves Auto",  notas:"Cardamomo, Pachulí",       familia:"amaderado", imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/3-MILLEREVES2025.png?v=1730929877",        desc:"Sofisticación en movimiento. Versión compacta para vehículos ejecutivos." },
+  { nombre:"Azur Auto",         notas:"Eucalipto, Violetas",      familia:"floral",    imagen:"https://cdn.shopify.com/s/files/1/0265/2641/6993/files/AZUR_fcde1d9e-c515-4fe6-9afb-38375a939c32.png?v=1743542660", desc:"Frescura marina para habitáculos. Limpieza aromática en cada trayecto." }
 ];
 
-function tagClass(tag) {
-  if (tag==='ENTRADA'||tag==='EQUILIBRIO') return 'tag-entrada';
-  if (tag==='ESCALA'||tag==='MACRO'||tag==='ULTRA') return 'tag-enterprise';
-  return 'tag-premium';
+function tagClass(tag){ if(tag==='ENTRADA'||tag==='EQUILIBRIO')return 'tag-entrada'; if(tag==='ESCALA'||tag==='MACRO'||tag==='ULTRA')return 'tag-enterprise'; return 'tag-premium'; }
+
+function renderDifusores(filter){
+  const grid=document.getElementById('dif-grid');
+  const list=filter==='all'?DIFUSORES:DIFUSORES.filter(d=>d.tier.includes(filter));
+  grid.innerHTML=list.map(d=>`<div class="dif-card"><div class="dif-img-wrap"><img class="dif-img" src="${d.imagen}" alt="${d.nombre}" loading="lazy"></div><div class="dif-body"><span class="dif-tag ${tagClass(d.tag)}">${d.tag}</span><div class="dif-nombre">${d.nombre}</div><div class="dif-tier">${d.tier.toUpperCase()}</div><div class="dif-specs"><div class="dif-spec"><div class="dif-spec-val">${d.m2}</div><div class="dif-spec-lbl">m² máx</div></div><div class="dif-spec"><div class="dif-spec-val">${d.m3}</div><div class="dif-spec-lbl">m³ máx</div></div></div><div class="dif-suited">${d.suited}</div><div class="dif-precio"><div><div class="dif-precio-lbl">RENTA MENSUAL</div><div class="dif-precio-val">${d.precio}</div></div><div style="font-size:11px;color:var(--muted);text-align:right">Incluye instalación<br>y soporte técnico</div></div></div></div>`).join('');
 }
 
-function renderDifusores(filter) {
-  const grid = document.getElementById('dif-grid');
-  const list = filter==='all' ? DIFUSORES : DIFUSORES.filter(d=>d.tier.includes(filter));
-  grid.innerHTML = list.map(d=>`
-    <div class="dif-card">
-      <div class="dif-img-wrap"><img class="dif-img" src="${d.imagen}" alt="${d.nombre}" loading="lazy"></div>
-      <div class="dif-body">
-        <span class="dif-tag ${tagClass(d.tag)}">${d.tag}</span>
-        <div class="dif-nombre">${d.nombre}</div>
-        <div class="dif-tier">${d.tier.toUpperCase()}</div>
-        <div class="dif-specs">
-          <div class="dif-spec"><div class="dif-spec-val">${d.m2}</div><div class="dif-spec-lbl">m² máx</div></div>
-          <div class="dif-spec"><div class="dif-spec-val">${d.m3}</div><div class="dif-spec-lbl">m³ máx</div></div>
-        </div>
-        <div class="dif-suited">${d.suited}</div>
-        <div class="dif-precio">
-          <div><div class="dif-precio-lbl">RENTA MENSUAL</div><div class="dif-precio-val">${d.precio}</div></div>
-          <div style="font-size:11px;color:var(--muted);text-align:right">Incluye instalación<br>y soporte técnico</div>
-        </div>
-      </div>
-    </div>
-  `).join('');
+function renderAromas(filter){
+  const grid=document.getElementById('aroma-grid');
+  const list=filter==='all'?AROMAS:AROMAS.filter(a=>a.familia===filter);
+  grid.innerHTML=list.map(a=>`<div class="aroma-card"><div class="aroma-img-wrap"><img class="aroma-img" src="${a.imagen}" alt="${a.nombre}" loading="lazy"></div><div class="aroma-body"><div class="aroma-familia">${a.familia}</div><div class="aroma-nombre">${a.nombre}</div><div class="aroma-notas">${a.notas}</div><div class="aroma-desc">${a.desc}</div><div class="aroma-precios"><span class="aroma-precio-chip">10 ml · $250</span><span class="aroma-precio-chip">100 ml · $1,219</span><span class="aroma-precio-chip">200 ml · $2,225</span><span class="aroma-precio-chip">500 ml · $4,799</span></div></div></div>`).join('');
 }
 
-function renderAromas(filter) {
-  const grid = document.getElementById('aroma-grid');
-  const list = filter==='all' ? AROMAS : AROMAS.filter(a=>a.familia===filter);
-  grid.innerHTML = list.map(a=>`
-    <div class="aroma-card">
-      <div class="aroma-img-wrap"><img class="aroma-img" src="${a.imagen}" alt="${a.nombre}" loading="lazy"></div>
-      <div class="aroma-body">
-        <div class="aroma-familia">${a.familia}</div>
-        <div class="aroma-nombre">${a.nombre}</div>
-        <div class="aroma-notas">${a.notas}</div>
-        <div class="aroma-desc">${a.desc}</div>
-        <div class="aroma-precios">
-          <span class="aroma-precio-chip">10 ml · $250</span>
-          <span class="aroma-precio-chip">100 ml · $1,219</span>
-          <span class="aroma-precio-chip">200 ml · $2,225</span>
-          <span class="aroma-precio-chip">500 ml · $4,799</span>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function showPanel(id,btn) {
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('panel-'+id).classList.add('active');
-  btn.classList.add('active');
-}
-function filterDif(tier,btn) {
-  document.querySelectorAll('#panel-difusores .filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); renderDifusores(tier);
-}
-function filterAroma(familia,btn) {
-  document.querySelectorAll('#panel-aromas .filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); renderAromas(familia);
-}
+function showPanel(id,btn){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.getElementById('panel-'+id).classList.add('active');btn.classList.add('active');}
+function filterDif(tier,btn){document.querySelectorAll('#panel-difusores .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderDifusores(tier);}
+function filterAroma(familia,btn){document.querySelectorAll('#panel-aromas .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAromas(familia);}
 renderDifusores('all');
 renderAromas('all');
 </script>
