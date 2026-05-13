@@ -1096,6 +1096,120 @@
   .siq-error { padding: 32px; text-align: center; }
   .siq-error p { color: rgba(243,237,227,0.7); margin: 12px 0 20px; }
 
+  /* — Admin panel (slides personalizados) — */
+  .admin-modal { max-width: 1080px; }
+  .admin-body {
+    display: grid; grid-template-columns: 1.1fr 1fr;
+    gap: 24px;
+    padding: 22px 32px;
+    flex: 1; overflow-y: auto;
+  }
+  @media (max-width: 920px) { .admin-body { grid-template-columns: 1fr; } }
+  .admin-list { display: flex; flex-direction: column; gap: 12px; }
+  .admin-list-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(243,237,227,0.1);
+    color: rgba(243,237,227,0.7);
+    font-size: 12px; letter-spacing: 0.08em;
+  }
+  .admin-empty {
+    padding: 28px; text-align: center;
+    color: rgba(243,237,227,0.45);
+    font-style: italic; font-size: 13px;
+    border: 1px dashed rgba(243,237,227,0.14);
+    border-radius: 6px;
+  }
+  .admin-row {
+    display: grid; grid-template-columns: 56px 1fr auto;
+    gap: 12px; align-items: center;
+    padding: 10px;
+    background: rgba(243,237,227,0.03);
+    border: 1px solid rgba(243,237,227,0.08);
+    border-radius: 6px;
+    transition: all 160ms;
+  }
+  .admin-row:hover { background: rgba(243,237,227,0.06); }
+  .admin-row.is-editing { border-color: rgba(201,168,76,0.5); background: rgba(201,168,76,0.08); }
+  .admin-row-thumb {
+    width: 56px; height: 56px;
+    background: #111;
+    border-radius: 4px; overflow: hidden;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .admin-row-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .admin-row-thumb-empty {
+    color: rgba(201,168,76,0.55);
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-style: italic; font-size: 22px;
+  }
+  .admin-row-info { cursor: pointer; min-width: 0; }
+  .admin-row-title {
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-style: italic; font-size: 17px; color: #F5F0E8;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .admin-row-meta {
+    font-size: 11px; color: rgba(243,237,227,0.5);
+    letter-spacing: 0.06em; margin-top: 2px;
+  }
+  .admin-row-actions { display: flex; gap: 6px; align-items: center; }
+  .admin-row-del {
+    appearance: none; background: transparent; border: 0;
+    color: rgba(196,122,72,0.7); cursor: pointer;
+    font-size: 20px; line-height: 1; padding: 0 6px;
+  }
+  .admin-row-del:hover { color: #C47A48; }
+
+  .admin-form {
+    display: flex; flex-direction: column; gap: 12px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(243,237,227,0.1);
+    border-radius: 8px;
+    padding: 18px;
+    align-self: flex-start;
+  }
+  .admin-form-head { margin-bottom: 6px; }
+  .admin-form-head h3 {
+    margin: 4px 0 0;
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-style: italic; font-size: 22px; color: #F5F0E8;
+  }
+  .admin-field { display: flex; flex-direction: column; gap: 4px; }
+  .admin-field label {
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(243,237,227,0.55); font-weight: 600;
+  }
+  .admin-req { color: #C47A48; }
+  .admin-field input, .admin-field textarea, .admin-field select {
+    appearance: none; font-family: inherit;
+    background: rgba(243,237,227,0.06);
+    border: 1px solid rgba(243,237,227,0.18);
+    color: #F5F0E8; font-size: 13px;
+    padding: 8px 10px; border-radius: 5px; outline: none;
+    resize: vertical;
+  }
+  .admin-field input:focus, .admin-field textarea:focus, .admin-field select:focus {
+    border-color: #C9A84C;
+  }
+  .admin-form-actions {
+    display: flex; gap: 8px; justify-content: flex-end;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(243,237,227,0.08);
+  }
+  .admin-row-del-btn {
+    appearance: none; cursor: pointer; font-family: inherit;
+    background: rgba(196,122,72,0.12);
+    border: 1px solid rgba(196,122,72,0.4);
+    color: #C47A48;
+    padding: 8px 14px; border-radius: 5px;
+    font-size: 12px; letter-spacing: 0.04em;
+    margin-right: auto;
+  }
+  .admin-row-del-btn:hover { background: rgba(196,122,72,0.22); }
+
   /* — Boton Enviar por WhatsApp (verde brand) — */
   .siq-whatsapp { background: #25d366 !important; color: #FFF !important; border-color: #25d366 !important; }
   .siq-whatsapp:hover { background: #1ebd5c !important; border-color: #1ebd5c !important; }
@@ -1675,16 +1789,16 @@
 <script src="https://unpkg.com/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
 <!-- html2canvas standalone para captura PNG del PhotoEvidenceCard (compartir WhatsApp) -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="deck-stage.js?v=20260513o"></script>
-<script src="scent-iq-knowledge.js?v=20260513o"></script>
-<script src="scent-iq-engines.js?v=20260513o"></script>
-<script type="text/babel" src="tweaks-panel.jsx?v=20260513o"></script>
-<script type="text/babel" src="slides-master.jsx?v=20260513o"></script>
-<script type="text/babel" src="slide-views-master.jsx?v=20260513o"></script>
-<script type="text/babel" src="hero-difusor.jsx?v=20260513o"></script>
-<script type="text/babel" src="catalog-min.jsx?v=20260513o"></script>
-<script type="text/babel" src="control-olores.jsx?v=20260513o"></script>
-<script type="text/babel" src="scent-iq-panel.jsx?v=20260513o"></script>
-<script type="text/babel" src="app-cotizador.jsx?v=20260513o"></script>
+<script src="deck-stage.js?v=20260513p"></script>
+<script src="scent-iq-knowledge.js?v=20260513p"></script>
+<script src="scent-iq-engines.js?v=20260513p"></script>
+<script type="text/babel" src="tweaks-panel.jsx?v=20260513p"></script>
+<script type="text/babel" src="slides-master.jsx?v=20260513p"></script>
+<script type="text/babel" src="slide-views-master.jsx?v=20260513p"></script>
+<script type="text/babel" src="hero-difusor.jsx?v=20260513p"></script>
+<script type="text/babel" src="catalog-min.jsx?v=20260513p"></script>
+<script type="text/babel" src="control-olores.jsx?v=20260513p"></script>
+<script type="text/babel" src="scent-iq-panel.jsx?v=20260513p"></script>
+<script type="text/babel" src="app-cotizador.jsx?v=20260513p"></script>
 </body>
 </html>
