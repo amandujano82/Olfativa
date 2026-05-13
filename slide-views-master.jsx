@@ -110,10 +110,11 @@ function SlideCover({ segment, clientName, propId, propDate, totalSlides, idx })
         </div>
         <div style={{ lineHeight: 0.95 }}>
           <div style={{
-            fontFamily: "'Inter Tight', sans-serif",
-            fontSize: 144, fontWeight: 300,
+            fontFamily: "'Cormorant Garamond', serif",
+            fontStyle: 'normal', fontWeight: 400,
+            fontSize: 144,
             color: PALETTE.bone,
-            letterSpacing: '-0.042em',
+            letterSpacing: '-0.028em',
           }}>
             {t1}
           </div>
@@ -220,12 +221,12 @@ function SlidePromise({ segment, clientName, idx, totalSlides, propId, propDate 
         display: 'flex', flexDirection: 'column', justifyContent: 'center',
         gap: 36,
       }}>
-        <Eyebrow color={PALETTE.gold} size={TYPE_SCALE.micro}>{segment.promiseEyebrow}</Eyebrow>
+        <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>{segment.promiseEyebrow}</Eyebrow>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, lineHeight: 1.04 }}>
-          <SansH size={TYPE_SCALE.display + 4} color={PALETTE.bone} weight={400} tracking="-0.03em">
+          <SerifH italic={false} size={TYPE_SCALE.display + 4} color={PALETTE.bone} weight={400}>
             {segment.promiseLead}
-          </SansH>
+          </SerifH>
           <SerifH size={TYPE_SCALE.display + 4} color={PALETTE.gold}>
             {segment.promiseHighlight}
           </SerifH>
@@ -334,11 +335,11 @@ function SlidePillars({ segment, clientName, idx, totalSlides, propId, propDate 
       }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 80, alignItems: 'end' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            <Eyebrow color={PALETTE.goldSoft} size={TYPE_SCALE.micro}>{segment.pillarsEyebrow}</Eyebrow>
+            <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>{segment.pillarsEyebrow}</Eyebrow>
             <div style={{ lineHeight: 1.0 }}>
-              <SansH size={TYPE_SCALE.title} color={PALETTE.ink} weight={400} tracking="-0.03em">
+              <SerifH italic={false} size={TYPE_SCALE.title} color={PALETTE.ink} weight={400}>
                 {segment.pillarsTitleA}{' '}
-              </SansH>
+              </SerifH>
               <SerifH size={TYPE_SCALE.title} color={PALETTE.bronze}>
                 {segment.pillarsTitleB}
               </SerifH>
@@ -437,11 +438,11 @@ function SlideMethod({ segment, clientName, idx, totalSlides, propId, propDate }
       }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 80, alignItems: 'end' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <Eyebrow color={PALETTE.gold} size={TYPE_SCALE.micro}>{segment.methodEyebrow}</Eyebrow>
+            <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>{segment.methodEyebrow}</Eyebrow>
             <div style={{ lineHeight: 1.02 }}>
-              <SansH size={TYPE_SCALE.title - 12} color={PALETTE.bone} weight={400} tracking="-0.03em">
+              <SerifH italic={false} size={TYPE_SCALE.title - 12} color={PALETTE.bone} weight={400}>
                 {segment.methodTitleA}{' '}
-              </SansH>
+              </SerifH>
               <SerifH size={TYPE_SCALE.title - 12} color={PALETTE.gold}>
                 {segment.methodTitleB}
               </SerifH>
@@ -501,11 +502,11 @@ function SlideAroma({ segment, clientName, idx, totalSlides, propId, propDate })
       }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 80, alignItems: 'end' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <Eyebrow color={PALETTE.goldSoft} size={TYPE_SCALE.micro}>{segment.aromaEyebrow}</Eyebrow>
+            <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>{segment.aromaEyebrow}</Eyebrow>
             <div style={{ lineHeight: 1.02 }}>
-              <SansH size={TYPE_SCALE.title - 12} color={PALETTE.ink} weight={400} tracking="-0.03em">
+              <SerifH italic={false} size={TYPE_SCALE.title - 12} color={PALETTE.ink} weight={400}>
                 {segment.aromaTitleA}{' '}
-              </SansH>
+              </SerifH>
               <SerifH size={TYPE_SCALE.title - 12} color={PALETTE.bronze}>
                 {segment.aromaTitleB}
               </SerifH>
@@ -605,7 +606,7 @@ function SlideCompliance({ segment, clientName, idx, totalSlides, propId, propDa
       }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 80, alignItems: 'end' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <Eyebrow color={PALETTE.gold} size={TYPE_SCALE.micro}>{segment.complianceEyebrow}</Eyebrow>
+            <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>{segment.complianceEyebrow}</Eyebrow>
             <SerifH size={TYPE_SCALE.title - 12} color={PALETTE.bone} italic={false} weight={400}>
               {segment.complianceTitle}
             </SerifH>
@@ -678,7 +679,7 @@ function SlideTrust({ segment, clientName, idx, totalSlides, fields, propId, pro
         {/* Left: scope + testimonial */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 40, justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <Eyebrow color={PALETTE.gold} size={TYPE_SCALE.micro}>ALCANCE</Eyebrow>
+            <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>ALCANCE</Eyebrow>
             <SerifH size={TYPE_SCALE.subtitle + 4} color={PALETTE.bone} italic={false} weight={400} lineHeight={1.1}>
               {fields.scope}
             </SerifH>
@@ -712,7 +713,7 @@ function SlideTrust({ segment, clientName, idx, totalSlides, fields, propId, pro
           borderRadius: 2,
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <Eyebrow color={PALETTE.gold} size={TYPE_SCALE.micro}>INVERSIÓN</Eyebrow>
+            <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>INVERSIÓN</Eyebrow>
             <Body size={TYPE_SCALE.small} color={PALETTE.boneSoft} weight={400}>
               {fields.unitsLabel}
             </Body>
@@ -802,11 +803,11 @@ function SlideClose({ segment, clientName, idx, totalSlides, account, accountEma
         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-          <Eyebrow color={PALETTE.gold} size={TYPE_SCALE.micro}>OLFATIVA × {clientName.toUpperCase()}</Eyebrow>
+          <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>OLFATIVA × {clientName.toUpperCase()}</Eyebrow>
           <div style={{ lineHeight: 1.02, display: 'flex', flexDirection: 'column', gap: 4, maxWidth: 1500 }}>
-            <SansH size={TYPE_SCALE.hero - 32} color={PALETTE.bone} weight={400} tracking="-0.03em">
+            <SerifH italic={false} size={TYPE_SCALE.hero - 32} color={PALETTE.bone} weight={400}>
               {segment.closeLead}
-            </SansH>
+            </SerifH>
             <SerifH size={TYPE_SCALE.hero - 32} color={PALETTE.gold} lineHeight={1.0}>
               {segment.closeHighlight}
             </SerifH>
@@ -966,11 +967,11 @@ function SlideCatalog({ segment, clientName, idx, totalSlides, propId, propDate 
           {/* Header */}
           <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 1fr', gap: 72, alignItems: 'end' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <Eyebrow color={PALETTE.goldSoft} size={TYPE_SCALE.micro}>{segment.catalogEyebrow}</Eyebrow>
+              <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>{segment.catalogEyebrow}</Eyebrow>
               <div style={{ lineHeight: 1.02 }}>
-                <SansH size={TYPE_SCALE.title - 16} color={PALETTE.ink} weight={400} tracking="-0.03em">
+                <SerifH italic={false} size={TYPE_SCALE.title - 16} color={PALETTE.ink} weight={400}>
                   {segment.catalogTitleA}{' '}
-                </SansH>
+                </SerifH>
                 <SerifH size={TYPE_SCALE.title - 16} color={PALETTE.bronze}>
                   {segment.catalogTitleB}
                 </SerifH>
@@ -1052,11 +1053,11 @@ function SlideCatalog({ segment, clientName, idx, totalSlides, propId, propDate 
           {/* Header */}
           <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 1fr', gap: 72, alignItems: 'end' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <Eyebrow color={PALETTE.goldSoft} size={TYPE_SCALE.micro}>{segment.catalogEyebrow}</Eyebrow>
+              <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>{segment.catalogEyebrow}</Eyebrow>
               <div style={{ lineHeight: 1.02 }}>
-                <SansH size={TYPE_SCALE.title - 16} color={PALETTE.ink} weight={400} tracking="-0.03em">
+                <SerifH italic={false} size={TYPE_SCALE.title - 16} color={PALETTE.ink} weight={400}>
                   {segment.catalogTitleA}{' '}
-                </SansH>
+                </SerifH>
                 <SerifH size={TYPE_SCALE.title - 16} color={PALETTE.bronze}>
                   {segment.catalogTitleB}
                 </SerifH>
@@ -1128,11 +1129,11 @@ function SlideCatalog({ segment, clientName, idx, totalSlides, propId, propDate 
         {/* Header */}
         <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 1fr', gap: 72, alignItems: 'end' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <Eyebrow color={PALETTE.goldSoft} size={TYPE_SCALE.micro}>{segment.catalogEyebrow}</Eyebrow>
+            <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>{segment.catalogEyebrow}</Eyebrow>
             <div style={{ lineHeight: 1.02 }}>
-              <SansH size={TYPE_SCALE.title - 16} color={PALETTE.ink} weight={400} tracking="-0.03em">
+              <SerifH italic={false} size={TYPE_SCALE.title - 16} color={PALETTE.ink} weight={400}>
                 {segment.catalogTitleA}{' '}
-              </SansH>
+              </SerifH>
               <SerifH size={TYPE_SCALE.title - 16} color={PALETTE.bronze}>
                 {segment.catalogTitleB}
               </SerifH>
@@ -1313,9 +1314,9 @@ function SlideCuradora({ segment, clientName, idx, totalSlides, propId, propDate
         <div style={{ display: 'flex', flexDirection: 'column', gap: 28, paddingTop: 8 }}>
           {/* Name */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2, lineHeight: 0.98 }}>
-            <SansH size={TYPE_SCALE.title - 4} color={PALETTE.ink} weight={400} tracking="-0.03em">
+            <SerifH italic={false} size={TYPE_SCALE.title - 4} color={PALETTE.ink} weight={400}>
               {C.nameA}
-            </SansH>
+            </SerifH>
             <SerifH size={TYPE_SCALE.title - 4} color={PALETTE.bronze} lineHeight={0.98}>
               {C.nameB}
             </SerifH>
@@ -1422,11 +1423,11 @@ function SlideQuote({ segment, clientName, idx, totalSlides, propId, propDate, f
         {/* LEFT — placeholder de asignación (Copilot rellenará) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <Eyebrow color={PALETTE.goldSoft} size={TYPE_SCALE.micro}>ALCANCE E INVERSIÓN</Eyebrow>
+            <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>ALCANCE E INVERSIÓN</Eyebrow>
             <div style={{ lineHeight: 1.0 }}>
-              <SansH size={TYPE_SCALE.title - 4} color={PALETTE.ink} weight={400} tracking="-0.03em">
+              <SerifH italic={false} size={TYPE_SCALE.title - 4} color={PALETTE.ink} weight={400}>
                 Tu cotización,{' '}
-              </SansH>
+              </SerifH>
               <SerifH size={TYPE_SCALE.title - 4} color={PALETTE.bronze}>
                 a la medida de tu espacio.
               </SerifH>
@@ -1505,11 +1506,11 @@ function SlideQuote({ segment, clientName, idx, totalSlides, propId, propDate, f
         <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
           {/* Header alineado con "Tu cotización" — dos líneas para igualar altura */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <Eyebrow color={PALETTE.goldSoft} size={TYPE_SCALE.micro}>ESQUEMAS DE PAGO</Eyebrow>
+            <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>ESQUEMAS DE PAGO</Eyebrow>
             <div style={{ lineHeight: 1.0 }}>
-              <SansH size={TYPE_SCALE.title - 4} color={PALETTE.ink} weight={400} tracking="-0.03em">
+              <SerifH italic={false} size={TYPE_SCALE.title - 4} color={PALETTE.ink} weight={400}>
                 Descuento{' '}
-              </SansH>
+              </SerifH>
               <SerifH size={TYPE_SCALE.title - 4} color={PALETTE.bronze}>
                 por pronto pago.
               </SerifH>
@@ -2025,11 +2026,11 @@ function SlideScentAdvisor({ segment, clientName, idx, totalSlides, propId, prop
         {/* Header */}
         <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 1fr', gap: 72, alignItems: 'end' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <Eyebrow color={PALETTE.gold} size={TYPE_SCALE.micro}>{segment.scentAdvisorEyebrow}</Eyebrow>
+            <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>{segment.scentAdvisorEyebrow}</Eyebrow>
             <div style={{ lineHeight: 1.02 }}>
-              <SansH size={TYPE_SCALE.title - 14} color={PALETTE.bone} weight={400} tracking="-0.03em">
+              <SerifH italic={false} size={TYPE_SCALE.title - 14} color={PALETTE.bone} weight={400}>
                 {segment.scentAdvisorTitleA}{' '}
-              </SansH>
+              </SerifH>
               <SerifH size={TYPE_SCALE.title - 14} color={PALETTE.gold}>
                 {segment.scentAdvisorTitleB}
               </SerifH>
@@ -2175,11 +2176,11 @@ function SlideCotizador({ segment, clientName, idx, totalSlides, propId, propDat
         {/* Header */}
         <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 1fr', gap: 72, alignItems: 'end' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <Eyebrow color={PALETTE.goldSoft} size={TYPE_SCALE.micro}>{segment.cotizadorEyebrow}</Eyebrow>
+            <Eyebrow color="rgba(199, 166, 104, 0.75)" size={14} style={{ letterSpacing: "0.24em" }}>{segment.cotizadorEyebrow}</Eyebrow>
             <div style={{ lineHeight: 1.02 }}>
-              <SansH size={TYPE_SCALE.title - 16} color={PALETTE.ink} weight={400} tracking="-0.03em">
+              <SerifH italic={false} size={TYPE_SCALE.title - 16} color={PALETTE.ink} weight={400}>
                 {segment.cotizadorTitleA}{' '}
-              </SansH>
+              </SerifH>
               <SerifH size={TYPE_SCALE.title - 16} color={PALETTE.bronze}>
                 {segment.cotizadorTitleB}
               </SerifH>

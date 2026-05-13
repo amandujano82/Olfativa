@@ -22,16 +22,27 @@ const SPACING = {
   itemGap: 28,
 };
 
+// Paleta canónica (Olfativa 2026 · brand book minimalista)
+//  · ink         = canvas oscuro
+//  · inkRaised   = paneles/modales sobre ink (+4 luminancia)
+//  · bone        = texto/título sobre ink · canvas claro
+//  · boneSoft    = body text pequeño únicamente (no labels primarios)
+//  · gold        = acento editorial (eyebrows, hairlines clave)
+//  · goldSoft    = hover/estados pasivos del gold (NO usar como primario)
+//  · bronze      = acento tipográfico sobre fondo bone
+//  · rule        = hairlines sobre ink (más sutil que antes · 0.12)
+//  · ruleInk     = hairlines sobre bone
 const PALETTE = {
   ink: "#0E0E0E",
-  inkSoft: "#1A1815",
+  inkSoft: "#1A1815",       // alias legacy de inkRaised
+  inkRaised: "#1A1815",
   bone: "#F3EDE3",
   boneSoft: "#E8DFD0",
   gold: "#C7A668",
-  goldSoft: "#A88A4F",
+  goldSoft: "#A88A4F",      // reservar para hover
   bronze: "#7A6242",
-  rule: "rgba(243, 237, 227, 0.18)",
-  ruleInk: "rgba(14, 14, 14, 0.14)",
+  rule: "rgba(243, 237, 227, 0.12)",
+  ruleInk: "rgba(14, 14, 14, 0.12)",
 };
 
 // ============================================================
