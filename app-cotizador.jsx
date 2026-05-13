@@ -612,45 +612,58 @@ function App() {
       {adminOpen && (
         <AdminPanel
           customSlides={customSlides}
+          enabledKinds={new Set(selected.filter(s => s.enabled).map(s => s.kind))}
           onClose={() => setAdminOpen(false)}
-          onSave={(nextArr) => {
-            // Diff con el array anterior: cualquier kind nuevo se agrega
-            // automaticamente al deck (selected) con enabled:true.
-            // Los kinds eliminados se sacan del deck.
-            const oldKinds = new Set(customSlides.map(c => c.kind));
-            const newKinds = new Set(nextArr.map(c => c.kind));
-            const added = nextArr.filter(c => !oldKinds.has(c.kind));
-            const removedKinds = customSlides
-              .filter(c => !newKinds.has(c.kind))
-              .map(c => c.kind);
-
-            setCustomSlides(nextArr);
-
+          onToggleInDeck={(kind, on) => {
+            // Toggle directo desde el Admin sin pasar por el SlidePicker
             setSelected(prev => {
-              let arr = prev.filter(s => !removedKinds.includes(s.kind));
-              added.forEach(c => {
-                if (!arr.some(s => s.kind === c.kind)) {
-                  arr.push({
-                    uid: `s-${c.kind}-${Date.now()}`,
-                    kind: c.kind,
+              const idx = prev.findIndex(s => s.kind === kind);
+              if (idx === -1) {
+                if (!on) return prev;
+                return [...prev, {
+                  uid: `s-${kind}-${Date.now()}`,
+                  kind,
+                  segment: 'master',
+                  enabled: true,
+                }];
+              }
+              if (!on) {
+                // Sacar del deck (remover, no solo enabled:false)
+                return prev.filter((_, i) => i !== idx);
+              }
+              return prev.map((s, i) => i === idx ? { ...s, enabled: true } : s);
+            });
+          }}
+          onSave={(arr, newlyCreatedKinds) => {
+            setCustomSlides(arr);
+            // Slides eliminados también salen del deck
+            const newIds = new Set(arr.map(s => s.id));
+            const removedKinds = (customSlides || [])
+              .filter(s => !newIds.has(s.id))
+              .map(s => s.kind);
+            if (newlyCreatedKinds && newlyCreatedKinds.length) {
+              setSelected(prev => {
+                const existing = new Set(prev.map(s => s.kind));
+                const additions = newlyCreatedKinds
+                  .filter(k => !existing.has(k))
+                  .map(k => ({
+                    uid: `s-${k}-${Date.now()}`,
+                    kind: k,
                     segment: 'master',
                     enabled: true,
-                  });
-                }
+                  }));
+                let next = [...prev, ...additions];
+                if (removedKinds.length) next = next.filter(s => !removedKinds.includes(s.kind));
+                return next;
               });
-              return arr;
-            });
-
-            // Toast confirmando que se agrego al deck
-            if (added.length > 0) {
-              const n = added.length;
-              const titles = added.slice(0, 2).map(c => `"${c.title}"`).join(', ');
-              const extra = n > 2 ? ` y ${n - 2} más` : '';
+              const n = newlyCreatedKinds.length;
               try {
                 window.dispatchEvent(new CustomEvent('olfativa:scent-applied', {
-                  detail: { __toast: `Admin: ${titles}${extra} agregado${n > 1 ? 's' : ''} al deck.` }
+                  detail: { __toast: `${n} slide${n > 1 ? 's' : ''} agregado${n > 1 ? 's' : ''} al deck. Abre Láminas para reordenar o desactivar.` }
                 }));
               } catch (_) {}
+            } else if (removedKinds.length) {
+              setSelected(prev => prev.filter(s => !removedKinds.includes(s.kind)));
             }
           }}
         />
@@ -848,9 +861,15 @@ function FullPreview({ kind, segmentName, Renderer, slideProps, enabled, onToggl
 // ============================================================
 // AdminPanel — CRUD de slides personalizados (custom-XXX)
 // ============================================================
-function AdminPanel({ customSlides, onSave, onClose }) {
+function AdminPanel({ customSlides, enabledKinds, onSave, onToggleInDeck, onClose }) {
   const [draft, setDraft] = useState(customSlides);
   const [editing, setEditing] = useState(null); // null | { ...slide, isNew: bool }
+  const [savedHint, setSavedHint] = useState(null);
+
+  // Calcular diff contra el array original recibido por prop
+  const originalIds = useMemo(() => new Set((customSlides || []).map(s => s.id)), [customSlides]);
+  const newlyCreated = draft.filter(s => !originalIds.has(s.id));
+  const newCount = newlyCreated.length;
 
   const startNew = () => setEditing({
     id: 'custom-' + Date.now(),
@@ -869,6 +888,7 @@ function AdminPanel({ customSlides, onSave, onClose }) {
   const saveEditing = () => {
     if (!editing) return;
     if (!editing.title.trim()) { alert('El título es requerido'); return; }
+    const wasNew = !!editing.isNew;
     const clean = { ...editing };
     delete clean.isNew;
     setDraft(prev => {
@@ -877,13 +897,21 @@ function AdminPanel({ customSlides, onSave, onClose }) {
       const next = [...prev]; next[i] = clean; return next;
     });
     setEditing(null);
+    setSavedHint(wasNew
+      ? 'Slide guardado · se agregará al deck al hacer Guardar y agregar al deck.'
+      : 'Cambios guardados.');
+    setTimeout(() => setSavedHint(null), 3500);
   };
   const deleteSlide = (id) => {
     if (!confirm('Eliminar este slide personalizado?')) return;
     setDraft(prev => prev.filter(x => x.id !== id));
     if (editing && editing.id === id) setEditing(null);
   };
-  const apply = () => { onSave(draft); onClose(); };
+  const apply = () => {
+    const newlyCreatedKinds = newlyCreated.map(s => s.kind);
+    onSave(draft, newlyCreatedKinds);
+    onClose();
+  };
 
   return (
     <div className="picker-overlay" onClick={onClose}>
@@ -905,23 +933,42 @@ function AdminPanel({ customSlides, onSave, onClose }) {
             </div>
             {draft.length === 0 ? (
               <div className="admin-empty">Aún no tienes slides personalizados. Click en "+ Nuevo slide" para crear el primero.</div>
-            ) : draft.map(s => (
-              <div key={s.id} className={"admin-row" + (editing?.id === s.id ? ' is-editing' : '')}>
-                <div className="admin-row-thumb" onClick={() => startEdit(s)}>
-                  {s.imageUrl
-                    ? <img src={s.imageUrl} alt={s.title} />
-                    : <div className="admin-row-thumb-empty">{(s.title || 'S')[0]}</div>}
+            ) : draft.map(s => {
+              const isNewSlide = !originalIds.has(s.id);
+              const isInDeck = enabledKinds && enabledKinds.has(s.kind);
+              return (
+                <div key={s.id} className={"admin-row" + (editing?.id === s.id ? ' is-editing' : '')}>
+                  <div className="admin-row-thumb" onClick={() => startEdit(s)}>
+                    {s.imageUrl
+                      ? <img src={s.imageUrl} alt={s.title} />
+                      : <div className="admin-row-thumb-empty">{(s.title || 'S')[0]}</div>}
+                  </div>
+                  <div className="admin-row-info" onClick={() => startEdit(s)}>
+                    <div className="admin-row-title">
+                      {s.title || 'Sin título'}
+                      {isNewSlide && <span className="admin-row-newbadge">Nuevo</span>}
+                    </div>
+                    <div className="admin-row-meta">
+                      {s.layout} · {isInDeck ? <span className="admin-row-active">activo en deck</span> : 'no incluido'}
+                    </div>
+                  </div>
+                  <div className="admin-row-actions">
+                    {!isNewSlide && (
+                      <button
+                        className={"admin-deck-toggle" + (isInDeck ? ' is-on' : '')}
+                        onClick={() => onToggleInDeck && onToggleInDeck(s.kind, !isInDeck)}
+                        title={isInDeck ? 'Desactivar en deck' : 'Activar en deck'}
+                      >
+                        {isInDeck ? '✓ En deck' : 'Activar en deck'}
+                      </button>
+                    )}
+                    <button className="btn-secondary" onClick={() => startEdit(s)}>Editar</button>
+                    <button className="admin-row-del" onClick={() => deleteSlide(s.id)} title="Eliminar">×</button>
+                  </div>
                 </div>
-                <div className="admin-row-info" onClick={() => startEdit(s)}>
-                  <div className="admin-row-title">{s.title || 'Sin título'}</div>
-                  <div className="admin-row-meta">{s.layout} · {s.kind}</div>
-                </div>
-                <div className="admin-row-actions">
-                  <button className="btn-secondary" onClick={() => startEdit(s)}>Editar</button>
-                  <button className="admin-row-del" onClick={() => deleteSlide(s.id)} title="Eliminar">×</button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
+            {savedHint && <div className="admin-saved-hint">{savedHint}</div>}
           </div>
 
           {editing && (
@@ -969,10 +1016,18 @@ function AdminPanel({ customSlides, onSave, onClose }) {
         </div>
 
         <div className="picker-footer">
-          <span className="picker-footer-info">Los slides personalizados se persisten en tu navegador.</span>
+          <span className="picker-footer-info">
+            {newCount > 0
+              ? <><strong>{newCount}</strong> {newCount === 1 ? 'slide nuevo' : 'slides nuevos'} se agregará{newCount > 1 ? 'n' : ''} al deck al aplicar.</>
+              : 'Los slides personalizados se persisten en tu navegador.'}
+          </span>
           <div className="picker-footer-btns">
             <button className="btn-secondary" onClick={onClose}>Cancelar</button>
-            <button className="btn-download" onClick={apply}>Aplicar cambios</button>
+            <button className="btn-download" onClick={apply}>
+              {newCount > 0
+                ? (newCount === 1 ? 'Guardar y agregar al deck' : `Guardar y agregar ${newCount} al deck`)
+                : 'Aplicar cambios'}
+            </button>
           </div>
         </div>
       </div>

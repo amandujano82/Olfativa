@@ -1210,6 +1210,47 @@
   }
   .admin-row-del-btn:hover { background: rgba(196,122,72,0.22); }
 
+  /* Badge + estado activo + hint inline + toggle por fila */
+  .admin-row-newbadge {
+    display: inline-block; margin-left: 10px;
+    padding: 2px 8px; border-radius: 999px;
+    background: rgba(201,168,76,0.18); color: #C9A84C;
+    border: 1px solid rgba(201,168,76,0.4);
+    font-family: 'Public Sans', system-ui, sans-serif;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    vertical-align: middle;
+  }
+  .admin-row-active { color: #9CC597; font-weight: 600; }
+  .admin-deck-toggle {
+    appearance: none; cursor: pointer; font-family: inherit;
+    background: transparent;
+    color: rgba(201,168,76,0.85);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 5px;
+    padding: 6px 10px;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.04em;
+    transition: all 160ms;
+    white-space: nowrap;
+  }
+  .admin-deck-toggle:hover { background: rgba(201,168,76,0.12); color: #F5F0E8; }
+  .admin-deck-toggle.is-on {
+    background: rgba(80,150,80,0.16); color: #9CC597;
+    border-color: rgba(156,197,151,0.5);
+  }
+  .admin-deck-toggle.is-on:hover { background: rgba(80,150,80,0.25); }
+  .admin-saved-hint {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(80,150,80,0.10);
+    border: 1px solid rgba(156,197,151,0.35);
+    border-radius: 6px;
+    color: #9CC597;
+    font-size: 12.5px; line-height: 1.4;
+    animation: olfToastIn 0.3s ease-out;
+  }
+
   /* — Boton Enviar por WhatsApp (verde brand) — */
   .siq-whatsapp { background: #25d366 !important; color: #FFF !important; border-color: #25d366 !important; }
   .siq-whatsapp:hover { background: #1ebd5c !important; border-color: #1ebd5c !important; }
@@ -1789,16 +1830,16 @@
 <script src="https://unpkg.com/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
 <!-- html2canvas standalone para captura PNG del PhotoEvidenceCard (compartir WhatsApp) -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="deck-stage.js?v=20260513q"></script>
-<script src="scent-iq-knowledge.js?v=20260513q"></script>
-<script src="scent-iq-engines.js?v=20260513q"></script>
-<script type="text/babel" src="tweaks-panel.jsx?v=20260513q"></script>
-<script type="text/babel" src="slides-master.jsx?v=20260513q"></script>
-<script type="text/babel" src="slide-views-master.jsx?v=20260513q"></script>
-<script type="text/babel" src="hero-difusor.jsx?v=20260513q"></script>
-<script type="text/babel" src="catalog-min.jsx?v=20260513q"></script>
-<script type="text/babel" src="control-olores.jsx?v=20260513q"></script>
-<script type="text/babel" src="scent-iq-panel.jsx?v=20260513q"></script>
-<script type="text/babel" src="app-cotizador.jsx?v=20260513q"></script>
+<script src="deck-stage.js?v=20260513r"></script>
+<script src="scent-iq-knowledge.js?v=20260513r"></script>
+<script src="scent-iq-engines.js?v=20260513r"></script>
+<script type="text/babel" src="tweaks-panel.jsx?v=20260513r"></script>
+<script type="text/babel" src="slides-master.jsx?v=20260513r"></script>
+<script type="text/babel" src="slide-views-master.jsx?v=20260513r"></script>
+<script type="text/babel" src="hero-difusor.jsx?v=20260513r"></script>
+<script type="text/babel" src="catalog-min.jsx?v=20260513r"></script>
+<script type="text/babel" src="control-olores.jsx?v=20260513r"></script>
+<script type="text/babel" src="scent-iq-panel.jsx?v=20260513r"></script>
+<script type="text/babel" src="app-cotizador.jsx?v=20260513r"></script>
 </body>
 </html>
