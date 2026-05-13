@@ -19,7 +19,7 @@
   // helpers
   // ----------------------------------------------------------
   function readDemo() {
-    return fetch('scent-iq-demo.json?v=20260513e').then(r => r.ok ? r.json() : null).catch(() => null);
+    return fetch('scent-iq-demo.json?v=20260513f').then(r => r.ok ? r.json() : null).catch(() => null);
   }
 
   function copyToClipboard(text) {
@@ -462,10 +462,64 @@
         aromaKey:    meta.aroma_principal_full?.key || null,
         aromaName:   output.estrategia_olfativa.aroma_principal,
         cantidad:    output.difusion.cantidad,
+        fromScentIQ: true,
         full: output
       };
       onApply && onApply(payload);
       setApplied(true);
+      // Toast + apertura automatica del panel Precios (lo gestiona el cotizador via evento global)
+      try {
+        window.dispatchEvent(new CustomEvent('olfativa:scent-applied', { detail: payload }));
+      } catch (_) {}
+      // Auto-cerrar el modal para que el usuario vea donde quedo
+      setTimeout(() => { onClose && onClose(); }, 900);
+    };
+
+    const onShareWhatsApp = () => {
+      if (!output) return;
+      const o = output;
+      const meta = o._meta || {};
+      const difFull = meta.difusor_full || {};
+      const av = o.analisis_visual || {};
+      const lectura = o.lectura_emocional || {};
+      const est = o.estrategia_olfativa || {};
+      const dif = o.difusion || {};
+      const cliente = client?.clientName || 'cliente';
+      const propId = client?.propId || '';
+      const fvName = (OLF_KNOW.familiasVisuales.find(f => f.id === av.familia_visual) || {}).nombre || av.familia_visual || '';
+      const familiaAroma = meta.aroma_principal_full?.familia || '';
+      const cobertura = (difFull.cobertura_min_m2 != null && difFull.cobertura_max_m2 != null)
+        ? `${difFull.cobertura_min_m2}–${difFull.cobertura_max_m2} m²`
+        : '';
+      const lineas = [
+        `*Olfativa · Recomendación olfativa para ${cliente}*`,
+        propId ? `Cotización: ${propId}` : '',
+        '',
+        `*Lectura del espacio*`,
+        fvName ? `• Familia visual: ${fvName}` : '',
+        av.tipo_de_luz ? `• Iluminación: ${av.tipo_de_luz}` : '',
+        av.materialidad ? `• Materiales: ${av.materialidad}` : '',
+        lectura.emocion_deseada ? `• Emoción deseada: ${lectura.emocion_deseada}` : '',
+        '',
+        `*Estrategia olfativa*`,
+        est.familia_olfativa ? `• Dirección: ${est.familia_olfativa}` : '',
+        est.aroma_principal ? `• Aroma principal: *${est.aroma_principal}*${familiaAroma ? ` (${familiaAroma})` : ''}` : '',
+        est.aroma_alternativo && est.aroma_alternativo !== 'requiere validación' ? `• Alternativo: ${est.aroma_alternativo}` : '',
+        '',
+        `*Difusión*`,
+        dif.difusor_recomendado ? `• Equipo recomendado: ${dif.difusor_recomendado}` : '',
+        dif.cantidad ? `• Cantidad: ${dif.cantidad}` : '',
+        cobertura ? `• Cobertura: ${cobertura}` : '',
+        dif.intensidad ? `• Intensidad: ${dif.intensidad}` : '',
+        '',
+        `*Resumen*`,
+        o.resumen_comercial || '',
+        '',
+        `Generado con Scent Advisor de Olfativa`,
+        'https://amandujano82.github.io/Olfativa/'
+      ].filter(Boolean).join('\n');
+      const url = 'https://wa.me/?text=' + encodeURIComponent(lineas);
+      window.open(url, '_blank', 'noopener,noreferrer');
     };
 
     const onReset = () => {
@@ -543,6 +597,9 @@
                 <div className="siq-actions">
                   <button className="btn-secondary" onClick={onReset}>↻ Analizar otro espacio</button>
                   <button className="btn-secondary" onClick={onExport}>↓ Exportar JSON</button>
+                  <button className="btn-secondary siq-whatsapp" onClick={onShareWhatsApp}>
+                    Enviar por WhatsApp
+                  </button>
                   <button
                     className={"btn-download" + (applied ? ' btn-download-confirm' : '')}
                     onClick={onApplyToCotizacion}

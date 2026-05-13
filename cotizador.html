@@ -1096,6 +1096,54 @@
   .siq-error { padding: 32px; text-align: center; }
   .siq-error p { color: rgba(243,237,227,0.7); margin: 12px 0 20px; }
 
+  /* — Boton Enviar por WhatsApp (verde brand) — */
+  .siq-whatsapp { background: #25d366 !important; color: #FFF !important; border-color: #25d366 !important; }
+  .siq-whatsapp:hover { background: #1ebd5c !important; border-color: #1ebd5c !important; }
+
+  /* — Toast global cotizador (Scent Advisor aplicado) — */
+  .olf-toast {
+    position: fixed; right: 24px; bottom: 24px; z-index: 9999;
+    background: #f4ede0; color: #2a2a2a;
+    padding: 14px 18px;
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    display: flex; align-items: center; gap: 12px;
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-size: 15px; line-height: 1.35;
+    max-width: 380px;
+    border: 1px solid #d9cdb3;
+    animation: olfToastIn 0.3s ease-out;
+  }
+  .olf-toast .check { color: #2e7d32; font-weight: 700; font-size: 18px; }
+  .olf-toast .close {
+    margin-left: auto; cursor: pointer; opacity: 0.55;
+    background: none; border: none; font-size: 20px; line-height: 1;
+    color: inherit; padding: 0 4px;
+  }
+  .olf-toast .close:hover { opacity: 1; }
+  @keyframes olfToastIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+
+  /* — Badge "Scent IQ" en linea del modal Precios — */
+  .prices-line-sel-wrap {
+    display: inline-flex; align-items: center; gap: 8px;
+    width: 100%;
+  }
+  .prices-line-sel-wrap .prices-line-sel { flex: 1; min-width: 0; }
+  .siq-badge {
+    display: inline-block;
+    flex-shrink: 0;
+    padding: 2px 8px;
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    background: rgba(201,168,76,0.18); color: #C9A84C;
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 999px;
+    font-family: 'Public Sans', system-ui, sans-serif;
+    font-weight: 600;
+  }
+
   /* ── Print: ocultar topbar y overlays ───────────────────── */
   /* Vista previa y orden · drag&drop reorder strip */
   .picker-order-section {
@@ -1298,15 +1346,15 @@
 <!-- html2pdf · trae html2canvas + jsPDF en un solo bundle -->
 <script src="https://unpkg.com/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
 <script src="deck-stage.js"></script>
-<script src="scent-iq-knowledge.js?v=20260513e"></script>
-<script src="scent-iq-engines.js?v=20260513e"></script>
+<script src="scent-iq-knowledge.js?v=20260513f"></script>
+<script src="scent-iq-engines.js?v=20260513f"></script>
 <script type="text/babel" src="tweaks-panel.jsx"></script>
 <script type="text/babel" src="slides-master.jsx"></script>
 <script type="text/babel" src="slide-views-master.jsx"></script>
 <script type="text/babel" src="hero-difusor.jsx"></script>
 <script type="text/babel" src="catalog-min.jsx"></script>
 <script type="text/babel" src="control-olores.jsx"></script>
-<script type="text/babel" src="scent-iq-panel.jsx?v=20260513e"></script>
+<script type="text/babel" src="scent-iq-panel.jsx?v=20260513f"></script>
 <script type="text/babel" src="app-cotizador.jsx"></script>
 </body>
 </html>
