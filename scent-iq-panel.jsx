@@ -19,7 +19,7 @@
   // helpers
   // ----------------------------------------------------------
   function readDemo() {
-    return fetch('scent-iq-demo.json?v=20260513k').then(r => r.ok ? r.json() : null).catch(() => null);
+    return fetch('scent-iq-demo.json?v=20260513l').then(r => r.ok ? r.json() : null).catch(() => null);
   }
 
   function copyToClipboard(text) {
@@ -73,6 +73,7 @@
     const emocion = lectura.emocion_deseada || av.emocion_deseada || av.emocion_actual || '';
     const difusor = dif.difusor_recomendado || '';
     const cant = dif.cantidad || '';
+    const overrides = (o._meta && o._meta.manual_overrides) || {};
 
     const lineas = [];
     lineas.push(`*Olfativa · Recomendación sensorial para ${cliente}*`);
@@ -91,7 +92,11 @@
         `que prolongan la sensación de la madera, la piedra y los textiles en el aire.`
       );
     }
-    if (paleta) {
+    if (overrides.aroma) {
+      lineas.push(
+        `*Aroma seleccionado: ${aroma}* — elección manual del especialista, que complementa la lectura visual del espacio.`
+      );
+    } else if (paleta) {
       lineas.push(
         `La paleta ${String(paleta).toLowerCase()} pide un perfume de baja saturación y alta profundidad — ` +
         `exactamente lo que entrega *${aroma}*.`
@@ -120,9 +125,11 @@
     lineas.push('');
     lineas.push(
       `*Recomendación final:* ${aroma}` +
-      `${familiaOlf ? ` (familia ${String(familiaOlf).toLowerCase()})` : ''}, ` +
+      `${familiaOlf ? ` (familia ${String(familiaOlf).toLowerCase()})` : ''}` +
+      `${overrides.aroma ? ' · selección manual' : ''}, ` +
       `difundido con ${difusor || 'el equipo recomendado'}` +
-      `${cant ? ` (${cant} unidad${cant > 1 ? 'es' : ''})` : ''}.`
+      `${cant ? ` (${cant} unidad${cant > 1 ? 'es' : ''})` : ''}` +
+      `${overrides.difusor ? ' · equipo seleccionado manualmente por el especialista' : ''}.`
     );
     if (o.resumen_comercial) {
       lineas.push('');
@@ -472,6 +479,183 @@
   }
 
   // ----------------------------------------------------------
+  // Override pickers: aroma / difusor (selección manual del especialista)
+  // ----------------------------------------------------------
+  function AromaPicker({ onSelect, onClose, current }) {
+    const [familiaFilter, setFamiliaFilter] = useState([]);
+    const [sublineaFilter, setSublineaFilter] = useState([]);
+    const [soloNicho, setSoloNicho] = useState(false);
+    const [query, setQuery] = useState('');
+    const [selectedId, setSelectedId] = useState(current?.id || null);
+
+    const familias = ['Cítricas','Herbales','Verdes','Florales','Frutales','Amaderadas','De ocasión'];
+    const sublineas = ['Nueva colección','Nicho','Regular','Odor control','De ocasión'];
+    const toggleArr = (arr, v) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
+
+    const filtered = OLF_KNOW.aromas.filter(a => {
+      if (familiaFilter.length > 0 && !familiaFilter.includes(a.familia)) return false;
+      if (sublineaFilter.length > 0 && !sublineaFilter.includes(a.sublinea)) return false;
+      if (soloNicho && !a.flags?.nicho) return false;
+      if (query) {
+        const q = query.toLowerCase();
+        const hay = [a.nombre, a.familia, ...(a.acordes||[]), a.descripcion].join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+    const selected = filtered.find(a => a.id === selectedId) || OLF_KNOW.aromas.find(a => a.id === selectedId);
+
+    return (
+      <div className="siq-picker">
+        <div className="siq-picker-head">
+          <div className="siq-eyebrow">Override manual · Aroma</div>
+          <button className="siq-picker-close" onClick={onClose} aria-label="Cerrar">×</button>
+        </div>
+        <div className="siq-picker-filters">
+          <input
+            className="siq-picker-search"
+            placeholder="Buscar nombre, acordes, descripción…"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+          />
+          <div className="siq-chips-row">
+            <span className="siq-chips-label">Familia</span>
+            {familias.map(f => (
+              <button key={f} className={"siq-chip" + (familiaFilter.includes(f) ? ' is-on' : '')} onClick={() => setFamiliaFilter(arr => toggleArr(arr, f))}>{f}</button>
+            ))}
+          </div>
+          <div className="siq-chips-row">
+            <span className="siq-chips-label">Sublínea</span>
+            {sublineas.map(s => (
+              <button key={s} className={"siq-chip" + (sublineaFilter.includes(s) ? ' is-on' : '')} onClick={() => setSublineaFilter(arr => toggleArr(arr, s))}>{s}</button>
+            ))}
+            <label className="siq-toggle">
+              <input type="checkbox" checked={soloNicho} onChange={e => setSoloNicho(e.target.checked)} />
+              Solo nicho
+            </label>
+          </div>
+        </div>
+        <div className="siq-picker-list">
+          {filtered.length === 0 ? (
+            <div className="siq-picker-empty">Sin resultados con esos filtros.</div>
+          ) : filtered.map(a => {
+            const isSel = selectedId === a.id;
+            const acordes = (a.acordes || []).filter(Boolean).slice(0, 3);
+            return (
+              <div key={a.id} className={"siq-picker-row" + (isSel ? ' is-selected' : '')} onClick={() => setSelectedId(a.id)}>
+                <div className="siq-picker-row-main">
+                  <span className="siq-picker-row-name">{a.nombre}</span>
+                  <span className="siq-picker-row-meta">{a.familia} · {a.sublinea}</span>
+                </div>
+                {acordes.length > 0 && (
+                  <div className="siq-picker-row-acordes">
+                    {acordes.map((ac, i) => <span key={i}>{ac}</span>)}
+                  </div>
+                )}
+                {isSel && <span className="siq-picker-check">✓</span>}
+              </div>
+            );
+          })}
+        </div>
+        <div className="siq-picker-foot">
+          <span className="siq-picker-count">{filtered.length} aromas</span>
+          <button className="btn-secondary" onClick={onClose}>Cancelar</button>
+          <button className="btn-download" disabled={!selected} onClick={() => selected && onSelect(selected)}>
+            Usar este aroma
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  function DifusorPicker({ onSelect, onClose, current }) {
+    const [catFilter, setCatFilter] = useState([]);
+    const [tamFilter, setTamFilter] = useState([]);
+    const [intFilter, setIntFilter] = useState([]);
+    const [minCoverage, setMinCoverage] = useState(0);
+    const [selectedId, setSelectedId] = useState(current?.key || null);
+
+    const cats = ['Manual basico','Industrial / Profesional','Premium'];
+    const tams = ['muy pequeño','pequeño','pequeño-mediano','mediano','mediano-grande','grande','muy grande'];
+    const ints = ['baja','media','media-alta','alta'];
+    const toggleArr = (arr, v) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
+
+    const filtered = OLF_KNOW.difusores.filter(d => {
+      if (catFilter.length > 0 && !catFilter.includes(d.categoria)) return false;
+      if (tamFilter.length > 0 && !tamFilter.includes(d.tamano)) return false;
+      if (intFilter.length > 0 && !intFilter.includes(d.intensidad)) return false;
+      if (minCoverage > 0 && (Number(d.cobertura_max_m2) || 0) < minCoverage) return false;
+      return true;
+    });
+    const selected = filtered.find(d => d.key === selectedId) || OLF_KNOW.difusores.find(d => d.key === selectedId);
+
+    return (
+      <div className="siq-picker">
+        <div className="siq-picker-head">
+          <div className="siq-eyebrow">Override manual · Difusor</div>
+          <button className="siq-picker-close" onClick={onClose} aria-label="Cerrar">×</button>
+        </div>
+        <div className="siq-picker-filters">
+          <div className="siq-chips-row">
+            <span className="siq-chips-label">Categoría</span>
+            {cats.map(c => (
+              <button key={c} className={"siq-chip" + (catFilter.includes(c) ? ' is-on' : '')} onClick={() => setCatFilter(arr => toggleArr(arr, c))}>{c}</button>
+            ))}
+          </div>
+          <div className="siq-chips-row">
+            <span className="siq-chips-label">Tamaño</span>
+            {tams.map(t => (
+              <button key={t} className={"siq-chip" + (tamFilter.includes(t) ? ' is-on' : '')} onClick={() => setTamFilter(arr => toggleArr(arr, t))}>{t}</button>
+            ))}
+          </div>
+          <div className="siq-chips-row">
+            <span className="siq-chips-label">Intensidad</span>
+            {ints.map(i => (
+              <button key={i} className={"siq-chip" + (intFilter.includes(i) ? ' is-on' : '')} onClick={() => setIntFilter(arr => toggleArr(arr, i))}>{i}</button>
+            ))}
+          </div>
+          <div className="siq-chips-row">
+            <span className="siq-chips-label">Cobertura mínima requerida</span>
+            <input type="number" min="0" step="10" value={minCoverage}
+              className="siq-picker-num"
+              onChange={e => setMinCoverage(Math.max(0, Number(e.target.value) || 0))} />
+            <span className="siq-picker-unit">m²</span>
+          </div>
+        </div>
+        <div className="siq-picker-list">
+          {filtered.length === 0 ? (
+            <div className="siq-picker-empty">Sin difusores con esos filtros.</div>
+          ) : filtered.map(d => {
+            const isSel = selectedId === d.key;
+            return (
+              <div key={d.key} className={"siq-picker-row" + (isSel ? ' is-selected' : '')} onClick={() => setSelectedId(d.key)}>
+                <div className="siq-picker-row-main">
+                  <span className="siq-picker-row-name">{d.modelo}</span>
+                  <span className="siq-picker-row-meta">{d.categoria} · {d.tamano} · {d.intensidad}</span>
+                </div>
+                <div className="siq-picker-row-acordes">
+                  <span>{d.cobertura_min_m2}–{d.cobertura_max_m2} m²</span>
+                  {d.cotizador_key
+                    ? <span>${(Number(d.precio_renta_mxn) || 0).toLocaleString('es-MX')}/mes</span>
+                    : <span className="siq-picker-warn">sin precio cargado</span>}
+                </div>
+                {isSel && <span className="siq-picker-check">✓</span>}
+              </div>
+            );
+          })}
+        </div>
+        <div className="siq-picker-foot">
+          <span className="siq-picker-count">{filtered.length} difusores</span>
+          <button className="btn-secondary" onClick={onClose}>Cancelar</button>
+          <button className="btn-download" disabled={!selected} onClick={() => selected && onSelect(selected)}>
+            Usar este difusor
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ----------------------------------------------------------
   // Root component
   // ----------------------------------------------------------
   function ScentIQPanel({ onClose, client, onApply }) {
@@ -489,6 +673,11 @@
     const [shareData, setShareData] = useState(null); // { imageUrl, blob, text }
     const [copiedImg, setCopiedImg] = useState(false);
     const [copiedTxt, setCopiedTxt] = useState(false);
+    // Overrides manuales del especialista (encima del análisis IA)
+    const [aromaOverride, setAromaOverride] = useState(null);
+    const [difusorOverride, setDifusorOverride] = useState(null);
+    const [aromaPickerOpen, setAromaPickerOpen] = useState(false);
+    const [difusorPickerOpen, setDifusorPickerOpen] = useState(false);
 
     const close = () => { onClose && onClose(); };
 
@@ -548,7 +737,6 @@
 
     const onApplyToCotizacion = async () => {
       if (!output) return;
-      const meta = output._meta || {};
       // Convertir el archivo subido a dataURL para que la foto del
       // slide del deck sobreviva refresh (blob: URLs son session-scoped).
       let dataURL = null;
@@ -562,18 +750,36 @@
           });
         } catch (_) { /* si falla, dejamos el blob URL como mejor esfuerzo */ }
       }
-      const fullWithPreview = {
-        ...output,
-        _meta: { ...meta, previewURL: dataURL || previewURL || null }
+
+      // Aplicar overrides manuales (deep clone para no mutar el state)
+      const base = JSON.parse(JSON.stringify(output));
+      base._meta = base._meta || {};
+      if (aromaOverride) {
+        base.estrategia_olfativa.aroma_principal = aromaOverride.nombre;
+        base._meta.aroma_principal_full = { ...aromaOverride, manual_override: true };
+      }
+      if (difusorOverride) {
+        base.difusion.difusor_recomendado = difusorOverride.modelo;
+        base.difusion.difusor_key = difusorOverride.key;
+        base.difusion.cotizador_key = difusorOverride.cotizador_key || null;
+        base._meta.difusor_full = { ...difusorOverride, manual_override: true };
+        base._meta.difusor_key = difusorOverride.key;
+        base._meta.cotizador_key = difusorOverride.cotizador_key || null;
+      }
+      base._meta.manual_overrides = {
+        aroma: !!aromaOverride,
+        difusor: !!difusorOverride
       };
+      base._meta.previewURL = dataURL || previewURL || null;
+
       const payload = {
-        difusorKey:  meta.cotizador_key,           // null si no priced
-        difusorName: output.difusion.difusor_recomendado,
-        aromaKey:    meta.aroma_principal_full?.key || null,
-        aromaName:   output.estrategia_olfativa.aroma_principal,
-        cantidad:    output.difusion.cantidad,
+        difusorKey:  base._meta.cotizador_key,           // null si no priced
+        difusorName: base.difusion.difusor_recomendado,
+        aromaKey:    base._meta.aroma_principal_full?.key || null,
+        aromaName:   base.estrategia_olfativa.aroma_principal,
+        cantidad:    base.difusion.cantidad,
         fromScentIQ: true,
-        full: fullWithPreview
+        full: base
       };
       onApply && onApply(payload);
       setApplied(true);
@@ -729,8 +935,70 @@
 
                 <div className="siq-grid">
                   <VisualAnalysisCard a={analisis} />
-                  <OlfactoryRecommendationCard est={output.estrategia_olfativa} principalFull={principalFull} alternativoFull={alternativoFull} />
-                  <DiffuserRecommendationCard dif={{...output.difusion, _meta: output._meta?.difusor_full}} />
+
+                  <div className="siq-card-stack">
+                    {aromaOverride && (
+                      <div className="siq-override-banner">⚙ Override manual · aroma seleccionado por el especialista</div>
+                    )}
+                    <OlfactoryRecommendationCard
+                      est={aromaOverride ? { ...output.estrategia_olfativa, aroma_principal: aromaOverride.nombre } : output.estrategia_olfativa}
+                      principalFull={aromaOverride || principalFull}
+                      alternativoFull={alternativoFull}
+                    />
+                    <div className="siq-override-actions">
+                      <button className="siq-override-btn" onClick={() => setAromaPickerOpen(v => !v)}>
+                        {aromaPickerOpen ? '✕ Cancelar' : (aromaOverride ? '↻ Cambiar selección' : '⌖ Cambiar aroma manualmente')}
+                      </button>
+                      {aromaOverride && (
+                        <button className="siq-override-clear" onClick={() => setAromaOverride(null)}>
+                          Volver al recomendado
+                        </button>
+                      )}
+                    </div>
+                    {aromaPickerOpen && (
+                      <AromaPicker
+                        current={aromaOverride}
+                        onSelect={(a) => { setAromaOverride(a); setAromaPickerOpen(false); }}
+                        onClose={() => setAromaPickerOpen(false)}
+                      />
+                    )}
+                  </div>
+
+                  <div className="siq-card-stack">
+                    {difusorOverride && (
+                      <div className="siq-override-banner">⚙ Override manual · difusor seleccionado por el especialista</div>
+                    )}
+                    <DiffuserRecommendationCard
+                      dif={difusorOverride
+                        ? {
+                            ...output.difusion,
+                            difusor_recomendado: difusorOverride.modelo,
+                            difusor_key: difusorOverride.key,
+                            cotizador_key: difusorOverride.cotizador_key || null,
+                            _meta: difusorOverride
+                          }
+                        : { ...output.difusion, _meta: output._meta?.difusor_full }
+                      }
+                    />
+                    <div className="siq-override-actions">
+                      <button className="siq-override-btn" onClick={() => setDifusorPickerOpen(v => !v)}>
+                        {difusorPickerOpen ? '✕ Cancelar' : (difusorOverride ? '↻ Cambiar selección' : '⌖ Cambiar difusor manualmente')}
+                      </button>
+                      {difusorOverride && (
+                        <button className="siq-override-clear" onClick={() => setDifusorOverride(null)}>
+                          Volver al recomendado
+                        </button>
+                      )}
+                    </div>
+                    {difusorPickerOpen && (
+                      <DifusorPicker
+                        current={difusorOverride}
+                        onSelect={(d) => { setDifusorOverride(d); setDifusorPickerOpen(false); }}
+                        onClose={() => setDifusorPickerOpen(false)}
+                      />
+                    )}
+                  </div>
+
                   <DesignerPromptCard designer={output.designer} onCopy={onCopyPrompt} copied={copied} />
                 </div>
 
