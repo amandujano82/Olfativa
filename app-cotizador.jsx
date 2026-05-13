@@ -128,7 +128,24 @@ function loadCustomSlides() {
   catch (_) { return []; }
 }
 function saveCustomSlides(arr) {
-  try { localStorage.setItem(CUSTOM_LS, JSON.stringify(arr || [])); } catch (_) {}
+  try { localStorage.setItem(CUSTOM_LS, JSON.stringify(arr || [])); return true; }
+  catch (e) {
+    if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
+      alert('No se pudo guardar · el almacenamiento local está lleno. Elimina slides custom antiguos o usa imágenes más chicas.');
+    }
+    return false;
+  }
+}
+// Inserta una row en un array de selected segun pos:
+//   'start' -> al inicio  ·  'end'/null -> al final  ·  kindX -> después de kindX.
+function insertSlideAt(arr, row, pos) {
+  const next = [...arr];
+  if (pos === 'start') { next.unshift(row); return next; }
+  if (!pos || pos === 'end') { next.push(row); return next; }
+  const idx = next.findIndex(s => s.kind === pos);
+  if (idx < 0) { next.push(row); return next; }
+  next.splice(idx + 1, 0, row);
+  return next;
 }
 // Lookup helpers: si un kind es 'custom-XXX' busca en customSlides
 function rendererFor(kind, customSlides) {
@@ -613,57 +630,78 @@ function App() {
         <AdminPanel
           customSlides={customSlides}
           enabledKinds={new Set(selected.filter(s => s.enabled).map(s => s.kind))}
+          selected={selected}
           onClose={() => setAdminOpen(false)}
           onToggleInDeck={(kind, on) => {
-            // Toggle directo desde el Admin sin pasar por el SlidePicker
             setSelected(prev => {
               const idx = prev.findIndex(s => s.kind === kind);
               if (idx === -1) {
                 if (!on) return prev;
-                return [...prev, {
+                // Insertar respetando insertAfter del custom slide si existe
+                const cs = customSlides.find(c => c.kind === kind);
+                const row = {
                   uid: `s-${kind}-${Date.now()}`,
                   kind,
-                  segment: 'master',
+                  segment: (cs && cs.segment) || 'master',
                   enabled: true,
-                }];
+                };
+                return insertSlideAt(prev, row, cs?.insertAfter || 'end');
               }
-              if (!on) {
-                // Sacar del deck (remover, no solo enabled:false)
-                return prev.filter((_, i) => i !== idx);
-              }
+              if (!on) return prev.filter((_, i) => i !== idx);
               return prev.map((s, i) => i === idx ? { ...s, enabled: true } : s);
             });
           }}
           onSave={(arr, newlyCreatedKinds) => {
+            const oldMap = new Map((customSlides || []).map(s => [s.kind, s]));
             setCustomSlides(arr);
-            // Slides eliminados también salen del deck
             const newIds = new Set(arr.map(s => s.id));
             const removedKinds = (customSlides || [])
               .filter(s => !newIds.has(s.id))
               .map(s => s.kind);
-            if (newlyCreatedKinds && newlyCreatedKinds.length) {
-              setSelected(prev => {
-                const existing = new Set(prev.map(s => s.kind));
-                const additions = newlyCreatedKinds
-                  .filter(k => !existing.has(k))
-                  .map(k => ({
-                    uid: `s-${k}-${Date.now()}`,
-                    kind: k,
-                    segment: 'master',
+
+            setSelected(prev => {
+              let next = [...prev];
+              // 1. Remover los eliminados
+              if (removedKinds.length) next = next.filter(s => !removedKinds.includes(s.kind));
+              // 2. Para cada slide del nuevo array, decidir agregar o mover
+              arr.forEach(slide => {
+                const exists = next.find(s => s.kind === slide.kind);
+                const isNew = (newlyCreatedKinds || []).includes(slide.kind);
+                const old = oldMap.get(slide.kind);
+                const positionChanged = old && old.insertAfter !== slide.insertAfter;
+                if (!exists && isNew) {
+                  // Agregar en la posicion indicada
+                  const row = {
+                    uid: `s-${slide.kind}-${Date.now()}`,
+                    kind: slide.kind,
+                    segment: slide.segment || 'master',
                     enabled: true,
-                  }));
-                let next = [...prev, ...additions];
-                if (removedKinds.length) next = next.filter(s => !removedKinds.includes(s.kind));
-                return next;
+                  };
+                  next = insertSlideAt(next, row, slide.insertAfter || 'end');
+                } else if (exists && positionChanged) {
+                  // Mover a la nueva posicion (preservando uid + enabled + segment)
+                  const row = { ...exists, segment: slide.segment || exists.segment };
+                  next = next.filter(s => s.kind !== slide.kind);
+                  next = insertSlideAt(next, row, slide.insertAfter || 'end');
+                } else if (exists && slide.segment && slide.segment !== exists.segment) {
+                  // Solo cambio de segmento
+                  next = next.map(s => s.kind === slide.kind ? { ...s, segment: slide.segment } : s);
+                }
               });
-              const n = newlyCreatedKinds.length;
+              return next;
+            });
+
+            const n = (newlyCreatedKinds || []).length;
+            if (n > 0) {
+              const firstNew = arr.find(s => s.kind === newlyCreatedKinds[0]);
+              const where = firstNew ? (firstNew.insertAfter === 'start' ? 'al inicio del deck'
+                : firstNew.insertAfter === 'end' ? 'al final del deck'
+                : `después de ${SLIDE_LABELS[firstNew.insertAfter] || firstNew.insertAfter}`) : 'al deck';
               try {
                 window.dispatchEvent(new CustomEvent('olfativa:scent-applied', {
-                  detail: { __toast: `${n} slide${n > 1 ? 's' : ''} agregado${n > 1 ? 's' : ''} al deck. Abre Láminas para reordenar o desactivar.` }
+                  detail: { __toast: n === 1 ? `Slide agregado ${where}.` : `${n} slides agregados al deck.` }
                 }));
               } catch (_) {}
-            } else if (removedKinds.length) {
-              setSelected(prev => prev.filter(s => !removedKinds.includes(s.kind)));
             }
           }}
         />
@@ -861,33 +899,95 @@ function FullPreview({ kind, segmentName, Renderer, slideProps, enabled, onToggl
 // ============================================================
 // AdminPanel — CRUD de slides personalizados (custom-XXX)
 // ============================================================
-function AdminPanel({ customSlides, enabledKinds, onSave, onToggleInDeck, onClose }) {
-  const [draft, setDraft] = useState(customSlides);
-  const [editing, setEditing] = useState(null); // null | { ...slide, isNew: bool }
-  const [savedHint, setSavedHint] = useState(null);
+// Helper: titulo default tipo "Slide custom 13 may 21:30"
+function defaultSlideTitle() {
+  const d = new Date();
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `Slide custom ${d.getDate()} ${months[d.getMonth()]} ${hh}:${mm}`;
+}
 
-  // Calcular diff contra el array original recibido por prop
+function AdminPanel({ customSlides, enabledKinds, selected, onSave, onToggleInDeck, onClose }) {
+  const [draft, setDraft] = useState(customSlides);
+  const [editing, setEditing] = useState(null);
+  const [savedHint, setSavedHint] = useState(null);
+  const [drag, setDrag] = useState(false);
+  const fileInputRef = useRef(null);
+
   const originalIds = useMemo(() => new Set((customSlides || []).map(s => s.id)), [customSlides]);
   const newlyCreated = draft.filter(s => !originalIds.has(s.id));
   const newCount = newlyCreated.length;
 
+  // Cálculo de espacio usado por imágenes en LS (estimado)
+  const storageBytes = useMemo(() => {
+    return draft.reduce((sum, s) => sum + (s.imageDataUrl ? s.imageDataUrl.length : 0), 0);
+  }, [draft]);
+  const storageMB = (storageBytes * 0.75 / (1024 * 1024)).toFixed(1);
+
+  // Opciones de posicion: 'start' | 'end' | kind name de un slide del deck
+  const positionOptions = useMemo(() => {
+    const opts = [
+      { value: 'start', label: 'Al inicio (antes de Portada)' }
+    ];
+    (selected || []).filter(s => s.enabled).forEach(s => {
+      if (editing && s.kind === editing.kind) return; // no insertarse después de sí mismo
+      opts.push({
+        value: s.kind,
+        label: 'Después de ' + (SLIDE_LABELS[s.kind] || (customSlides.find(c => c.kind === s.kind)?.title) || s.kind)
+      });
+    });
+    opts.push({ value: 'end', label: 'Al final del deck' });
+    return opts;
+  }, [selected, customSlides, editing]);
+
   const startNew = () => setEditing({
     id: 'custom-' + Date.now(),
     kind: 'custom-' + Date.now(),
-    title: '',
-    eyebrow: '',
-    subtitle: '',
-    body: '',
-    imageUrl: '',
-    layout: 'left-image',
+    mode: 'image',
+    title: defaultSlideTitle(),
+    imageDataUrl: '',
+    segment: 'master',
+    insertAfter: 'end',
     enabled: true,
     createdAt: Date.now(),
     isNew: true,
   });
-  const startEdit = (s) => setEditing({ ...s, isNew: false });
+  const startEdit = (s) => setEditing({
+    ...s,
+    mode: s.mode || (s.imageDataUrl ? 'image' : 'text'),
+    segment: s.segment || 'master',
+    insertAfter: s.insertAfter || 'end',
+    isNew: false
+  });
+
+  const handleFile = (file) => {
+    if (!file) return;
+    if (!/^image\//.test(file.type)) { alert('Sube una imagen (PNG, JPG, JPEG, WEBP).'); return; }
+    const sizeMB = file.size / (1024 * 1024);
+    if (sizeMB > 3) {
+      const ok = confirm(`La imagen pesa ${sizeMB.toFixed(1)} MB. Recomendado < 2 MB para que el cotizador siga ligero. Continuar?`);
+      if (!ok) return;
+    }
+    const fr = new FileReader();
+    fr.onload = (e) => {
+      setEditing(prev => prev ? { ...prev, imageDataUrl: e.target.result, mode: 'image' } : prev);
+    };
+    fr.onerror = () => alert('No se pudo leer la imagen.');
+    fr.readAsDataURL(file);
+  };
+
+  const onDrop = (e) => {
+    e.preventDefault(); setDrag(false);
+    const f = e.dataTransfer.files?.[0]; if (f) handleFile(f);
+  };
+
   const saveEditing = () => {
     if (!editing) return;
-    if (!editing.title.trim()) { alert('El título es requerido'); return; }
+    if (!editing.imageDataUrl && editing.mode === 'image') {
+      alert('Sube una imagen primero.');
+      return;
+    }
     const wasNew = !!editing.isNew;
     const clean = { ...editing };
     delete clean.isNew;
@@ -898,7 +998,7 @@ function AdminPanel({ customSlides, enabledKinds, onSave, onToggleInDeck, onClos
     });
     setEditing(null);
     setSavedHint(wasNew
-      ? 'Slide guardado · se agregará al deck al hacer Guardar y agregar al deck.'
+      ? 'Slide listo · se insertará al deck al hacer Aplicar.'
       : 'Cambios guardados.');
     setTimeout(() => setSavedHint(null), 3500);
   };
@@ -913,14 +1013,21 @@ function AdminPanel({ customSlides, enabledKinds, onSave, onToggleInDeck, onClos
     onClose();
   };
 
+  const positionLabel = (pos) => {
+    if (!pos || pos === 'end') return 'Al final del deck';
+    if (pos === 'start') return 'Al inicio';
+    const opt = positionOptions.find(o => o.value === pos);
+    return opt ? opt.label : 'Posición ' + pos;
+  };
+
   return (
     <div className="picker-overlay" onClick={onClose}>
       <div className="picker-modal admin-modal" onClick={e => e.stopPropagation()}>
         <div className="picker-header">
           <div>
             <div className="picker-eyebrow">Admin · Slides personalizados</div>
-            <h2 className="picker-title">Crea slides extra para tu propuesta</h2>
-            <div className="picker-sub">Los slides personalizados se inyectan al deck igual que los del machote. Puedes activarlos, reordenarlos y editarlos en cualquier momento.</div>
+            <h2 className="picker-title">Sube slides ya diseñados</h2>
+            <div className="picker-sub">Diseña la lámina en Microsoft Designer (u otra herramienta), súbela aquí como PNG/JPG y elige dónde insertarla en el deck.</div>
           </div>
           <button className="picker-close" onClick={onClose} aria-label="Cerrar">×</button>
         </div>
@@ -929,19 +1036,23 @@ function AdminPanel({ customSlides, enabledKinds, onSave, onToggleInDeck, onClos
           <div className="admin-list">
             <div className="admin-list-head">
               <span>Slides existentes ({draft.length})</span>
-              <button className="btn-primary" onClick={startNew}>+ Nuevo slide</button>
+              <button className="btn-primary" onClick={startNew}>+ Subir slide</button>
             </div>
             {draft.length === 0 ? (
-              <div className="admin-empty">Aún no tienes slides personalizados. Click en "+ Nuevo slide" para crear el primero.</div>
+              <div className="admin-empty">Aún no tienes slides personalizados. Click en "+ Subir slide" para crear el primero.</div>
             ) : draft.map(s => {
               const isNewSlide = !originalIds.has(s.id);
               const isInDeck = enabledKinds && enabledKinds.has(s.kind);
+              const segColor = SEG_COLOR[s.segment || 'master'] || SEG_COLOR.master;
+              const segShort = SEG_SHORT[s.segment || 'master'] || 'Master';
               return (
                 <div key={s.id} className={"admin-row" + (editing?.id === s.id ? ' is-editing' : '')}>
                   <div className="admin-row-thumb" onClick={() => startEdit(s)}>
-                    {s.imageUrl
-                      ? <img src={s.imageUrl} alt={s.title} />
-                      : <div className="admin-row-thumb-empty">{(s.title || 'S')[0]}</div>}
+                    {s.imageDataUrl
+                      ? <img src={s.imageDataUrl} alt={s.title} />
+                      : s.imageUrl
+                        ? <img src={s.imageUrl} alt={s.title} />
+                        : <div className="admin-row-thumb-empty">{(s.title || 'S')[0]}</div>}
                   </div>
                   <div className="admin-row-info" onClick={() => startEdit(s)}>
                     <div className="admin-row-title">
@@ -949,7 +1060,8 @@ function AdminPanel({ customSlides, enabledKinds, onSave, onToggleInDeck, onClos
                       {isNewSlide && <span className="admin-row-newbadge">Nuevo</span>}
                     </div>
                     <div className="admin-row-meta">
-                      {s.layout} · {isInDeck ? <span className="admin-row-active">activo en deck</span> : 'no incluido'}
+                      <span className="admin-row-segdot" style={{ background: segColor }} />
+                      {segShort} · {positionLabel(s.insertAfter)} · {isInDeck ? <span className="admin-row-active">activo en deck</span> : 'no incluido'}
                     </div>
                   </div>
                   <div className="admin-row-actions">
@@ -974,42 +1086,74 @@ function AdminPanel({ customSlides, enabledKinds, onSave, onToggleInDeck, onClos
           {editing && (
             <div className="admin-form">
               <div className="admin-form-head">
-                <div className="picker-eyebrow">{editing.isNew ? 'Nuevo slide' : 'Editar slide'}</div>
+                <div className="picker-eyebrow">{editing.isNew ? 'Subir nuevo slide' : 'Editar slide'}</div>
                 <h3>{editing.title || '(sin título)'}</h3>
               </div>
+
+              {/* Drop zone + file input */}
               <div className="admin-field">
-                <label>Título <span className="admin-req">*</span></label>
-                <input value={editing.title} onChange={e => setEditing({...editing, title: e.target.value})} placeholder="Casos de éxito" />
+                <label>Imagen del slide <span className="admin-req">*</span></label>
+                <div
+                  className={"admin-drop" + (drag ? ' is-drag' : '') + (editing.imageDataUrl ? ' has-image' : '')}
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+                  onDragLeave={() => setDrag(false)}
+                  onDrop={onDrop}
+                >
+                  {editing.imageDataUrl
+                    ? <img src={editing.imageDataUrl} alt="preview" />
+                    : (
+                      <div className="admin-drop-empty">
+                        <div className="admin-drop-icon">⬆</div>
+                        <div>Arrastra o haz click para subir<br/><span>PNG · JPG · JPEG · WEBP</span></div>
+                      </div>
+                    )}
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,image/webp"
+                  style={{ display: 'none' }}
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }}
+                />
+                {editing.imageDataUrl && (
+                  <button type="button" className="admin-replace-btn" onClick={() => fileInputRef.current?.click()}>
+                    Reemplazar imagen
+                  </button>
+                )}
               </div>
+
               <div className="admin-field">
-                <label>Eyebrow (texto pequeño arriba)</label>
-                <input value={editing.eyebrow} onChange={e => setEditing({...editing, eyebrow: e.target.value})} placeholder="Resultados" />
+                <label>Nombre interno (solo para identificarlo)</label>
+                <input value={editing.title} onChange={e => setEditing({...editing, title: e.target.value})} placeholder={defaultSlideTitle()} />
               </div>
+
               <div className="admin-field">
-                <label>Subtítulo</label>
-                <input value={editing.subtitle} onChange={e => setEditing({...editing, subtitle: e.target.value})} placeholder="Lo que dicen nuestros clientes" />
-              </div>
-              <div className="admin-field">
-                <label>Cuerpo (saltos de línea = párrafos)</label>
-                <textarea rows={6} value={editing.body} onChange={e => setEditing({...editing, body: e.target.value})} placeholder={'Párrafo 1...\nPárrafo 2...'} />
-              </div>
-              <div className="admin-field">
-                <label>Imagen URL</label>
-                <input value={editing.imageUrl} onChange={e => setEditing({...editing, imageUrl: e.target.value})} placeholder="https://..." />
-              </div>
-              <div className="admin-field">
-                <label>Layout</label>
-                <select value={editing.layout} onChange={e => setEditing({...editing, layout: e.target.value})}>
-                  <option value="left-image">Foto izquierda + texto derecha</option>
-                  <option value="right-image">Texto izquierda + foto derecha</option>
-                  <option value="full-bleed">Foto a sangre + texto encima</option>
-                  <option value="text-only">Solo texto (centrado)</option>
+                <label>Categoría / segmento</label>
+                <select value={editing.segment} onChange={e => setEditing({...editing, segment: e.target.value})}>
+                  <option value="longtail">Long Tail (1-2 difusores)</option>
+                  <option value="core">Core (3-9 difusores)</option>
+                  <option value="key">Key (10-49 difusores)</option>
+                  <option value="enterprise">Enterprise (50+ difusores)</option>
+                  <option value="master">Master</option>
                 </select>
               </div>
+
+              <div className="admin-field">
+                <label>Posición en el deck</label>
+                <select value={editing.insertAfter} onChange={e => setEditing({...editing, insertAfter: e.target.value})}>
+                  {positionOptions.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+
               <div className="admin-form-actions">
                 <button className="btn-secondary" onClick={() => setEditing(null)}>Cancelar</button>
                 {!editing.isNew && <button className="admin-row-del-btn" onClick={() => deleteSlide(editing.id)}>Eliminar</button>}
-                <button className="btn-primary" onClick={saveEditing}>Guardar slide</button>
+                <button className="btn-primary" onClick={saveEditing}>
+                  {editing.isNew ? 'Subir y agregar al deck' : 'Guardar cambios'}
+                </button>
               </div>
             </div>
           )}
@@ -1019,13 +1163,13 @@ function AdminPanel({ customSlides, enabledKinds, onSave, onToggleInDeck, onClos
           <span className="picker-footer-info">
             {newCount > 0
               ? <><strong>{newCount}</strong> {newCount === 1 ? 'slide nuevo' : 'slides nuevos'} se agregará{newCount > 1 ? 'n' : ''} al deck al aplicar.</>
-              : 'Los slides personalizados se persisten en tu navegador.'}
+              : <>Espacio usado por slides custom: <strong>{storageMB} MB</strong></>}
           </span>
           <div className="picker-footer-btns">
             <button className="btn-secondary" onClick={onClose}>Cancelar</button>
             <button className="btn-download" onClick={apply}>
               {newCount > 0
-                ? (newCount === 1 ? 'Guardar y agregar al deck' : `Guardar y agregar ${newCount} al deck`)
+                ? (newCount === 1 ? 'Aplicar (+1 slide al deck)' : `Aplicar (+${newCount} slides al deck)`)
                 : 'Aplicar cambios'}
             </button>
           </div>

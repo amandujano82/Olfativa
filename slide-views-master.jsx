@@ -1866,11 +1866,36 @@ function SlideScentAnalysis({ segment, clientName, idx, totalSlides, propId, pro
 }
 
 // ============================================================
-// CustomSlide — slide creado desde Admin (4 layouts)
-//   layout: 'left-image' | 'right-image' | 'full-bleed' | 'text-only'
+// CustomSlide — slide creado desde Admin
+//   mode 'image' (default nuevo): imagen subida en Designer u otra
+//                                 herramienta, render full-bleed
+//                                 con object-fit:contain sobre ink.
+//   mode 'text'  (legacy): layouts text-based (4 variantes).
 // ============================================================
 function CustomSlide({ segment, clientName, idx, totalSlides, propId, propDate, slide }) {
   const s = slide || {};
+  const mode = s.mode || (s.imageDataUrl ? 'image' : 'text');
+
+  // Modo IMAGEN: ocupa todo el slide, sin chrome
+  if (mode === 'image' && s.imageDataUrl) {
+    return (
+      <SlideFrame>
+        <img
+          src={s.imageDataUrl}
+          alt={s.title || 'Slide personalizado'}
+          style={{
+            position: 'absolute', inset: 0,
+            width: '100%', height: '100%',
+            objectFit: 'contain',
+            backgroundColor: PALETTE.ink,
+            display: 'block'
+          }}
+        />
+      </SlideFrame>
+    );
+  }
+
+  // Modo TEXT (legacy)
   const layout = s.layout || 'text-only';
   const eyebrow = s.eyebrow || (segment && segment.name) || '';
   const title = s.title || '';
