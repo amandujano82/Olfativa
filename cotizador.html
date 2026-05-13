@@ -1251,6 +1251,63 @@
     animation: olfToastIn 0.3s ease-out;
   }
 
+  /* Dot de segmento en la meta linea del row */
+  .admin-row-segdot {
+    display: inline-block;
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* Drop zone para subir imagen del slide */
+  .admin-drop {
+    border: 2px dashed rgba(201,168,76,0.4);
+    background: rgba(201,168,76,0.04);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 160ms;
+    min-height: 160px;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    aspect-ratio: 16 / 9;
+  }
+  .admin-drop:hover, .admin-drop.is-drag {
+    background: rgba(201,168,76,0.12);
+    border-color: #C9A84C;
+  }
+  .admin-drop.has-image {
+    background: #111;
+    padding: 6px;
+  }
+  .admin-drop img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+  .admin-drop-empty {
+    text-align: center;
+    color: rgba(243,237,227,0.6);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .admin-drop-empty span { color: rgba(243,237,227,0.4); font-size: 11px; }
+  .admin-drop-icon {
+    font-size: 28px; color: #C9A84C;
+    margin-bottom: 8px;
+  }
+  .admin-replace-btn {
+    appearance: none; cursor: pointer; font-family: inherit;
+    background: transparent;
+    color: rgba(201,168,76,0.85);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-size: 11px; letter-spacing: 0.04em;
+    margin-top: 6px;
+    align-self: flex-start;
+  }
+  .admin-replace-btn:hover { background: rgba(201,168,76,0.12); color: #F5F0E8; }
+
   /* — Boton Enviar por WhatsApp (verde brand) — */
   .siq-whatsapp { background: #25d366 !important; color: #FFF !important; border-color: #25d366 !important; }
   .siq-whatsapp:hover { background: #1ebd5c !important; border-color: #1ebd5c !important; }
@@ -1830,16 +1887,16 @@
 <script src="https://unpkg.com/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
 <!-- html2canvas standalone para captura PNG del PhotoEvidenceCard (compartir WhatsApp) -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="deck-stage.js?v=20260513r"></script>
-<script src="scent-iq-knowledge.js?v=20260513r"></script>
-<script src="scent-iq-engines.js?v=20260513r"></script>
-<script type="text/babel" src="tweaks-panel.jsx?v=20260513r"></script>
-<script type="text/babel" src="slides-master.jsx?v=20260513r"></script>
-<script type="text/babel" src="slide-views-master.jsx?v=20260513r"></script>
-<script type="text/babel" src="hero-difusor.jsx?v=20260513r"></script>
-<script type="text/babel" src="catalog-min.jsx?v=20260513r"></script>
-<script type="text/babel" src="control-olores.jsx?v=20260513r"></script>
-<script type="text/babel" src="scent-iq-panel.jsx?v=20260513r"></script>
-<script type="text/babel" src="app-cotizador.jsx?v=20260513r"></script>
+<script src="deck-stage.js?v=20260513s"></script>
+<script src="scent-iq-knowledge.js?v=20260513s"></script>
+<script src="scent-iq-engines.js?v=20260513s"></script>
+<script type="text/babel" src="tweaks-panel.jsx?v=20260513s"></script>
+<script type="text/babel" src="slides-master.jsx?v=20260513s"></script>
+<script type="text/babel" src="slide-views-master.jsx?v=20260513s"></script>
+<script type="text/babel" src="hero-difusor.jsx?v=20260513s"></script>
+<script type="text/babel" src="catalog-min.jsx?v=20260513s"></script>
+<script type="text/babel" src="control-olores.jsx?v=20260513s"></script>
+<script type="text/babel" src="scent-iq-panel.jsx?v=20260513s"></script>
+<script type="text/babel" src="app-cotizador.jsx?v=20260513s"></script>
 </body>
 </html>
