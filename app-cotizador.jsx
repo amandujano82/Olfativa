@@ -303,6 +303,13 @@ function App() {
   const [scentIQOpen, setScentIQOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
   const [scentToast, setScentToast] = useState(null);
+  // Coach mark del primer ingreso · LS: olfativa.coachSeen
+  const [coachOpen, setCoachOpen] = useState(() => {
+    try { return localStorage.getItem('olfativa.coachSeen') !== '1'; }
+    catch { return true; }
+  });
+  // Soft tip cuando el ejecutivo se salta un paso (siempre permite continuar)
+  const [softTip, setSoftTip] = useState(null);
   const [customSlides, setCustomSlides] = useState(() => loadCustomSlides());
   useEffect(() => { saveCustomSlides(customSlides); window.OLF_CUSTOM_SLIDES = customSlides; }, [customSlides]);
   // Datos del último análisis Scent Advisor aplicado a esta cotización.
@@ -481,6 +488,9 @@ function App() {
     });
     setScentData(null);
     setCustomSlides([]);
+    // Reset también re-arma el coach mark de bienvenida.
+    setCoachOpen(true);
+    setSoftTip(null);
     // UX feedback
     try {
       window.dispatchEvent(new CustomEvent('olfativa:scent-applied', {
@@ -488,6 +498,38 @@ function App() {
       }));
     } catch (_) {}
     try { window.scrollTo(0, 0); } catch (_) {}
+  };
+
+  // ── Soft guides · si saltas un paso, mostramos un tip (no bloquea) ──
+  const dismissCoach = () => {
+    setCoachOpen(false);
+    try { localStorage.setItem('olfativa.coachSeen', '1'); } catch (_) {}
+  };
+  const isClientUnset = !client.clientName || client.clientName.trim() === '' || client.clientName.trim() === CLIENT_DEFAULTS.clientName;
+  const hasAnyPriceLine = (prices?.lines || []).some(l => Number(l.cant) > 0 && l.difusor);
+  const openScentIQGuarded = () => {
+    if (isClientUnset) {
+      setSoftTip({
+        eyebrow: 'Tip de flujo',
+        body: 'Configura primero el cliente para que la propuesta tenga su nombre. Puedes seguir y editarlo después.',
+        primary: { label: 'Configurar cliente', onClick: () => { setSoftTip(null); setClientOpen(true); } },
+        ghost:   { label: 'Continuar al Scent Advisor', onClick: () => { setSoftTip(null); setScentIQOpen(true); } },
+      });
+      return;
+    }
+    setScentIQOpen(true);
+  };
+  const openDownloadGuarded = () => {
+    if (!hasAnyPriceLine) {
+      setSoftTip({
+        eyebrow: 'Antes de descargar',
+        body: 'Aún no hay líneas de precios cargadas. La cotización saldrá sin el slide de inversión.',
+        primary: { label: 'Definir precios', onClick: () => { setSoftTip(null); setPricesOpen(true); } },
+        ghost:   { label: 'Continuar a descarga', onClick: () => { setSoftTip(null); setDownloadOpen(true); } },
+      });
+      return;
+    }
+    setDownloadOpen(true);
   };
 
   return (
@@ -499,11 +541,33 @@ function App() {
         onOpenPicker={() => setPickerOpen(true)}
         onOpenClient={() => setClientOpen(true)}
         onOpenPrices={() => setPricesOpen(true)}
-        onOpenScentIQ={() => setScentIQOpen(true)}
+        onOpenScentIQ={openScentIQGuarded}
         onOpenAdmin={() => setAdminOpen(true)}
-        onDownload={() => setDownloadOpen(true)}
+        onDownload={openDownloadGuarded}
         onReset={reset}
       />
+
+      {coachOpen && (
+        <div className="coach-mark" role="status">
+          <span className="coach-dot" aria-hidden="true" />
+          <span>Empieza por <span className="coach-step">Cliente</span><span className="coach-sep">·</span>luego <span className="coach-step">Scent Advisor</span><span className="coach-sep">·</span>después <span className="coach-step">Precios</span></span>
+          <button className="coach-close" onClick={dismissCoach} aria-label="Cerrar guía">×</button>
+        </div>
+      )}
+
+      {softTip && (
+        <div className="soft-tip" role="dialog" aria-live="polite">
+          <div className="soft-tip-body">
+            <div className="soft-tip-eyebrow">{softTip.eyebrow}</div>
+            <div>{softTip.body}</div>
+            <div className="soft-tip-actions">
+              <button className="soft-tip-primary" onClick={softTip.primary.onClick}>{softTip.primary.label}</button>
+              <button className="soft-tip-ghost" onClick={softTip.ghost.onClick}>{softTip.ghost.label}</button>
+            </div>
+          </div>
+          <button className="soft-tip-close" onClick={() => setSoftTip(null)} aria-label="Cerrar tip">×</button>
+        </div>
+      )}
 
       <div className="deck-area">
         <deck-stage>
@@ -793,25 +857,26 @@ function TopBar({ total, totalAvailable, client, onOpenPicker, onOpenClient, onO
       </div>
 
       <div className="topbar-right">
-        <button className="btn-secondary btn-edit" onClick={onOpenClient} title="Editar nombre del cliente, ID, fecha y ejecutivo">
-          <span className="btn-icon">✎</span> Cliente
+        <button className="btn-secondary" onClick={onOpenClient} title="Editar nombre del cliente, ID, fecha y ejecutivo">
+          Cliente
         </button>
-        <button className="btn-secondary btn-edit" onClick={onOpenPrices} title="Calcular precios y generar slide de cotización">
-          <span className="btn-icon">$</span> Precios
+        <button className="btn-secondary" onClick={onOpenScentIQ} title="Análisis olfativo por foto del espacio (Scent Advisor)">
+          Scent Advisor
         </button>
-        <button className="btn-secondary btn-edit" onClick={onOpenScentIQ} title="Análisis olfativo por foto del espacio (Scent Advisor)">
-          <span className="btn-icon">⌖</span> Scent Advisor
+        <button className="btn-secondary" onClick={onOpenPrices} title="Calcular precios y generar slide de cotización">
+          Precios
         </button>
-        <button className="btn-secondary btn-edit" onClick={onOpenAdmin} title="Admin · slides personalizados">
-          <span className="btn-icon">⚙</span> Admin
+        <button className="btn-secondary" onClick={onOpenAdmin} title="Admin · slides personalizados">
+          Admin
         </button>
         <button className="btn-primary" onClick={onOpenPicker}>
           <span className="btn-icon">▦</span>
           Láminas <span className="btn-counter">{total} / {totalAvailable}</span>
         </button>
         <button className="btn-download" onClick={onDownload} title="Revisar resumen y descargar la cotización">
-          <span className="btn-icon">↓</span> Descargar cotización
+          <span className="btn-icon">↓</span> Descargar
         </button>
+        <span className="topbar-reset-divider" aria-hidden="true" />
         <button className="btn-tertiary" onClick={onReset} title="Reset total · cliente, deck, precios y Scent Advisor">
           ↻
         </button>
@@ -1458,7 +1523,7 @@ function SlidePicker({ selected, client, prices, triageSegment, customSlides = [
                     <div className="picker-kind-title-row">
                       <h3 className="picker-kind-title">{labelFor(kind, customSlides)}</h3>
                       {isEnabled
-                        ? <span className="picker-kind-status on">Incluida en la cotización</span>
+                        ? <span className="picker-kind-status on">Activa</span>
                         : <span className="picker-kind-status off">No incluida</span>}
                     </div>
                     <div className="picker-kind-desc">{descFor(kind, customSlides)}</div>
