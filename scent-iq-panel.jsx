@@ -52,7 +52,7 @@
   // helpers
   // ----------------------------------------------------------
   function readDemo() {
-    return fetch('scent-iq-demo.json?v=20260514d').then(r => r.ok ? r.json() : null).catch(() => null);
+    return fetch('scent-iq-demo.json?v=20260514e').then(r => r.ok ? r.json() : null).catch(() => null);
   }
 
   function copyToClipboard(text) {
@@ -205,6 +205,10 @@
   // ImageUploader
   // ----------------------------------------------------------
   function ImageUploader({ previewURL, onFile, onUseDemo, onAnalyzeWithoutPhoto, disabled, spaceType, onSpaceType }) {
+    // Adapter activo en runtime · refleja la selección guardada en Admin.
+    // Si el usuario cambia de adapter sin recargar, el bootstrap script
+    // de cotizador.html ya actualiza W.OLF_IA.visionAdapter al guardar.
+    const currentAdapter = (W.OLF_IA && W.OLF_IA.visionAdapter) || 'mock';
     const inputRef = useRef(null);
     const [drag, setDrag] = useState(false);
     const ready = !!spaceType;
@@ -283,7 +287,7 @@
             ▶ Usar análisis demo
           </button>
           <span className="siq-uploader-note">
-            Adapter actual: <b>mock</b> · el giro elegido fija el perfil del catálogo; el override manual del especialista vive en la siguiente pantalla.
+            Adapter actual: <b>{currentAdapter}</b> · el giro elegido fija el perfil del catálogo; el override manual del especialista vive en la siguiente pantalla.
           </span>
         </div>
       </div>
