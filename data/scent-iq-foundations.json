@@ -1,8 +1,8 @@
 {
   "meta": {
-    "version": "1.1.0",
+    "version": "1.2.0",
     "fecha": "2026-05-14",
-    "autor": "Olfativa · ronda 6 foundations cientificas · marco 5 sentidos",
+    "autor": "Olfativa · ronda 6 foundations cientificas · marco 5 sentidos · adenda 3 (gusto bebida + oido volumen y playlist)",
     "nota": "Reglas operativas para seedFromFoundations(). Cada aroma se evalua contra todas las reglas; las que matchean acumulan campos tipo_a (escalares: last-wins, listas: union deduplicada). Niveles de confianza: alta = consenso en literatura aromacologica, media = inferencia razonable apoyada en perfil quimico o practica de diseno, baja = default operativo sin base solida, override esperable de Tony.",
     "fuentes": [
       "Hirsch A.R. · Aroma marketing y respuesta emocional al olor",
@@ -19,8 +19,8 @@
       "olfato": ["intensidad_sugerida", "persistencia", "temperatura_emocional", "energia"],
       "vista": ["familia_visual_compatible", "paleta_cromatica_sugerida", "tipo_luz_compatible", "intensidad_luminica"],
       "tacto": ["texturas_compatibles", "peso_visual_mobiliario", "densidad_textil"],
-      "oido": ["generos_musicales_compatibles", "bpm_sugerido", "instrumentacion_predominante", "ambiente_sonoro"],
-      "gusto": ["tipos_cocina_compatibles", "sabores_predominantes_compatibles", "momento_consumo", "maridaje_conceptual"],
+      "oido": ["generos_musicales_compatibles", "nivel_volumen_exacto", "instrumentacion_predominante", "ambiente_sonoro", "playlist_sugerida"],
+      "gusto": ["tipos_cocina_compatibles", "sabores_predominantes_compatibles", "tipos_bebida_compatibles", "momento_consumo", "maridaje_conceptual"],
       "general": ["contextos_recomendados", "contextos_a_evitar", "tipo_cliente_ideal", "nivel_lujo_sugerido"]
     },
     "vocabularios_controlados": {
@@ -30,12 +30,14 @@
       "texturas_compatibles": ["lino_algodon", "vidrio_metal_pulido", "madera_natural", "boucle_lana", "terciopelo_seda", "cuero", "marmol", "latones", "ratan_yute", "cemento_pulido"],
       "peso_visual_mobiliario": ["ligero", "medio", "opulento"],
       "densidad_textil": ["etereo", "ligero", "medio", "denso", "opulento"],
-      "generos_musicales_compatibles": ["ambient_spa", "jazz_lounge", "bossa", "soul_rnb", "house_pop", "electronico_melodico", "clasico", "world", "acustico_indie", "opera", "lounge_oriental"],
-      "bpm_sugerido": ["50-70", "70-95", "95-115", "115-130"],
+      "generos_musicales_compatibles": ["ambient_spa", "jazz_lounge", "jazz_clasico", "jazz_contemporaneo", "bossa", "bossa_nova_moderna", "soul_rnb", "soul_clasico", "neo_soul", "house_pop", "house_tropical", "electronico_melodico", "clasico", "classical_crossover", "world", "lounge_oriental", "french_lounge", "trip_hop", "acustico_indie", "indie_pop", "indie_pop_etereo", "folk_acustico", "lo_fi_chill", "reggae_chill", "classic_rock_suave", "pop_acustico_comercial", "pop_comercial_femenino", "pop_comercial_mid_tempo", "pop_sofisticado_comercial", "pop_indie_comercial", "pop_rock_comercial", "pop_latino_comercial", "latin_pop_comercial", "opera"],
+      "nivel_volumen_escala": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+      "playlist_etiqueta": ["core", "soporte", "comercial"],
       "instrumentacion_predominante": ["cuerdas", "piano", "electronica", "voz", "mixto"],
       "ambiente_sonoro": ["silencio_natural", "murmullo_humano", "musica_protagonista"],
       "tipos_cocina_compatibles": ["mediterranea", "asiatica_oriental", "mexicana_contemporanea", "internacional_lujo", "comfort_food", "sushi_omakase", "parrilla_steakhouse", "pasteleria_cafeteria", "vegetariana_saludable", "fine_dining_creativo"],
       "sabores_predominantes_compatibles": ["dulce", "salado", "umami", "acido_citrico", "amargo", "picante"],
+      "tipos_bebida_compatibles": ["cocteleria_clasica", "cocteleria_de_autor", "mocktails", "vinos_tintos", "vinos_blancos", "vinos_espumosos", "destilados_premium", "cafe_especialidad", "te_e_infusiones", "refrescos_y_jugos", "cerveza_artesanal"],
       "momento_consumo": ["desayuno", "brunch", "almuerzo", "merienda", "cena", "coctel_post_cena"],
       "energia": ["calmante", "neutra", "estimulante", "euforizante"],
       "temperatura_emocional": ["frio", "fresco", "templado", "calido", "caliente"],
@@ -91,9 +93,14 @@
         "peso_visual_mobiliario": "ligero",
         "densidad_textil": "ligero",
         "generos_musicales_compatibles": ["bossa", "acustico_indie", "jazz_lounge", "house_pop"],
-        "bpm_sugerido": "95-115",
+        "nivel_volumen_exacto": { "escala": 6, "rango_db_sugerido": "55-65 dB" },
         "instrumentacion_predominante": "mixto",
         "ambiente_sonoro": "musica_protagonista",
+        "playlist_sugerida": [
+          { "genero": "house_tropical", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "bossa_nova_moderna", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "latin_pop_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Shakira / Bad Bunny (lado luminoso)" }
+        ],
         "tipo_cliente_ideal": ["retail diurno", "oficinas creativas", "wellness activo", "hospitality casual", "cafeteria", "gastronomico ligero"]
       },
       "recomendado_en": ["oficina", "retail diurno", "lobby matutino", "co-working", "cafeteria"],
@@ -108,6 +115,7 @@
       "entonces": {
         "tipos_cocina_compatibles": ["mediterranea", "sushi_omakase", "vegetariana_saludable", "fine_dining_creativo", "pasteleria_cafeteria"],
         "sabores_predominantes_compatibles": ["acido_citrico", "dulce", "salado"],
+        "tipos_bebida_compatibles": ["mocktails", "refrescos_y_jugos", "cocteleria_de_autor", "vinos_espumosos"],
         "momento_consumo": "almuerzo",
         "maridaje_conceptual": "Citricos aligeran sushi y pescados, refuerzan postres frescos (limon, yuzu, naranja), funcionan en cocina mediterranea soleada y brunch luminoso."
       },
@@ -132,9 +140,14 @@
         "peso_visual_mobiliario": "medio",
         "densidad_textil": "denso",
         "generos_musicales_compatibles": ["clasico", "jazz_lounge", "opera", "soul_rnb"],
-        "bpm_sugerido": "70-95",
+        "nivel_volumen_exacto": { "escala": 4, "rango_db_sugerido": "45-55 dB" },
         "instrumentacion_predominante": "cuerdas",
         "ambiente_sonoro": "murmullo_humano",
+        "playlist_sugerida": [
+          { "genero": "indie_pop_etereo", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "classical_crossover", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_comercial_femenino", "etiqueta": "comercial", "ejemplo_artista_o_track": "Taylor Swift (folklore) / Billie Eilish (suave)" }
+        ],
         "tipo_cliente_ideal": ["hotelería premium", "boutique femenino", "salones evento", "spa de noche"]
       },
       "recomendado_en": ["lobby hotel", "boutique femenina", "salon eventos", "suite presidencial"],
@@ -160,9 +173,14 @@
         "peso_visual_mobiliario": "ligero",
         "densidad_textil": "ligero",
         "generos_musicales_compatibles": ["clasico", "ambient_spa", "acustico_indie"],
-        "bpm_sugerido": "70-95",
+        "nivel_volumen_exacto": { "escala": 3, "rango_db_sugerido": "40-50 dB" },
         "instrumentacion_predominante": "piano",
         "ambiente_sonoro": "silencio_natural",
+        "playlist_sugerida": [
+          { "genero": "indie_pop_etereo", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "ambient_spa", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_comercial_femenino", "etiqueta": "comercial", "ejemplo_artista_o_track": "Taylor Swift baladas / Sara Bareilles" }
+        ],
         "tipo_cliente_ideal": ["residencial femenino", "spa premium", "boutique floral"]
       },
       "recomendado_en": ["dormitorio principal", "spa", "salon de te", "consultorio bienestar"],
@@ -187,10 +205,15 @@
         "texturas_compatibles": ["madera_natural", "boucle_lana", "cuero", "marmol"],
         "peso_visual_mobiliario": "medio",
         "densidad_textil": "medio",
-        "generos_musicales_compatibles": ["jazz_lounge", "clasico", "ambient_spa", "electronico_melodico"],
-        "bpm_sugerido": "70-95",
+        "generos_musicales_compatibles": ["jazz_contemporaneo", "jazz_lounge", "clasico", "ambient_spa", "electronico_melodico"],
+        "nivel_volumen_exacto": { "escala": 4, "rango_db_sugerido": "45-55 dB" },
         "instrumentacion_predominante": "cuerdas",
         "ambiente_sonoro": "murmullo_humano",
+        "playlist_sugerida": [
+          { "genero": "jazz_contemporaneo", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "classic_rock_suave", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_rock_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Coldplay / John Mayer" }
+        ],
         "tipo_cliente_ideal": ["oficina ejecutiva", "lobby premium", "showroom adulto", "estudio creativo"]
       },
       "recomendado_en": ["oficina ejecutiva", "lobby premium", "biblioteca", "showroom adulto"],
@@ -205,6 +228,7 @@
       "entonces": {
         "tipos_cocina_compatibles": ["parrilla_steakhouse", "internacional_lujo", "fine_dining_creativo"],
         "sabores_predominantes_compatibles": ["umami", "salado"],
+        "tipos_bebida_compatibles": ["destilados_premium", "vinos_tintos", "cafe_especialidad"],
         "momento_consumo": "cena",
         "maridaje_conceptual": "Maderas secas (cedro, sandalo) refuerzan humo y carne madurada en steakhouse y carbon. Cardamomo con cedro funciona en cocina con especiado contenido."
       },
@@ -228,10 +252,15 @@
         "texturas_compatibles": ["terciopelo_seda", "cuero", "cemento_pulido"],
         "peso_visual_mobiliario": "opulento",
         "densidad_textil": "denso",
-        "generos_musicales_compatibles": ["electronico_melodico", "lounge_oriental", "jazz_lounge"],
-        "bpm_sugerido": "95-115",
+        "generos_musicales_compatibles": ["electronico_melodico", "lounge_oriental", "trip_hop", "jazz_lounge"],
+        "nivel_volumen_exacto": { "escala": 5, "rango_db_sugerido": "50-60 dB" },
         "instrumentacion_predominante": "electronica",
         "ambiente_sonoro": "musica_protagonista",
+        "playlist_sugerida": [
+          { "genero": "electronico_melodico", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "trip_hop", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_sofisticado_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "The Weeknd / Dua Lipa (Future Nostalgia)" }
+        ],
         "tipo_cliente_ideal": ["bar tematico", "estudio adulto", "boutique nicho"]
       },
       "recomendado_en": ["bar lounge", "concept store", "estudio fotografico"],
@@ -256,10 +285,15 @@
         "texturas_compatibles": ["terciopelo_seda", "latones", "marmol", "cuero"],
         "peso_visual_mobiliario": "opulento",
         "densidad_textil": "opulento",
-        "generos_musicales_compatibles": ["lounge_oriental", "world", "electronico_melodico", "soul_rnb"],
-        "bpm_sugerido": "95-115",
+        "generos_musicales_compatibles": ["jazz_lounge", "neo_soul", "lounge_oriental", "world", "electronico_melodico", "soul_rnb"],
+        "nivel_volumen_exacto": { "escala": 3, "rango_db_sugerido": "40-50 dB" },
         "instrumentacion_predominante": "mixto",
-        "ambiente_sonoro": "musica_protagonista",
+        "ambiente_sonoro": "murmullo_humano",
+        "playlist_sugerida": [
+          { "genero": "jazz_lounge", "etiqueta": "core", "ejemplo_artista_o_track": "Norah Jones / Diana Krall" },
+          { "genero": "neo_soul", "etiqueta": "soporte", "ejemplo_artista_o_track": "Sade / Anderson .Paak" },
+          { "genero": "pop_acustico_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Ed Sheeran (acústico) / Adele (baladas)" }
+        ],
         "tipo_cliente_ideal": ["bar luxury", "boutique evening", "social club", "suite presidencial", "gastronomico fusion"]
       },
       "recomendado_en": ["bar nocturno", "salon social", "suite hotel", "boutique evening"],
@@ -274,6 +308,7 @@
       "entonces": {
         "tipos_cocina_compatibles": ["mexicana_contemporanea", "internacional_lujo", "asiatica_oriental", "fine_dining_creativo"],
         "sabores_predominantes_compatibles": ["dulce", "picante", "umami"],
+        "tipos_bebida_compatibles": ["destilados_premium", "vinos_tintos", "cafe_especialidad"],
         "momento_consumo": "cena",
         "maridaje_conceptual": "Orientales especiados (cardamomo, canela, azafran) funcionan en fusion arabe-mexicana, mole, curry y postres con especia. Coctel post cena con maderas dulces."
       },
@@ -297,10 +332,15 @@
         "texturas_compatibles": ["boucle_lana", "terciopelo_seda", "madera_natural"],
         "peso_visual_mobiliario": "medio",
         "densidad_textil": "denso",
-        "generos_musicales_compatibles": ["soul_rnb", "jazz_lounge", "acustico_indie"],
-        "bpm_sugerido": "70-95",
+        "generos_musicales_compatibles": ["jazz_clasico", "soul_clasico", "soul_rnb", "jazz_lounge", "acustico_indie"],
+        "nivel_volumen_exacto": { "escala": 5, "rango_db_sugerido": "50-60 dB" },
         "instrumentacion_predominante": "voz",
         "ambiente_sonoro": "murmullo_humano",
+        "playlist_sugerida": [
+          { "genero": "jazz_clasico", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "soul_clasico", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_comercial_mid_tempo", "etiqueta": "comercial", "ejemplo_artista_o_track": "Bruno Mars / Dua Lipa (baladas)" }
+        ],
         "tipo_cliente_ideal": ["pasteleria premium", "boutique kids/femenino", "hotel familiar", "lobby cozy", "gastronomico dulce"]
       },
       "recomendado_en": ["pasteleria", "lobby invierno", "tienda regalos", "salon te"],
@@ -315,6 +355,7 @@
       "entonces": {
         "tipos_cocina_compatibles": ["pasteleria_cafeteria", "comfort_food", "internacional_lujo"],
         "sabores_predominantes_compatibles": ["dulce"],
+        "tipos_bebida_compatibles": ["cafe_especialidad", "cocteleria_clasica", "destilados_premium"],
         "momento_consumo": "merienda",
         "maridaje_conceptual": "Gourmand acoge bien postres, reposteria, brunch dulce, chocolateria. Vainilla y caramelo amplifican lectura de confort comestible."
       },
@@ -338,10 +379,15 @@
         "texturas_compatibles": ["lino_algodon", "vidrio_metal_pulido", "ratan_yute"],
         "peso_visual_mobiliario": "ligero",
         "densidad_textil": "etereo",
-        "generos_musicales_compatibles": ["ambient_spa", "house_pop", "electronico_melodico"],
-        "bpm_sugerido": "95-115",
+        "generos_musicales_compatibles": ["ambient_spa", "house_tropical", "house_pop", "electronico_melodico"],
+        "nivel_volumen_exacto": { "escala": 5, "rango_db_sugerido": "50-60 dB" },
         "instrumentacion_predominante": "electronica",
         "ambiente_sonoro": "silencio_natural",
+        "playlist_sugerida": [
+          { "genero": "ambient_spa", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "house_tropical", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_latino_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Carlos Vives / pop tropical luminoso" }
+        ],
         "tipo_cliente_ideal": ["hotel costero", "spa marino", "gimnasio premium", "retail playa"]
       },
       "recomendado_en": ["hotel costero", "spa marino", "lobby playa", "gym premium"],
@@ -366,10 +412,15 @@
         "texturas_compatibles": ["lino_algodon", "madera_natural", "ratan_yute"],
         "peso_visual_mobiliario": "medio",
         "densidad_textil": "ligero",
-        "generos_musicales_compatibles": ["ambient_spa", "acustico_indie", "clasico"],
-        "bpm_sugerido": "50-70",
+        "generos_musicales_compatibles": ["ambient_spa", "folk_acustico", "lo_fi_chill", "acustico_indie", "clasico"],
+        "nivel_volumen_exacto": { "escala": 5, "rango_db_sugerido": "50-60 dB" },
         "instrumentacion_predominante": "piano",
         "ambiente_sonoro": "silencio_natural",
+        "playlist_sugerida": [
+          { "genero": "folk_acustico", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "lo_fi_chill", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_indie_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Hozier / Vance Joy" }
+        ],
         "tipo_cliente_ideal": ["spa", "yoga studio", "clinica wellness", "consultorio integrativo"]
       },
       "recomendado_en": ["spa", "yoga", "consultorio bienestar", "retiro wellness"],
@@ -384,6 +435,7 @@
       "entonces": {
         "tipos_cocina_compatibles": ["mediterranea", "vegetariana_saludable", "fine_dining_creativo"],
         "sabores_predominantes_compatibles": ["amargo", "salado", "acido_citrico"],
+        "tipos_bebida_compatibles": ["te_e_infusiones", "cerveza_artesanal", "cocteleria_de_autor"],
         "momento_consumo": "almuerzo",
         "maridaje_conceptual": "Herbal mediterraneo (romero, tomillo, salvia) funciona en cocina mediterranea, vegetariana saludable y fine dining con hierbas frescas."
       },
@@ -407,10 +459,15 @@
         "texturas_compatibles": ["lino_algodon", "madera_natural", "ratan_yute"],
         "peso_visual_mobiliario": "ligero",
         "densidad_textil": "ligero",
-        "generos_musicales_compatibles": ["ambient_spa", "clasico", "acustico_indie"],
-        "bpm_sugerido": "50-70",
+        "generos_musicales_compatibles": ["ambient_spa", "clasico", "lo_fi_chill", "acustico_indie"],
+        "nivel_volumen_exacto": { "escala": 4, "rango_db_sugerido": "45-55 dB" },
         "instrumentacion_predominante": "piano",
         "ambiente_sonoro": "silencio_natural",
+        "playlist_sugerida": [
+          { "genero": "ambient_spa", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "lo_fi_chill", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_indie_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Bon Iver / Iron & Wine" }
+        ],
         "tipo_cliente_ideal": ["wellness premium", "oficina foco", "boutique japandi", "lobby zen"]
       },
       "recomendado_en": ["oficina foco", "wellness", "lobby zen", "spa premium", "salon te"],
@@ -425,6 +482,7 @@
       "entonces": {
         "tipos_cocina_compatibles": ["asiatica_oriental", "sushi_omakase", "vegetariana_saludable"],
         "sabores_predominantes_compatibles": ["amargo", "umami"],
+        "tipos_bebida_compatibles": ["te_e_infusiones", "mocktails", "cerveza_artesanal"],
         "momento_consumo": "almuerzo",
         "maridaje_conceptual": "Te verde y matcha funcionan en cocina asiatica, sushi y vegetariana. Limpia paladar y refuerza umami sin saturar."
       },
@@ -448,10 +506,15 @@
         "texturas_compatibles": ["cuero", "terciopelo_seda", "cemento_pulido", "latones"],
         "peso_visual_mobiliario": "opulento",
         "densidad_textil": "denso",
-        "generos_musicales_compatibles": ["jazz_lounge", "soul_rnb", "electronico_melodico"],
-        "bpm_sugerido": "70-95",
+        "generos_musicales_compatibles": ["jazz_lounge", "jazz_contemporaneo", "soul_rnb", "classic_rock_suave", "electronico_melodico"],
+        "nivel_volumen_exacto": { "escala": 4, "rango_db_sugerido": "45-55 dB" },
         "instrumentacion_predominante": "voz",
         "ambiente_sonoro": "murmullo_humano",
+        "playlist_sugerida": [
+          { "genero": "jazz_contemporaneo", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "classic_rock_suave", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_rock_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Coldplay / John Mayer" }
+        ],
         "tipo_cliente_ideal": ["club caballeros", "boutique masculino", "concept urban", "bar speakeasy", "gastronomico steakhouse"]
       },
       "recomendado_en": ["bar caballeros", "tabaqueria", "concept urban", "showroom masculino"],
@@ -466,6 +529,7 @@
       "entonces": {
         "tipos_cocina_compatibles": ["parrilla_steakhouse", "internacional_lujo"],
         "sabores_predominantes_compatibles": ["umami", "salado"],
+        "tipos_bebida_compatibles": ["destilados_premium", "vinos_tintos", "cocteleria_clasica"],
         "momento_consumo": "coctel_post_cena",
         "maridaje_conceptual": "Cuero y tabaco rubio funcionan en steakhouse, whisky bar, coctel post cena con destilados anejos. Carne madurada y humo dialogan con la familia."
       },
@@ -489,10 +553,15 @@
         "texturas_compatibles": ["boucle_lana", "madera_natural", "marmol"],
         "peso_visual_mobiliario": "medio",
         "densidad_textil": "medio",
-        "generos_musicales_compatibles": ["clasico", "jazz_lounge", "opera"],
-        "bpm_sugerido": "70-95",
+        "generos_musicales_compatibles": ["french_lounge", "trip_hop", "clasico", "jazz_lounge", "opera"],
+        "nivel_volumen_exacto": { "escala": 4, "rango_db_sugerido": "45-55 dB" },
         "instrumentacion_predominante": "cuerdas",
         "ambiente_sonoro": "murmullo_humano",
+        "playlist_sugerida": [
+          { "genero": "french_lounge", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "trip_hop", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_sofisticado_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Dua Lipa (Future Nostalgia) / The Weeknd" }
+        ],
         "tipo_cliente_ideal": ["hotelería heritage", "boutique premium", "concept clasico"]
       },
       "recomendado_en": ["lobby heritage", "boutique premium", "salon ejecutivo"],
@@ -517,10 +586,15 @@
         "texturas_compatibles": ["lino_algodon", "ratan_yute", "madera_natural"],
         "peso_visual_mobiliario": "ligero",
         "densidad_textil": "ligero",
-        "generos_musicales_compatibles": ["bossa", "acustico_indie", "house_pop"],
-        "bpm_sugerido": "95-115",
+        "generos_musicales_compatibles": ["indie_pop", "bossa", "reggae_chill", "acustico_indie", "house_pop"],
+        "nivel_volumen_exacto": { "escala": 6, "rango_db_sugerido": "55-65 dB" },
         "instrumentacion_predominante": "voz",
         "ambiente_sonoro": "musica_protagonista",
+        "playlist_sugerida": [
+          { "genero": "indie_pop", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "reggae_chill", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_latino_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Camilo / Sebastian Yatra" }
+        ],
         "tipo_cliente_ideal": ["retail juvenil", "hotel familiar", "boutique lifestyle", "cafeteria", "gastronomico postre"]
       },
       "recomendado_en": ["retail juvenil", "hotel familiar", "lobby diurno", "cafeteria"],
@@ -535,6 +609,7 @@
       "entonces": {
         "tipos_cocina_compatibles": ["pasteleria_cafeteria", "comfort_food", "vegetariana_saludable"],
         "sabores_predominantes_compatibles": ["dulce", "acido_citrico"],
+        "tipos_bebida_compatibles": ["cocteleria_de_autor", "mocktails", "vinos_espumosos"],
         "momento_consumo": "brunch",
         "maridaje_conceptual": "Frutales dialogan con pasteleria, brunch fresco, postres frutales, helados. Lectura juvenil y luminosa."
       },
@@ -576,7 +651,7 @@
       "entonces": {
         "energia": "calmante",
         "temperatura_emocional": "templado",
-        "bpm_sugerido": "50-70",
+        "nivel_volumen_exacto": { "escala": 4, "rango_db_sugerido": "45-55 dB" },
         "ambiente_sonoro": "silencio_natural"
       },
       "recomendado_en": ["dormitorio", "spa", "salon meditacion", "consultorio bienestar"],
@@ -613,7 +688,8 @@
         "temperatura_emocional": "calido",
         "energia": "calmante",
         "tipos_cocina_compatibles": ["pasteleria_cafeteria", "comfort_food"],
-        "sabores_predominantes_compatibles": ["dulce"]
+        "sabores_predominantes_compatibles": ["dulce"],
+        "tipos_bebida_compatibles": ["cafe_especialidad", "cocteleria_clasica"]
       },
       "recomendado_en": ["lobby invierno", "pasteleria", "boutique femenino", "salon te"],
       "evitar_en": ["oficina foco", "restaurante savory", "showroom industrial"],
@@ -629,6 +705,7 @@
         "temperatura_emocional": "calido",
         "tipo_cliente_ideal": ["cafeteria", "boutique gourmand", "lobby breakfast"],
         "tipos_cocina_compatibles": ["pasteleria_cafeteria", "comfort_food"],
+        "tipos_bebida_compatibles": ["cafe_especialidad", "destilados_premium"],
         "momento_consumo": "desayuno"
       },
       "recomendado_en": ["cafeteria", "lobby breakfast", "concept gourmand"],
@@ -752,8 +829,8 @@
       "entonces": {
         "energia": "estimulante",
         "temperatura_emocional": "fresco",
-        "generos_musicales_compatibles": ["ambient_spa", "electronico_melodico"],
-        "bpm_sugerido": "70-95",
+        "generos_musicales_compatibles": ["ambient_spa", "lo_fi_chill", "electronico_melodico"],
+        "nivel_volumen_exacto": { "escala": 4, "rango_db_sugerido": "45-55 dB" },
         "instrumentacion_predominante": "piano",
         "ambiente_sonoro": "silencio_natural",
         "tipo_luz_compatible": ["led_frio_5000k", "neutro_4000k"],
@@ -791,7 +868,7 @@
         "temperatura_emocional": "templado",
         "familia_visual_compatible": ["biophilic", "minimalista_nordico", "japandi"],
         "generos_musicales_compatibles": ["ambient_spa"],
-        "bpm_sugerido": "50-70",
+        "nivel_volumen_exacto": { "escala": 3, "rango_db_sugerido": "40-50 dB" },
         "ambiente_sonoro": "silencio_natural"
       },
       "recomendado_en": ["spa", "wellness", "clinica integrativa", "yoga"],
@@ -832,9 +909,14 @@
         "peso_visual_mobiliario": "medio",
         "densidad_textil": "medio",
         "generos_musicales_compatibles": ["jazz_lounge"],
-        "bpm_sugerido": "70-95",
+        "nivel_volumen_exacto": { "escala": 5, "rango_db_sugerido": "50-60 dB" },
         "instrumentacion_predominante": "mixto",
         "ambiente_sonoro": "murmullo_humano",
+        "playlist_sugerida": [
+          { "genero": "jazz_lounge", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "acustico_indie", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_acustico_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Ed Sheeran (acústico)" }
+        ],
         "tipo_cliente_ideal": ["hospitality estándar"]
       },
       "confianza": "baja",
@@ -876,34 +958,177 @@
       { "familia": "frutales",            "texturas": ["lino_algodon", "ratan_yute", "madera_natural"],                            "peso": "ligero",  "densidad": "ligero" }
     ],
     "familia_to_oido": [
-      { "familia": "citricas",            "generos": ["bossa", "acustico_indie", "jazz_lounge", "house_pop"], "bpm": "95-115", "instrumentacion": "mixto",       "ambiente": "musica_protagonista" },
-      { "familia": "florales_blancas",    "generos": ["clasico", "jazz_lounge", "opera", "soul_rnb"],         "bpm": "70-95",  "instrumentacion": "cuerdas",     "ambiente": "murmullo_humano" },
-      { "familia": "florales_suaves",     "generos": ["clasico", "ambient_spa", "acustico_indie"],            "bpm": "70-95",  "instrumentacion": "piano",       "ambiente": "silencio_natural" },
-      { "familia": "amaderadas_secas",    "generos": ["jazz_lounge", "clasico", "ambient_spa", "electronico_melodico"], "bpm": "70-95", "instrumentacion": "cuerdas", "ambiente": "murmullo_humano" },
-      { "familia": "amaderadas_humedas",  "generos": ["electronico_melodico", "lounge_oriental", "jazz_lounge"], "bpm": "95-115", "instrumentacion": "electronica", "ambiente": "musica_protagonista" },
-      { "familia": "orientales_ambar",    "generos": ["lounge_oriental", "world", "electronico_melodico", "soul_rnb"], "bpm": "95-115", "instrumentacion": "mixto", "ambiente": "musica_protagonista" },
-      { "familia": "gourmand",            "generos": ["soul_rnb", "jazz_lounge", "acustico_indie"],            "bpm": "70-95",  "instrumentacion": "voz",         "ambiente": "murmullo_humano" },
-      { "familia": "acuaticas",           "generos": ["ambient_spa", "house_pop", "electronico_melodico"],     "bpm": "95-115", "instrumentacion": "electronica", "ambiente": "silencio_natural" },
-      { "familia": "aromaticas_herbales", "generos": ["ambient_spa", "acustico_indie", "clasico"],             "bpm": "50-70",  "instrumentacion": "piano",       "ambiente": "silencio_natural" },
-      { "familia": "verdes_te",           "generos": ["ambient_spa", "clasico", "acustico_indie"],             "bpm": "50-70",  "instrumentacion": "piano",       "ambiente": "silencio_natural" },
-      { "familia": "cuero_tabaco",        "generos": ["jazz_lounge", "soul_rnb", "electronico_melodico"],      "bpm": "70-95",  "instrumentacion": "voz",         "ambiente": "murmullo_humano" },
-      { "familia": "chipre",              "generos": ["clasico", "jazz_lounge", "opera"],                       "bpm": "70-95",  "instrumentacion": "cuerdas",     "ambiente": "murmullo_humano" },
-      { "familia": "frutales",            "generos": ["bossa", "acustico_indie", "house_pop"],                 "bpm": "95-115", "instrumentacion": "voz",         "ambiente": "musica_protagonista" }
+      {
+        "familia": "citricas",
+        "generos": ["bossa", "bossa_nova_moderna", "acustico_indie", "jazz_lounge", "house_pop", "house_tropical"],
+        "volumen": { "escala": 6, "rango_db_sugerido": "55-65 dB" },
+        "instrumentacion": "mixto",
+        "ambiente": "musica_protagonista",
+        "playlist": [
+          { "genero": "house_tropical", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "bossa_nova_moderna", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "latin_pop_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Shakira / Bad Bunny (lado luminoso)" }
+        ]
+      },
+      {
+        "familia": "florales_blancas",
+        "generos": ["clasico", "classical_crossover", "indie_pop_etereo", "jazz_lounge", "opera", "soul_rnb"],
+        "volumen": { "escala": 4, "rango_db_sugerido": "45-55 dB" },
+        "instrumentacion": "cuerdas",
+        "ambiente": "murmullo_humano",
+        "playlist": [
+          { "genero": "indie_pop_etereo", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "classical_crossover", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_comercial_femenino", "etiqueta": "comercial", "ejemplo_artista_o_track": "Taylor Swift (folklore) / Billie Eilish (suave)" }
+        ]
+      },
+      {
+        "familia": "florales_suaves",
+        "generos": ["clasico", "ambient_spa", "indie_pop_etereo", "acustico_indie"],
+        "volumen": { "escala": 3, "rango_db_sugerido": "40-50 dB" },
+        "instrumentacion": "piano",
+        "ambiente": "silencio_natural",
+        "playlist": [
+          { "genero": "indie_pop_etereo", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "ambient_spa", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_comercial_femenino", "etiqueta": "comercial", "ejemplo_artista_o_track": "Taylor Swift (baladas) / Sara Bareilles" }
+        ]
+      },
+      {
+        "familia": "amaderadas_secas",
+        "generos": ["jazz_contemporaneo", "jazz_lounge", "classic_rock_suave", "clasico", "ambient_spa", "electronico_melodico"],
+        "volumen": { "escala": 4, "rango_db_sugerido": "45-55 dB" },
+        "instrumentacion": "cuerdas",
+        "ambiente": "murmullo_humano",
+        "playlist": [
+          { "genero": "jazz_contemporaneo", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "classic_rock_suave", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_rock_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Coldplay / John Mayer" }
+        ]
+      },
+      {
+        "familia": "amaderadas_humedas",
+        "generos": ["electronico_melodico", "trip_hop", "lounge_oriental", "jazz_lounge"],
+        "volumen": { "escala": 5, "rango_db_sugerido": "50-60 dB" },
+        "instrumentacion": "electronica",
+        "ambiente": "musica_protagonista",
+        "playlist": [
+          { "genero": "electronico_melodico", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "trip_hop", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_sofisticado_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "The Weeknd / Dua Lipa (Future Nostalgia)" }
+        ]
+      },
+      {
+        "familia": "orientales_ambar",
+        "generos": ["jazz_lounge", "neo_soul", "lounge_oriental", "world", "electronico_melodico", "soul_rnb"],
+        "volumen": { "escala": 3, "rango_db_sugerido": "40-50 dB" },
+        "instrumentacion": "mixto",
+        "ambiente": "murmullo_humano",
+        "playlist": [
+          { "genero": "jazz_lounge", "etiqueta": "core", "ejemplo_artista_o_track": "Norah Jones / Diana Krall" },
+          { "genero": "neo_soul", "etiqueta": "soporte", "ejemplo_artista_o_track": "Sade / Anderson .Paak" },
+          { "genero": "pop_acustico_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Ed Sheeran (acústico) / Adele (baladas)" }
+        ]
+      },
+      {
+        "familia": "gourmand",
+        "generos": ["jazz_clasico", "soul_clasico", "soul_rnb", "jazz_lounge", "acustico_indie"],
+        "volumen": { "escala": 5, "rango_db_sugerido": "50-60 dB" },
+        "instrumentacion": "voz",
+        "ambiente": "murmullo_humano",
+        "playlist": [
+          { "genero": "jazz_clasico", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "soul_clasico", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_comercial_mid_tempo", "etiqueta": "comercial", "ejemplo_artista_o_track": "Bruno Mars / Dua Lipa (baladas)" }
+        ]
+      },
+      {
+        "familia": "acuaticas",
+        "generos": ["ambient_spa", "house_tropical", "house_pop", "electronico_melodico"],
+        "volumen": { "escala": 5, "rango_db_sugerido": "50-60 dB" },
+        "instrumentacion": "electronica",
+        "ambiente": "silencio_natural",
+        "playlist": [
+          { "genero": "ambient_spa", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "house_tropical", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_latino_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Carlos Vives / pop tropical luminoso" }
+        ]
+      },
+      {
+        "familia": "aromaticas_herbales",
+        "generos": ["ambient_spa", "folk_acustico", "lo_fi_chill", "acustico_indie", "clasico"],
+        "volumen": { "escala": 5, "rango_db_sugerido": "50-60 dB" },
+        "instrumentacion": "piano",
+        "ambiente": "silencio_natural",
+        "playlist": [
+          { "genero": "folk_acustico", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "lo_fi_chill", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_indie_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Hozier / Vance Joy" }
+        ]
+      },
+      {
+        "familia": "verdes_te",
+        "generos": ["ambient_spa", "clasico", "lo_fi_chill", "acustico_indie"],
+        "volumen": { "escala": 4, "rango_db_sugerido": "45-55 dB" },
+        "instrumentacion": "piano",
+        "ambiente": "silencio_natural",
+        "playlist": [
+          { "genero": "ambient_spa", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "lo_fi_chill", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_indie_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Bon Iver / Iron & Wine" }
+        ]
+      },
+      {
+        "familia": "cuero_tabaco",
+        "generos": ["jazz_lounge", "jazz_contemporaneo", "classic_rock_suave", "soul_rnb", "electronico_melodico"],
+        "volumen": { "escala": 4, "rango_db_sugerido": "45-55 dB" },
+        "instrumentacion": "voz",
+        "ambiente": "murmullo_humano",
+        "playlist": [
+          { "genero": "jazz_contemporaneo", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "classic_rock_suave", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_rock_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Coldplay / John Mayer" }
+        ]
+      },
+      {
+        "familia": "chipre",
+        "generos": ["french_lounge", "trip_hop", "clasico", "jazz_lounge", "opera"],
+        "volumen": { "escala": 4, "rango_db_sugerido": "45-55 dB" },
+        "instrumentacion": "cuerdas",
+        "ambiente": "murmullo_humano",
+        "playlist": [
+          { "genero": "french_lounge", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "trip_hop", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_sofisticado_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Dua Lipa (Future Nostalgia) / The Weeknd" }
+        ]
+      },
+      {
+        "familia": "frutales",
+        "generos": ["indie_pop", "bossa", "reggae_chill", "acustico_indie", "house_pop"],
+        "volumen": { "escala": 6, "rango_db_sugerido": "55-65 dB" },
+        "instrumentacion": "voz",
+        "ambiente": "musica_protagonista",
+        "playlist": [
+          { "genero": "indie_pop", "etiqueta": "core", "ejemplo_artista_o_track": "" },
+          { "genero": "reggae_chill", "etiqueta": "soporte", "ejemplo_artista_o_track": "" },
+          { "genero": "pop_latino_comercial", "etiqueta": "comercial", "ejemplo_artista_o_track": "Camilo / Sebastian Yatra" }
+        ]
+      }
     ],
     "familia_to_gusto": [
-      { "familia": "citricas",            "gastronomica": true,  "cocinas": ["mediterranea", "sushi_omakase", "vegetariana_saludable", "fine_dining_creativo", "pasteleria_cafeteria"], "sabores": ["acido_citrico", "dulce", "salado"],   "momento": "almuerzo", "maridaje": "Citricos aligeran sushi y pescados, refuerzan postres frescos (limon, yuzu, naranja), funcionan en mediterranea y brunch luminoso." },
-      { "familia": "amaderadas_secas",    "gastronomica": true,  "cocinas": ["parrilla_steakhouse", "internacional_lujo", "fine_dining_creativo"], "sabores": ["umami", "salado"], "momento": "cena", "maridaje": "Cedro y sandalo dialogan con carne madurada y humo de brasa. Cardamomo con cedro en cocina con especiado contenido." },
-      { "familia": "orientales_ambar",    "gastronomica": true,  "cocinas": ["mexicana_contemporanea", "internacional_lujo", "asiatica_oriental", "fine_dining_creativo"], "sabores": ["dulce", "picante", "umami"], "momento": "cena", "maridaje": "Orientales especiados funcionan en fusion arabe-mexicana, mole, curry y postres con especia." },
-      { "familia": "gourmand",            "gastronomica": true,  "cocinas": ["pasteleria_cafeteria", "comfort_food", "internacional_lujo"], "sabores": ["dulce"], "momento": "merienda", "maridaje": "Gourmand acoge postres, reposteria, brunch dulce, chocolateria." },
-      { "familia": "aromaticas_herbales", "gastronomica": true,  "cocinas": ["mediterranea", "vegetariana_saludable", "fine_dining_creativo"], "sabores": ["amargo", "salado", "acido_citrico"], "momento": "almuerzo", "maridaje": "Herbal mediterraneo (romero, tomillo, salvia) en mediterranea, vegetariana saludable y fine dining con hierbas frescas." },
-      { "familia": "verdes_te",           "gastronomica": true,  "cocinas": ["asiatica_oriental", "sushi_omakase", "vegetariana_saludable"], "sabores": ["amargo", "umami"], "momento": "almuerzo", "maridaje": "Te verde y matcha en cocina asiatica, sushi y vegetariana. Limpia paladar y refuerza umami." },
-      { "familia": "cuero_tabaco",        "gastronomica": true,  "cocinas": ["parrilla_steakhouse", "internacional_lujo"], "sabores": ["umami", "salado"], "momento": "coctel_post_cena", "maridaje": "Cuero y tabaco rubio en steakhouse, whisky bar, coctel post cena con destilados anejos." },
-      { "familia": "frutales",            "gastronomica": true,  "cocinas": ["pasteleria_cafeteria", "comfort_food", "vegetariana_saludable"], "sabores": ["dulce", "acido_citrico"], "momento": "brunch", "maridaje": "Frutales en pasteleria, brunch fresco, postres frutales, helados." },
-      { "familia": "florales_blancas",    "gastronomica": false, "cocinas": [], "sabores": [], "momento": "",        "maridaje": "Florales blancos densos compiten con paladar; uso ambiental, no gastronomico." },
-      { "familia": "florales_suaves",     "gastronomica": false, "cocinas": [], "sabores": [], "momento": "",        "maridaje": "Florales suaves uso ambiental; sin maridaje gastronomico recomendado." },
-      { "familia": "amaderadas_humedas",  "gastronomica": false, "cocinas": [], "sabores": [], "momento": "",        "maridaje": "Patchouli y vetiver humedo no funcionan en mesa; saturan paladar." },
-      { "familia": "acuaticas",           "gastronomica": false, "cocinas": [], "sabores": [], "momento": "",        "maridaje": "Acuaticos leen como aire abierto; no aportan al paladar." },
-      { "familia": "chipre",              "gastronomica": false, "cocinas": [], "sabores": [], "momento": "",        "maridaje": "Chipre uso lobby/hospitality; sin maridaje gastronomico canonico." }
+      { "familia": "citricas",            "gastronomica": true,  "cocinas": ["mediterranea", "sushi_omakase", "vegetariana_saludable", "fine_dining_creativo", "pasteleria_cafeteria"], "sabores": ["acido_citrico", "dulce", "salado"], "bebida": ["mocktails", "refrescos_y_jugos", "cocteleria_de_autor", "vinos_espumosos"], "momento": "almuerzo",        "maridaje": "Citricos aligeran sushi y pescados, refuerzan postres frescos (limon, yuzu, naranja), funcionan en mediterranea y brunch luminoso." },
+      { "familia": "amaderadas_secas",    "gastronomica": true,  "cocinas": ["parrilla_steakhouse", "internacional_lujo", "fine_dining_creativo"],                                       "sabores": ["umami", "salado"],                  "bebida": ["destilados_premium", "vinos_tintos", "cafe_especialidad"],                "momento": "cena",            "maridaje": "Cedro y sandalo dialogan con carne madurada y humo de brasa. Cardamomo con cedro en cocina con especiado contenido." },
+      { "familia": "orientales_ambar",    "gastronomica": true,  "cocinas": ["mexicana_contemporanea", "internacional_lujo", "asiatica_oriental", "fine_dining_creativo"],               "sabores": ["dulce", "picante", "umami"],        "bebida": ["destilados_premium", "vinos_tintos", "cafe_especialidad"],                "momento": "cena",            "maridaje": "Orientales especiados funcionan en fusion arabe-mexicana, mole, curry y postres con especia." },
+      { "familia": "gourmand",            "gastronomica": true,  "cocinas": ["pasteleria_cafeteria", "comfort_food", "internacional_lujo"],                                              "sabores": ["dulce"],                            "bebida": ["cafe_especialidad", "cocteleria_clasica", "destilados_premium"],          "momento": "merienda",        "maridaje": "Gourmand acoge postres, reposteria, brunch dulce, chocolateria." },
+      { "familia": "aromaticas_herbales", "gastronomica": true,  "cocinas": ["mediterranea", "vegetariana_saludable", "fine_dining_creativo"],                                           "sabores": ["amargo", "salado", "acido_citrico"], "bebida": ["te_e_infusiones", "cerveza_artesanal", "cocteleria_de_autor"],            "momento": "almuerzo",        "maridaje": "Herbal mediterraneo (romero, tomillo, salvia) en mediterranea, vegetariana saludable y fine dining con hierbas frescas." },
+      { "familia": "verdes_te",           "gastronomica": true,  "cocinas": ["asiatica_oriental", "sushi_omakase", "vegetariana_saludable"],                                              "sabores": ["amargo", "umami"],                  "bebida": ["te_e_infusiones", "mocktails", "cerveza_artesanal"],                       "momento": "almuerzo",        "maridaje": "Te verde y matcha en cocina asiatica, sushi y vegetariana. Limpia paladar y refuerza umami." },
+      { "familia": "cuero_tabaco",        "gastronomica": true,  "cocinas": ["parrilla_steakhouse", "internacional_lujo"],                                                                 "sabores": ["umami", "salado"],                  "bebida": ["destilados_premium", "vinos_tintos", "cocteleria_clasica"],                "momento": "coctel_post_cena","maridaje": "Cuero y tabaco rubio en steakhouse, whisky bar, coctel post cena con destilados anejos." },
+      { "familia": "frutales",            "gastronomica": true,  "cocinas": ["pasteleria_cafeteria", "comfort_food", "vegetariana_saludable"],                                            "sabores": ["dulce", "acido_citrico"],           "bebida": ["cocteleria_de_autor", "mocktails", "vinos_espumosos"],                     "momento": "brunch",          "maridaje": "Frutales en pasteleria, brunch fresco, postres frutales, helados." },
+      { "familia": "florales_blancas",    "gastronomica": false, "cocinas": [], "sabores": [], "bebida": ["vinos_blancos", "vinos_espumosos", "te_e_infusiones", "mocktails"], "momento": "", "maridaje": "Florales blancos uso ambiental; bebida solo para sugerencia de fondo (vinos blancos / espumosos / té / mocktails). No maridan en plato." },
+      { "familia": "florales_suaves",     "gastronomica": false, "cocinas": [], "sabores": [], "bebida": [],                                                                  "momento": "", "maridaje": "Florales suaves uso ambiental; sin maridaje gastronomico recomendado." },
+      { "familia": "amaderadas_humedas",  "gastronomica": false, "cocinas": [], "sabores": [], "bebida": [],                                                                  "momento": "", "maridaje": "Patchouli y vetiver humedo no funcionan en mesa; saturan paladar." },
+      { "familia": "acuaticas",           "gastronomica": false, "cocinas": [], "sabores": [], "bebida": [],                                                                  "momento": "", "maridaje": "Acuaticos leen como aire abierto; no aportan al paladar." },
+      { "familia": "chipre",              "gastronomica": false, "cocinas": [], "sabores": [], "bebida": ["vinos_tintos", "destilados_premium", "cocteleria_clasica"],        "momento": "", "maridaje": "Chipre uso lobby/hospitality; bebida sugerida como fondo de barra clasica (tintos / destilados anejos / coctel clasico)." }
     ]
   },
 
