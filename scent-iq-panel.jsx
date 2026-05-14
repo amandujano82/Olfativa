@@ -52,7 +52,7 @@
   // helpers
   // ----------------------------------------------------------
   function readDemo() {
-    return fetch('scent-iq-demo.json?v=20260514c').then(r => r.ok ? r.json() : null).catch(() => null);
+    return fetch('scent-iq-demo.json?v=20260514d').then(r => r.ok ? r.json() : null).catch(() => null);
   }
 
   function copyToClipboard(text) {
@@ -890,7 +890,9 @@
       setPreviewURL(url);
       setUsingDemo(false);
       // Pasamos profileIndex del giro al adapter para fijar el perfil mock.
-      startAnalysis(null, { file: f, adapterOpts: { profileIndex: profileIndexForSpace(spaceType) } });
+      // adapterOpts unifica el contrato para los dos adapters: el mock
+      // usa profileIndex, el claude (vision real) usa tipoDeEspacio.
+      startAnalysis(null, { file: f, adapterOpts: { profileIndex: profileIndexForSpace(spaceType), tipoDeEspacio: spaceType } });
     };
 
     const onAnalyzeWithoutPhoto = () => {
@@ -899,7 +901,7 @@
       setFile(null);
       if (previewURL) { URL.revokeObjectURL(previewURL); setPreviewURL(null); }
       setUsingDemo(false);
-      startAnalysis(null, { file: null, adapterOpts: { profileIndex: pi }, markEstimadoTotal: true });
+      startAnalysis(null, { file: null, adapterOpts: { profileIndex: pi, tipoDeEspacio: spaceType }, markEstimadoTotal: true });
     };
 
     const onUseDemo = async () => {
