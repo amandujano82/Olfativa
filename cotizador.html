@@ -893,6 +893,29 @@
 
   /* — Uploader — */
   .siq-uploader { display: flex; flex-direction: column; gap: 16px; }
+  /* Tipo de espacio · obligatorio antes de analizar */
+  .siq-space-type {
+    display: flex; flex-direction: column; gap: 8px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(234, 226, 213, 0.1);
+  }
+  .siq-space-type-label {
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(199, 166, 104, 0.7); font-weight: 600;
+  }
+  .siq-space-type-label .siq-req { color: #CC6633; margin-left: 2px; }
+  .siq-space-type-select {
+    appearance: none; font-family: inherit;
+    background: rgba(243,237,227,0.06);
+    border: 1px solid rgba(234, 226, 213, 0.18);
+    color: #F5F0E8; font-size: 14px;
+    padding: 11px 14px; border-radius: 5px; outline: none;
+    cursor: pointer;
+  }
+  .siq-space-type-select:focus { border-color: rgba(199, 166, 104, 0.55); background: rgba(199, 166, 104, 0.06); }
+  .siq-space-type-hint {
+    font-size: 12px; color: rgba(243,237,227,0.55); line-height: 1.4;
+  }
   .siq-drop {
     border: 2px dashed rgba(201,168,76,0.35);
     background: rgba(201,168,76,0.04);
@@ -907,6 +930,11 @@
   .siq-drop:hover, .siq-drop.is-drag {
     border-color: #C9A84C; background: rgba(201,168,76,0.1);
   }
+  .siq-drop.is-locked {
+    opacity: 0.55; cursor: not-allowed;
+    border-color: rgba(234, 226, 213, 0.12); background: rgba(234, 226, 213, 0.02);
+  }
+  .siq-drop.is-locked:hover { border-color: rgba(234, 226, 213, 0.12); background: rgba(234, 226, 213, 0.02); }
   .siq-drop.has-preview { padding: 12px; }
   .siq-drop-icon {
     font-size: 36px; color: #C9A84C; margin-bottom: 14px;
@@ -1083,6 +1111,40 @@
     margin: 0;
     max-width: 920px;
   }
+
+  /* — Override visual del especialista — */
+  .siq-visual-overrides {
+    background: rgba(243, 237, 227, 0.025);
+    border: 1px solid rgba(234, 226, 213, 0.1);
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+  .siq-visual-overrides-head {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+    margin-bottom: 14px;
+  }
+  .siq-visual-overrides-sub {
+    font-size: 12px; color: rgba(243, 237, 227, 0.55);
+    margin-top: 4px; max-width: 560px; line-height: 1.4;
+  }
+  .siq-visual-overrides-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .siq-vo-field { display: flex; flex-direction: column; gap: 6px; }
+  .siq-vo-label {
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(243, 237, 227, 0.55); font-weight: 500;
+  }
+  .siq-vo-control {
+    appearance: none; font-family: inherit;
+    background: rgba(243, 237, 227, 0.06);
+    border: 1px solid rgba(234, 226, 213, 0.18);
+    color: #F5F0E8; font-size: 13px;
+    padding: 9px 11px; border-radius: 5px; outline: none;
+  }
+  .siq-vo-control:focus { border-color: rgba(199, 166, 104, 0.55); background: rgba(199, 166, 104, 0.06); }
 
   /* — Result grid — */
   .siq-result { display: flex; flex-direction: column; gap: 20px; }
@@ -2023,16 +2085,16 @@
 <script src="https://unpkg.com/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
 <!-- html2canvas standalone para captura PNG del PhotoEvidenceCard (compartir WhatsApp) -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="deck-stage.js?v=20260514b"></script>
-<script src="scent-iq-knowledge.js?v=20260514b"></script>
-<script src="scent-iq-engines.js?v=20260514b"></script>
-<script type="text/babel" src="tweaks-panel.jsx?v=20260514b"></script>
-<script type="text/babel" src="slides-master.jsx?v=20260514b"></script>
-<script type="text/babel" src="slide-views-master.jsx?v=20260514b"></script>
-<script type="text/babel" src="hero-difusor.jsx?v=20260514b"></script>
-<script type="text/babel" src="catalog-min.jsx?v=20260514b"></script>
-<script type="text/babel" src="control-olores.jsx?v=20260514b"></script>
-<script type="text/babel" src="scent-iq-panel.jsx?v=20260514b"></script>
-<script type="text/babel" src="app-cotizador.jsx?v=20260514b"></script>
+<script src="deck-stage.js?v=20260514c"></script>
+<script src="scent-iq-knowledge.js?v=20260514c"></script>
+<script src="scent-iq-engines.js?v=20260514c"></script>
+<script type="text/babel" src="tweaks-panel.jsx?v=20260514c"></script>
+<script type="text/babel" src="slides-master.jsx?v=20260514c"></script>
+<script type="text/babel" src="slide-views-master.jsx?v=20260514c"></script>
+<script type="text/babel" src="hero-difusor.jsx?v=20260514c"></script>
+<script type="text/babel" src="catalog-min.jsx?v=20260514c"></script>
+<script type="text/babel" src="control-olores.jsx?v=20260514c"></script>
+<script type="text/babel" src="scent-iq-panel.jsx?v=20260514c"></script>
+<script type="text/babel" src="app-cotizador.jsx?v=20260514c"></script>
 </body>
 </html>
