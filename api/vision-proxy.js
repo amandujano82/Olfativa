@@ -31,6 +31,13 @@ export const config = {
   regions: ['iad1'],
 };
 
+// Snapshot vigente de Anthropic con visión. Si Anthropic publica un alias
+// más reciente, cambiar AQUI · no esparcir el ID por el archivo.
+// claude-3-5-sonnet-* fue deprecado y devolvía 404 not_found_error con
+// las keys nuevas a partir de mayo 2026.
+const ANTHROPIC_MODEL = 'claude-sonnet-4-5';
+const ANTHROPIC_VERSION = '2023-06-01';
+
 // CORS · permite GitHub Pages, el propio dominio Vercel y localhost
 const corsHeaders = {
   'Access-Control-Allow-Origin':  '*',
@@ -223,7 +230,7 @@ function mediaTypeFor(file) {
 // ----- Llamada a Anthropic Messages API
 async function callClaude(apiKey, imageBase64, mediaType, prompt) {
   const body = {
-    model: 'claude-3-5-sonnet-20241022',
+    model: ANTHROPIC_MODEL,
     max_tokens: 1024,
     messages: [
       {
@@ -242,7 +249,7 @@ async function callClaude(apiKey, imageBase64, mediaType, prompt) {
     method: 'POST',
     headers: {
       'x-api-key':         apiKey,
-      'anthropic-version': '2023-06-01',
+      'anthropic-version': ANTHROPIC_VERSION,
       'content-type':      'application/json',
     },
     body: JSON.stringify(body),
@@ -340,13 +347,17 @@ export default async function handler(request) {
     const final = applyOverride(sane, override);
     final._source = 'claude-vision';
     final._meta = {
-      model: 'claude-3-5-sonnet-20241022',
+      model: ANTHROPIC_MODEL,
       tipo_de_espacio_input: tipoDeEspacio || null,
       had_image: !!imageBase64,
       override_applied: !!override && Object.keys(override).length > 0,
     };
     return jsonResponse(final, 200);
   } catch (e) {
+    // El detalle real (status + body de Anthropic) queda solo en Vercel
+    // Logs. El cliente recibe un mensaje genérico para no filtrar key
+    // expirada, modelos exactos, ni payloads de upstream.
+    console.error('[vision-proxy] upstream/parse error:', (e && e.stack) || e);
     const fallback = applyOverride(
       SPACE_FALLBACK[tipoDeEspacio] || SPACE_FALLBACK['oficina'],
       override
@@ -356,7 +367,7 @@ export default async function handler(request) {
       tipo_de_espacio_input: tipoDeEspacio || null,
       had_image: !!imageBase64,
       override_applied: !!override && Object.keys(override).length > 0,
-      error: String((e && e.message) || e).slice(0, 300),
+      error: 'upstream rechazó la imagen · revisa modelo o key',
     };
     return jsonResponse({ error: 'vision upstream falló', fallback }, 502);
   }
