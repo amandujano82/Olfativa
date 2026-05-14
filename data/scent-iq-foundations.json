@@ -1,8 +1,8 @@
 {
   "meta": {
-    "version": "1.2.0",
+    "version": "1.3.0",
     "fecha": "2026-05-14",
-    "autor": "Olfativa · ronda 6 foundations cientificas · marco 5 sentidos · adenda 3 (gusto bebida + oido volumen y playlist)",
+    "autor": "Olfativa · ronda 6 foundations cientificas · marco 5 sentidos · adenda 3 · base universal Cotizador + Olfativa Home",
     "nota": "Reglas operativas para seedFromFoundations(). Cada aroma se evalua contra todas las reglas; las que matchean acumulan campos tipo_a (escalares: last-wins, listas: union deduplicada). Niveles de confianza: alta = consenso en literatura aromacologica, media = inferencia razonable apoyada en perfil quimico o practica de diseno, baja = default operativo sin base solida, override esperable de Tony.",
     "fuentes": [
       "Hirsch A.R. · Aroma marketing y respuesta emocional al olor",
@@ -482,7 +482,7 @@
       "entonces": {
         "tipos_cocina_compatibles": ["asiatica_oriental", "sushi_omakase", "vegetariana_saludable"],
         "sabores_predominantes_compatibles": ["amargo", "umami"],
-        "tipos_bebida_compatibles": ["te_e_infusiones", "mocktails", "cerveza_artesanal"],
+        "tipos_bebida_compatibles": ["te_e_infusiones", "mocktails", "cocteleria_de_autor", "vinos_blancos"],
         "momento_consumo": "almuerzo",
         "maridaje_conceptual": "Te verde y matcha funcionan en cocina asiatica, sushi y vegetariana. Limpia paladar y refuerza umami sin saturar."
       },
@@ -529,9 +529,9 @@
       "entonces": {
         "tipos_cocina_compatibles": ["parrilla_steakhouse", "internacional_lujo"],
         "sabores_predominantes_compatibles": ["umami", "salado"],
-        "tipos_bebida_compatibles": ["destilados_premium", "vinos_tintos", "cocteleria_clasica"],
+        "tipos_bebida_compatibles": ["destilados_premium", "vinos_tintos", "cafe_especialidad", "cocteleria_clasica"],
         "momento_consumo": "coctel_post_cena",
-        "maridaje_conceptual": "Cuero y tabaco rubio funcionan en steakhouse, whisky bar, coctel post cena con destilados anejos. Carne madurada y humo dialogan con la familia."
+        "maridaje_conceptual": "Cuero y tabaco rubio funcionan en steakhouse, whisky bar, coctel post cena con destilados anejos. Cafe negro corto cierra perfecto. Carne madurada y humo dialogan con la familia."
       },
       "confianza": "alta",
       "fuente": "Sensory dining · cuero y carne",
@@ -775,11 +775,11 @@
         "energia": "estimulante",
         "temperatura_emocional": "fresco"
       },
-      "recomendado_en": ["lobby matutino", "oficina", "retail diurno", "salon te"],
-      "evitar_en": ["bar evening intimo"],
-      "confianza": "media",
-      "fuente": "Hirsch · bergamota y estado de animo",
-      "justificacion": "Bergamota se asocia a elevacion de animo. Bridge citrico-chipre."
+      "recomendado_en": ["oficina_foco", "gym", "recepcion_diurna", "retail_energetico", "lobby_matutino", "salon_te", "co-working"],
+      "evitar_en": ["dormitorio_nocturno", "spa_de_noche", "bar_evening_intimo"],
+      "confianza": "alta",
+      "fuente": "Hirsch · bergamota y estado de animo · Olfativa operativo",
+      "justificacion": "Bergamota se asocia a elevacion de animo y a productividad/foco diurno. Bridge citrico-chipre. Inadecuada en contextos de relajacion nocturna profunda."
     },
     {
       "id": "R033",
@@ -922,6 +922,172 @@
       "confianza": "baja",
       "fuente": "Default operativo Olfativa",
       "justificacion": "Default conservador para aromas sin match. Tony debe override."
+    },
+    {
+      "id": "R041",
+      "si": "notas contains agave",
+      "entonces": {
+        "temperatura_emocional": "calido",
+        "familia_visual_compatible": ["boho_mediterraneo", "industrial", "contemporaneo_calido"],
+        "tipo_cliente_ideal": ["bar tematico", "restaurante mexicano", "concept mezcalero", "evento social"]
+      },
+      "recomendado_en": ["bar_nocturno", "restaurante_mexicano_contemporaneo", "evento_social", "concept_mezcalero", "boutique_local"],
+      "evitar_en": ["clinica_hospital", "guarderia_infantil", "spa_wellness"],
+      "confianza": "media",
+      "fuente": "Perfumeria mexicana contemporanea · Olfativa identidad local",
+      "justificacion": "Agave evoca paisaje y narrativa mexicana. Familia base amaderada-oriental con personalidad social/restaurante. Inadecuada en wellness e infantil por carga alcoholica percibida."
+    },
+    {
+      "id": "R042",
+      "si": "notas contains tequila",
+      "entonces": {
+        "temperatura_emocional": "calido",
+        "energia": "estimulante",
+        "familia_visual_compatible": ["boho_mediterraneo", "glam_nocturno", "industrial"],
+        "tipos_bebida_compatibles": ["destilados_premium", "cocteleria_clasica", "cocteleria_de_autor"],
+        "tipo_cliente_ideal": ["bar", "restaurante mexicano", "fiesta", "concept evening"]
+      },
+      "recomendado_en": ["bar", "restaurante_mexicano", "fiesta", "concept_evening", "salon_eventos"],
+      "evitar_en": ["oficina_foco", "dormitorio", "guarderia_infantil", "clinica_hospital", "spa_wellness"],
+      "confianza": "media",
+      "fuente": "Perfumeria local mexicana · Olfativa narrativa nacional",
+      "justificacion": "Tequila lee como social-festivo con identidad mexicana. Carga alcoholica percibida la hace incompatible con wellness, infantil y foco."
+    },
+    {
+      "id": "R043",
+      "si": "notas contains mezcal",
+      "entonces": {
+        "temperatura_emocional": "calido",
+        "energia": "neutra",
+        "intensidad_sugerida": 4,
+        "nivel_lujo_sugerido": 4,
+        "familia_visual_compatible": ["boho_mediterraneo", "industrial", "glam_nocturno"],
+        "tipos_bebida_compatibles": ["destilados_premium", "cocteleria_de_autor"],
+        "tipo_cliente_ideal": ["bar luxury", "restaurante de autor", "concept evening", "mezcaleria"]
+      },
+      "recomendado_en": ["bar_nocturno", "concept_evening", "restaurante_autor", "cocteleria_de_autor", "mezcaleria_boutique"],
+      "evitar_en": ["guarderia_infantil", "clinica_hospital", "spa_wellness", "oficina_foco"],
+      "confianza": "media",
+      "fuente": "Perfumeria nicho mexicana contemporanea",
+      "justificacion": "Mezcal es nota ahumada-introspectiva con narrativa adulta autorial. Lee mas premium que tequila por la lectura artesanal/humo."
+    },
+    {
+      "id": "R044",
+      "si": "notas contains copal",
+      "entonces": {
+        "temperatura_emocional": "calido",
+        "energia": "calmante",
+        "persistencia": "larga",
+        "familia_visual_compatible": ["boho_mediterraneo", "arabe_contemporaneo", "biophilic", "contemporaneo_calido"],
+        "intensidad_luminica": "baja_intima",
+        "tipo_cliente_ideal": ["spa", "espacio meditacion", "recepcion boutique", "concept ritual", "yoga premium"]
+      },
+      "recomendado_en": ["spa", "ritual", "recepcion_boutique", "espacio_meditacion", "yoga", "concept_oriental", "boutique_nicho_mexicano"],
+      "evitar_en": ["bar_nocturno", "restaurante_savory", "oficina_foco_abierta", "guarderia_infantil"],
+      "confianza": "alta",
+      "fuente": "Tradicion mesoamericana · uso ceremonial documentado",
+      "justificacion": "Copal es nota resinosa ceremonial muy caracteristica con uso documentado en ritual mesoamericano. Carga sagrada/meditativa la hace ideal para espacios contemplativos y rompe la lectura energetica del bar o restaurante."
+    },
+    {
+      "id": "R045",
+      "si": "notas contains hierbabuena",
+      "entonces": {
+        "energia": "estimulante",
+        "temperatura_emocional": "fresco",
+        "tipo_cliente_ideal": ["restaurante", "oficina foco", "gym", "spa de dia", "cafeteria"]
+      },
+      "recomendado_en": ["cocina_restaurante", "oficina_foco", "gym", "spa_diurno", "cafeteria", "co-working"],
+      "evitar_en": ["dormitorio_nocturno", "bar_lounge_intimo"],
+      "confianza": "alta",
+      "fuente": "Aromacologia · mentaceas y alerta",
+      "justificacion": "Hierbabuena (menta suave) activa alerta percibida sin la dureza del mentol puro. Apta para gastronomia y foco diurno; inadecuada antes de dormir."
+    },
+    {
+      "id": "R046",
+      "si": "notas contains jazmín",
+      "entonces": {
+        "temperatura_emocional": "templado",
+        "persistencia": "larga",
+        "intensidad_sugerida": 4,
+        "nivel_lujo_sugerido": 4,
+        "familia_visual_compatible": ["glam_nocturno", "arabe_contemporaneo", "clasico_transicional"],
+        "intensidad_luminica": "baja_intima",
+        "tipo_cliente_ideal": ["hotelería premium", "boutique femenino", "spa romance", "restaurante autor"]
+      },
+      "recomendado_en": ["lobby_boutique", "spa_romance", "restaurante_autor_maridaje", "dormitorio_adulto", "suite_signature"],
+      "evitar_en": ["oficina_foco", "guarderia_infantil", "restaurante_savory_intenso", "clinica_hospital", "gym"],
+      "confianza": "alta",
+      "fuente": "Jellinek · indolicos y narrativa adulta",
+      "justificacion": "Jazmin es absoluto indolico embriagador, signature floral nocturno. Compite con paladar en savory intenso y carga adulta lo hace inadecuado para infantil o foco."
+    },
+    {
+      "id": "R047",
+      "si": "notas contains gardenia",
+      "entonces": {
+        "temperatura_emocional": "templado",
+        "persistencia": "media",
+        "intensidad_sugerida": 3,
+        "nivel_lujo_sugerido": 4,
+        "familia_visual_compatible": ["clasico_transicional", "glam_nocturno", "boho_mediterraneo"],
+        "tipo_cliente_ideal": ["bodas", "eventos sociales", "lobby femenino", "hospitalidad premium"]
+      },
+      "recomendado_en": ["bodas", "eventos_sociales", "lobby_femenino", "hospitalidad_premium", "salon_eventos", "boutique_femenina"],
+      "evitar_en": ["oficina_foco", "guarderia_infantil", "restaurante_savory_intenso", "clinica_hospital"],
+      "confianza": "alta",
+      "fuente": "Perfumeria floral clasica · gardenia y feminidad evento",
+      "justificacion": "Gardenia es jazmin cremoso-blanco, menos indolica que el jazmin puro. Signature de evento social femenino y hospitalidad de bodas. Mismas contraindicaciones que florales blancas densos pero ligeramente mas suave."
+    },
+    {
+      "id": "R048",
+      "si": "notas contains sándalo",
+      "entonces": {
+        "temperatura_emocional": "templado",
+        "energia": "calmante",
+        "persistencia": "larga",
+        "nivel_lujo_sugerido": 4,
+        "familia_visual_compatible": ["japandi", "contemporaneo_calido", "minimalista_nordico", "biophilic", "arabe_contemporaneo"],
+        "tipo_cliente_ideal": ["spa", "oficina ejecutiva", "dormitorio premium", "recepcion premium", "concept ritual"]
+      },
+      "recomendado_en": ["spa", "oficina_ejecutiva", "dormitorio", "recepcion_premium", "ritual", "lobby_zen", "yoga_premium"],
+      "evitar_en": ["guarderia_infantil", "bar_nocturno_energetico", "restaurante_rapido", "gym_alto_impacto"],
+      "confianza": "alta",
+      "fuente": "Sense of Smell Institute · alfa-santalol y serenidad",
+      "justificacion": "Sandalo (alfa-santalol) tiene evidencia de modulacion EEG hacia estado relajado-alerta. Signature de quiet luxury y meditacion. Inadecuado en contextos de alta energia o infantil por carga adulta-contemplativa."
+    },
+    {
+      "id": "R049",
+      "si": "notas contains musk",
+      "entonces": {
+        "energia": "neutra",
+        "temperatura_emocional": "templado",
+        "persistencia": "larga",
+        "nivel_lujo_sugerido": 4,
+        "familia_visual_compatible": ["minimalista_nordico", "japandi", "clasico_transicional", "contemporaneo_calido"],
+        "tipo_cliente_ideal": ["spa", "lobby premium", "retail moda", "dormitorio", "boutique fashion"]
+      },
+      "recomendado_en": ["spa", "lobby_premium", "retail_moda", "dormitorio", "boutique_fashion", "hotel_premium", "salon_belleza"],
+      "evitar_en": [],
+      "confianza": "media",
+      "fuente": "Aroma marketing retail · musk como comodin aspiracional",
+      "justificacion": "Musk blanco es la nota mas universal de la perfumeria moderna: limpio, aspiracional, sin punto de friccion fuerte. Funciona como comodin transversal sin contraindicaciones serias."
+    },
+    {
+      "id": "R050",
+      "si": "notas contains cardamomo",
+      "entonces": {
+        "temperatura_emocional": "calido",
+        "energia": "neutra",
+        "nivel_lujo_sugerido": 4,
+        "familia_visual_compatible": ["contemporaneo_calido", "arabe_contemporaneo", "clasico_transicional", "industrial"],
+        "tipos_cocina_compatibles": ["asiatica_oriental", "mexicana_contemporanea", "internacional_lujo", "fine_dining_creativo"],
+        "tipos_bebida_compatibles": ["cafe_especialidad", "destilados_premium", "te_e_infusiones"],
+        "tipo_cliente_ideal": ["restaurante autor", "lobby premium", "oficina ejecutiva", "cafeteria especialidad"]
+      },
+      "recomendado_en": ["restaurante_autor", "lobby_premium", "oficina_ejecutiva", "cafeteria_especialidad", "concept_arabe"],
+      "evitar_en": ["guarderia_infantil", "restaurante_rapido_infantil"],
+      "confianza": "media",
+      "fuente": "Perfumeria oriental contemporanea + sensory dining",
+      "justificacion": "Cardamomo es especiado elegante con bridge entre arabe y fine dining contemporaneo. Maridaje natural con cafe de especialidad y postres especiados."
     }
   ],
 
@@ -1121,13 +1287,13 @@
       { "familia": "orientales_ambar",    "gastronomica": true,  "cocinas": ["mexicana_contemporanea", "internacional_lujo", "asiatica_oriental", "fine_dining_creativo"],               "sabores": ["dulce", "picante", "umami"],        "bebida": ["destilados_premium", "vinos_tintos", "cafe_especialidad"],                "momento": "cena",            "maridaje": "Orientales especiados funcionan en fusion arabe-mexicana, mole, curry y postres con especia." },
       { "familia": "gourmand",            "gastronomica": true,  "cocinas": ["pasteleria_cafeteria", "comfort_food", "internacional_lujo"],                                              "sabores": ["dulce"],                            "bebida": ["cafe_especialidad", "cocteleria_clasica", "destilados_premium"],          "momento": "merienda",        "maridaje": "Gourmand acoge postres, reposteria, brunch dulce, chocolateria." },
       { "familia": "aromaticas_herbales", "gastronomica": true,  "cocinas": ["mediterranea", "vegetariana_saludable", "fine_dining_creativo"],                                           "sabores": ["amargo", "salado", "acido_citrico"], "bebida": ["te_e_infusiones", "cerveza_artesanal", "cocteleria_de_autor"],            "momento": "almuerzo",        "maridaje": "Herbal mediterraneo (romero, tomillo, salvia) en mediterranea, vegetariana saludable y fine dining con hierbas frescas." },
-      { "familia": "verdes_te",           "gastronomica": true,  "cocinas": ["asiatica_oriental", "sushi_omakase", "vegetariana_saludable"],                                              "sabores": ["amargo", "umami"],                  "bebida": ["te_e_infusiones", "mocktails", "cerveza_artesanal"],                       "momento": "almuerzo",        "maridaje": "Te verde y matcha en cocina asiatica, sushi y vegetariana. Limpia paladar y refuerza umami." },
-      { "familia": "cuero_tabaco",        "gastronomica": true,  "cocinas": ["parrilla_steakhouse", "internacional_lujo"],                                                                 "sabores": ["umami", "salado"],                  "bebida": ["destilados_premium", "vinos_tintos", "cocteleria_clasica"],                "momento": "coctel_post_cena","maridaje": "Cuero y tabaco rubio en steakhouse, whisky bar, coctel post cena con destilados anejos." },
+      { "familia": "verdes_te",           "gastronomica": true,  "cocinas": ["asiatica_oriental", "sushi_omakase", "vegetariana_saludable"],                                              "sabores": ["amargo", "umami"],                  "bebida": ["te_e_infusiones", "mocktails", "cocteleria_de_autor", "vinos_blancos"],     "momento": "almuerzo",        "maridaje": "Te verde y matcha en cocina asiatica, sushi y vegetariana. Limpia paladar y refuerza umami." },
+      { "familia": "cuero_tabaco",        "gastronomica": true,  "cocinas": ["parrilla_steakhouse", "internacional_lujo"],                                                                 "sabores": ["umami", "salado"],                  "bebida": ["destilados_premium", "vinos_tintos", "cafe_especialidad", "cocteleria_clasica"], "momento": "coctel_post_cena","maridaje": "Cuero y tabaco rubio en steakhouse, whisky bar, coctel post cena con destilados anejos. Cafe negro corto cierra perfecto." },
       { "familia": "frutales",            "gastronomica": true,  "cocinas": ["pasteleria_cafeteria", "comfort_food", "vegetariana_saludable"],                                            "sabores": ["dulce", "acido_citrico"],           "bebida": ["cocteleria_de_autor", "mocktails", "vinos_espumosos"],                     "momento": "brunch",          "maridaje": "Frutales en pasteleria, brunch fresco, postres frutales, helados." },
       { "familia": "florales_blancas",    "gastronomica": false, "cocinas": [], "sabores": [], "bebida": ["vinos_blancos", "vinos_espumosos", "te_e_infusiones", "mocktails"], "momento": "", "maridaje": "Florales blancos uso ambiental; bebida solo para sugerencia de fondo (vinos blancos / espumosos / té / mocktails). No maridan en plato." },
-      { "familia": "florales_suaves",     "gastronomica": false, "cocinas": [], "sabores": [], "bebida": [],                                                                  "momento": "", "maridaje": "Florales suaves uso ambiental; sin maridaje gastronomico recomendado." },
-      { "familia": "amaderadas_humedas",  "gastronomica": false, "cocinas": [], "sabores": [], "bebida": [],                                                                  "momento": "", "maridaje": "Patchouli y vetiver humedo no funcionan en mesa; saturan paladar." },
-      { "familia": "acuaticas",           "gastronomica": false, "cocinas": [], "sabores": [], "bebida": [],                                                                  "momento": "", "maridaje": "Acuaticos leen como aire abierto; no aportan al paladar." },
+      { "familia": "florales_suaves",     "gastronomica": false, "cocinas": [], "sabores": [], "bebida": ["vinos_blancos", "te_e_infusiones", "mocktails", "cafe_especialidad"],                  "momento": "", "maridaje": "Florales suaves uso ambiental; bebida sugerida (confianza media) para Olfativa Home: vino blanco ligero, té, mocktails, cafe especialidad." },
+      { "familia": "amaderadas_humedas",  "gastronomica": false, "cocinas": [], "sabores": [], "bebida": ["destilados_premium", "vinos_tintos", "cafe_especialidad", "te_e_infusiones"],          "momento": "", "maridaje": "Patchouli y vetiver humedo no funcionan en mesa; bebida sugerida para acompañar el ambiente: destilados anejos, tintos, cafe oscuro." },
+      { "familia": "acuaticas",           "gastronomica": false, "cocinas": [], "sabores": [], "bebida": ["mocktails", "vinos_blancos", "te_e_infusiones", "refrescos_y_jugos"],                   "momento": "", "maridaje": "Acuaticos leen como aire abierto; bebida sugerida fresca: mocktails, vinos blancos, te frio, refrescos." },
       { "familia": "chipre",              "gastronomica": false, "cocinas": [], "sabores": [], "bebida": ["vinos_tintos", "destilados_premium", "cocteleria_clasica"],        "momento": "", "maridaje": "Chipre uso lobby/hospitality; bebida sugerida como fondo de barra clasica (tintos / destilados anejos / coctel clasico)." }
     ]
   },
