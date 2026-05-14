@@ -1,0 +1,968 @@
+{
+  "meta": {
+    "version": "1.1.0",
+    "fecha": "2026-05-14",
+    "autor": "Olfativa · ronda 6 foundations cientificas · marco 5 sentidos",
+    "nota": "Reglas operativas para seedFromFoundations(). Cada aroma se evalua contra todas las reglas; las que matchean acumulan campos tipo_a (escalares: last-wins, listas: union deduplicada). Niveles de confianza: alta = consenso en literatura aromacologica, media = inferencia razonable apoyada en perfil quimico o practica de diseno, baja = default operativo sin base solida, override esperable de Tony.",
+    "fuentes": [
+      "Hirsch A.R. · Aroma marketing y respuesta emocional al olor",
+      "Herz R.S. · The Scent of Desire · psicologia del olfato",
+      "Jellinek J.S. · The Psychological Basis of Perfumery",
+      "IFRA · guias publicas de aplicacion ambiental",
+      "Sense of Smell Institute · briefings publicos",
+      "Olfativa scent-iq-knowledge.js · 8 familias visuales y 8 objetivos",
+      "Principios de diseno interior: temperatura de color, texturas, acustica",
+      "Maridaje aroma-cocina · literatura gastronomica y sensory dining"
+    ],
+    "marco": "5_sentidos",
+    "campos_tipo_a_que_alimenta": {
+      "olfato": ["intensidad_sugerida", "persistencia", "temperatura_emocional", "energia"],
+      "vista": ["familia_visual_compatible", "paleta_cromatica_sugerida", "tipo_luz_compatible", "intensidad_luminica"],
+      "tacto": ["texturas_compatibles", "peso_visual_mobiliario", "densidad_textil"],
+      "oido": ["generos_musicales_compatibles", "bpm_sugerido", "instrumentacion_predominante", "ambiente_sonoro"],
+      "gusto": ["tipos_cocina_compatibles", "sabores_predominantes_compatibles", "momento_consumo", "maridaje_conceptual"],
+      "general": ["contextos_recomendados", "contextos_a_evitar", "tipo_cliente_ideal", "nivel_lujo_sugerido"]
+    },
+    "vocabularios_controlados": {
+      "familia_visual_compatible": ["minimalista_nordico", "japandi", "boho_mediterraneo", "contemporaneo_calido", "clasico_transicional", "industrial", "glam_nocturno", "arabe_contemporaneo", "biophilic", "costero_tropical"],
+      "tipo_luz_compatible": ["led_frio_5000k", "neutro_4000k", "calido_2700k", "ambar_2200k", "mixto"],
+      "intensidad_luminica": ["alta_directa", "media_difusa", "baja_intima"],
+      "texturas_compatibles": ["lino_algodon", "vidrio_metal_pulido", "madera_natural", "boucle_lana", "terciopelo_seda", "cuero", "marmol", "latones", "ratan_yute", "cemento_pulido"],
+      "peso_visual_mobiliario": ["ligero", "medio", "opulento"],
+      "densidad_textil": ["etereo", "ligero", "medio", "denso", "opulento"],
+      "generos_musicales_compatibles": ["ambient_spa", "jazz_lounge", "bossa", "soul_rnb", "house_pop", "electronico_melodico", "clasico", "world", "acustico_indie", "opera", "lounge_oriental"],
+      "bpm_sugerido": ["50-70", "70-95", "95-115", "115-130"],
+      "instrumentacion_predominante": ["cuerdas", "piano", "electronica", "voz", "mixto"],
+      "ambiente_sonoro": ["silencio_natural", "murmullo_humano", "musica_protagonista"],
+      "tipos_cocina_compatibles": ["mediterranea", "asiatica_oriental", "mexicana_contemporanea", "internacional_lujo", "comfort_food", "sushi_omakase", "parrilla_steakhouse", "pasteleria_cafeteria", "vegetariana_saludable", "fine_dining_creativo"],
+      "sabores_predominantes_compatibles": ["dulce", "salado", "umami", "acido_citrico", "amargo", "picante"],
+      "momento_consumo": ["desayuno", "brunch", "almuerzo", "merienda", "cena", "coctel_post_cena"],
+      "energia": ["calmante", "neutra", "estimulante", "euforizante"],
+      "temperatura_emocional": ["frio", "fresco", "templado", "calido", "caliente"],
+      "persistencia": ["corta", "media", "larga"],
+      "intensidad_sugerida": ["1", "2", "3", "4", "5"],
+      "nivel_lujo_sugerido": ["1", "2", "3", "4", "5"]
+    },
+    "gramatica_condicion_si": {
+      "formato": "expresion atomica · operadores soportados ==, contains",
+      "campos": "familia, sublinea, acordes, notas, objetivos, flags.<key>",
+      "ejemplos": [
+        "familia==citricas",
+        "acordes contains menta",
+        "notas contains oud",
+        "flags.odor_control==true",
+        "familia contains amaderada"
+      ],
+      "normalizacion": "Comparaciones case-insensitive y sin acentos. El parser del seed se encarga."
+    }
+  },
+
+  "familias_olfativas": [
+    { "id": "citricas",            "alias": ["Cítricas", "Cítricos"],                                     "perfil": "Volatiles ligeras (limoneno, linalool), cabeza dominante.",                   "energia_base": "estimulante", "temperatura_base": "fresco",   "persistencia_base": "corta", "intensidad_base": 3, "nivel_lujo_base": 2, "gastronomica": true },
+    { "id": "florales_blancas",    "alias": ["Florales blancas", "Azahar", "Gardenia", "Jazmín", "Magnolia"], "perfil": "Indolicas y absolutos densos (jazmin, gardenia, azahar, magnolia).",       "energia_base": "neutra",      "temperatura_base": "templado", "persistencia_base": "media", "intensidad_base": 3, "nivel_lujo_base": 4, "gastronomica": false },
+    { "id": "florales_suaves",     "alias": ["Florales", "Rosa", "Peonia", "Muguet"],                     "perfil": "Rosa, peonia, muguet · estructura ligera.",                                  "energia_base": "calmante",    "temperatura_base": "templado", "persistencia_base": "media", "intensidad_base": 2, "nivel_lujo_base": 3, "gastronomica": false },
+    { "id": "amaderadas_secas",    "alias": ["Amaderadas", "Madera", "Cedro", "Sándalo seco"],            "perfil": "Cedro, sandalo seco, vetiver suave.",                                        "energia_base": "calmante",    "temperatura_base": "templado", "persistencia_base": "larga", "intensidad_base": 3, "nivel_lujo_base": 4, "gastronomica": true },
+    { "id": "amaderadas_humedas",  "alias": ["Patchouli", "Vetiver húmedo", "Maderas húmedas"],           "perfil": "Patchouli, vetiver humedo, oakmoss. Densidad terrosa.",                       "energia_base": "neutra",      "temperatura_base": "calido",   "persistencia_base": "larga", "intensidad_base": 4, "nivel_lujo_base": 4, "gastronomica": false },
+    { "id": "orientales_ambar",    "alias": ["Orientales", "Ámbar", "Resinas", "Incienso"],               "perfil": "Ambar, benjui, incienso, resinas. Cuerpo envolvente.",                        "energia_base": "neutra",      "temperatura_base": "calido",   "persistencia_base": "larga", "intensidad_base": 4, "nivel_lujo_base": 5, "gastronomica": true },
+    { "id": "gourmand",            "alias": ["Gourmand", "Vainilla", "Caramelo", "Chocolate", "Praline"], "perfil": "Vainilla, caramelo, praline, tonka. Dulzor comestible.",                      "energia_base": "calmante",    "temperatura_base": "calido",   "persistencia_base": "larga", "intensidad_base": 4, "nivel_lujo_base": 3, "gastronomica": true },
+    { "id": "acuaticas",           "alias": ["Acuáticas", "Marinas", "Ozónicas", "Sal marina"],           "perfil": "Calone, sal marina, ozono.",                                                  "energia_base": "estimulante", "temperatura_base": "frio",     "persistencia_base": "corta", "intensidad_base": 2, "nivel_lujo_base": 2, "gastronomica": false },
+    { "id": "aromaticas_herbales", "alias": ["Aromáticas", "Herbales", "Lavanda", "Romero", "Eucalipto"], "perfil": "Lavanda, romero, eucalipto, salvia, tomillo.",                                "energia_base": "calmante",    "temperatura_base": "templado", "persistencia_base": "media", "intensidad_base": 3, "nivel_lujo_base": 3, "gastronomica": true },
+    { "id": "verdes_te",           "alias": ["Té", "Té blanco", "Té verde", "Té negro", "Verdes"],        "perfil": "Te blanco, te verde, hierba cortada.",                                        "energia_base": "neutra",      "temperatura_base": "fresco",   "persistencia_base": "media", "intensidad_base": 2, "nivel_lujo_base": 3, "gastronomica": true },
+    { "id": "cuero_tabaco",        "alias": ["Cuero", "Tabaco", "Leather"],                               "perfil": "Cuero curtido, tabaco rubio, ron, whisky.",                                   "energia_base": "neutra",      "temperatura_base": "calido",   "persistencia_base": "larga", "intensidad_base": 4, "nivel_lujo_base": 5, "gastronomica": true },
+    { "id": "chipre",              "alias": ["Chipre", "Chypre"],                                          "perfil": "Bergamota + oakmoss + labdano.",                                              "energia_base": "neutra",      "temperatura_base": "templado", "persistencia_base": "larga", "intensidad_base": 3, "nivel_lujo_base": 5, "gastronomica": false },
+    { "id": "frutales",            "alias": ["Frutales", "Manzana", "Pera", "Frutos rojos", "Tropical"], "perfil": "Manzana, pera, frutos rojos, frutal tropical.",                               "energia_base": "estimulante", "temperatura_base": "templado", "persistencia_base": "media", "intensidad_base": 3, "nivel_lujo_base": 2, "gastronomica": true }
+  ],
+
+  "reglas_psicoaromacologia": [
+    {
+      "id": "R001",
+      "si": "familia==citricas",
+      "entonces": {
+        "energia": "estimulante",
+        "temperatura_emocional": "fresco",
+        "persistencia": "corta",
+        "intensidad_sugerida": 3,
+        "nivel_lujo_sugerido": 2,
+        "familia_visual_compatible": ["minimalista_nordico", "japandi", "costero_tropical", "biophilic"],
+        "paleta_cromatica_sugerida": ["blanco hueso", "amarillo limon suave", "verde lima", "azul cielo"],
+        "tipo_luz_compatible": ["led_frio_5000k", "neutro_4000k"],
+        "intensidad_luminica": "alta_directa",
+        "texturas_compatibles": ["lino_algodon", "vidrio_metal_pulido", "madera_natural", "ratan_yute"],
+        "peso_visual_mobiliario": "ligero",
+        "densidad_textil": "ligero",
+        "generos_musicales_compatibles": ["bossa", "acustico_indie", "jazz_lounge", "house_pop"],
+        "bpm_sugerido": "95-115",
+        "instrumentacion_predominante": "mixto",
+        "ambiente_sonoro": "musica_protagonista",
+        "tipo_cliente_ideal": ["retail diurno", "oficinas creativas", "wellness activo", "hospitality casual", "cafeteria", "gastronomico ligero"]
+      },
+      "recomendado_en": ["oficina", "retail diurno", "lobby matutino", "co-working", "cafeteria"],
+      "evitar_en": ["dormitorio nocturno", "spa de noche", "bar evening"],
+      "confianza": "alta",
+      "fuente": "Hirsch · Aroma marketing · citricos y atencion",
+      "justificacion": "Limoneno y linalool activan via simpaticomimetica, asociados a aumento de alerta. Volatilidad alta -> persistencia corta."
+    },
+    {
+      "id": "R002",
+      "si": "familia==citricas",
+      "entonces": {
+        "tipos_cocina_compatibles": ["mediterranea", "sushi_omakase", "vegetariana_saludable", "fine_dining_creativo", "pasteleria_cafeteria"],
+        "sabores_predominantes_compatibles": ["acido_citrico", "dulce", "salado"],
+        "momento_consumo": "almuerzo",
+        "maridaje_conceptual": "Citricos aligeran sushi y pescados, refuerzan postres frescos (limon, yuzu, naranja), funcionan en cocina mediterranea soleada y brunch luminoso."
+      },
+      "confianza": "alta",
+      "fuente": "Sensory dining · citrico y paladar",
+      "justificacion": "Acordes citricos limpian paladar entre platos y refuerzan acidos en cocina ligera. Bien documentado en sushi y mediterranea."
+    },
+    {
+      "id": "R003",
+      "si": "familia==florales_blancas",
+      "entonces": {
+        "energia": "neutra",
+        "temperatura_emocional": "templado",
+        "persistencia": "media",
+        "intensidad_sugerida": 3,
+        "nivel_lujo_sugerido": 4,
+        "familia_visual_compatible": ["clasico_transicional", "glam_nocturno", "boho_mediterraneo", "arabe_contemporaneo"],
+        "paleta_cromatica_sugerida": ["blanco perla", "marfil", "rosa empolvado", "champagne"],
+        "tipo_luz_compatible": ["calido_2700k", "ambar_2200k"],
+        "intensidad_luminica": "media_difusa",
+        "texturas_compatibles": ["terciopelo_seda", "boucle_lana", "marmol", "latones"],
+        "peso_visual_mobiliario": "medio",
+        "densidad_textil": "denso",
+        "generos_musicales_compatibles": ["clasico", "jazz_lounge", "opera", "soul_rnb"],
+        "bpm_sugerido": "70-95",
+        "instrumentacion_predominante": "cuerdas",
+        "ambiente_sonoro": "murmullo_humano",
+        "tipo_cliente_ideal": ["hotelería premium", "boutique femenino", "salones evento", "spa de noche"]
+      },
+      "recomendado_en": ["lobby hotel", "boutique femenina", "salon eventos", "suite presidencial"],
+      "evitar_en": ["oficina corporativa", "clinica", "gimnasio", "guarderia"],
+      "confianza": "alta",
+      "fuente": "Jellinek · psicologia de florales blancas",
+      "justificacion": "Indolicos (jazmin, gardenia, azahar) cargan tension sensual percibida. Funcionan en contextos con narrativa adulta."
+    },
+    {
+      "id": "R004",
+      "si": "familia==florales_suaves",
+      "entonces": {
+        "energia": "calmante",
+        "temperatura_emocional": "templado",
+        "persistencia": "media",
+        "intensidad_sugerida": 2,
+        "nivel_lujo_sugerido": 3,
+        "familia_visual_compatible": ["clasico_transicional", "minimalista_nordico", "japandi", "boho_mediterraneo"],
+        "paleta_cromatica_sugerida": ["rosa polvo", "blanco roto", "verde salvia", "beige claro"],
+        "tipo_luz_compatible": ["neutro_4000k", "calido_2700k"],
+        "intensidad_luminica": "media_difusa",
+        "texturas_compatibles": ["lino_algodon", "boucle_lana", "terciopelo_seda"],
+        "peso_visual_mobiliario": "ligero",
+        "densidad_textil": "ligero",
+        "generos_musicales_compatibles": ["clasico", "ambient_spa", "acustico_indie"],
+        "bpm_sugerido": "70-95",
+        "instrumentacion_predominante": "piano",
+        "ambiente_sonoro": "silencio_natural",
+        "tipo_cliente_ideal": ["residencial femenino", "spa premium", "boutique floral"]
+      },
+      "recomendado_en": ["dormitorio principal", "spa", "salon de te", "consultorio bienestar"],
+      "evitar_en": ["bar nocturno", "showroom industrial"],
+      "confianza": "media",
+      "fuente": "Herz · linalool y reduccion de ansiedad",
+      "justificacion": "Rosa y muguet con geraniol/citronellol y efecto ansiolitico suave, sin carga indolica del jazmin."
+    },
+    {
+      "id": "R005",
+      "si": "familia==amaderadas_secas",
+      "entonces": {
+        "energia": "calmante",
+        "temperatura_emocional": "templado",
+        "persistencia": "larga",
+        "intensidad_sugerida": 3,
+        "nivel_lujo_sugerido": 4,
+        "familia_visual_compatible": ["contemporaneo_calido", "industrial", "clasico_transicional", "japandi"],
+        "paleta_cromatica_sugerida": ["nogal", "topo", "gris piedra", "tabaco claro"],
+        "tipo_luz_compatible": ["calido_2700k", "ambar_2200k"],
+        "intensidad_luminica": "media_difusa",
+        "texturas_compatibles": ["madera_natural", "boucle_lana", "cuero", "marmol"],
+        "peso_visual_mobiliario": "medio",
+        "densidad_textil": "medio",
+        "generos_musicales_compatibles": ["jazz_lounge", "clasico", "ambient_spa", "electronico_melodico"],
+        "bpm_sugerido": "70-95",
+        "instrumentacion_predominante": "cuerdas",
+        "ambiente_sonoro": "murmullo_humano",
+        "tipo_cliente_ideal": ["oficina ejecutiva", "lobby premium", "showroom adulto", "estudio creativo"]
+      },
+      "recomendado_en": ["oficina ejecutiva", "lobby premium", "biblioteca", "showroom adulto"],
+      "evitar_en": ["guarderia", "pool diurno tropical"],
+      "confianza": "alta",
+      "fuente": "Sense of Smell Institute · sandalol y serenidad",
+      "justificacion": "Alfa-santalol (sandalo) y cedrol modulan ondas cerebrales hacia estado relajado-alerta. Base de quiet luxury."
+    },
+    {
+      "id": "R006",
+      "si": "familia==amaderadas_secas",
+      "entonces": {
+        "tipos_cocina_compatibles": ["parrilla_steakhouse", "internacional_lujo", "fine_dining_creativo"],
+        "sabores_predominantes_compatibles": ["umami", "salado"],
+        "momento_consumo": "cena",
+        "maridaje_conceptual": "Maderas secas (cedro, sandalo) refuerzan humo y carne madurada en steakhouse y carbon. Cardamomo con cedro funciona en cocina con especiado contenido."
+      },
+      "confianza": "media",
+      "fuente": "Sensory dining · madera y umami",
+      "justificacion": "Cedro y sandalo dialogan con carne madurada y humo de brasa. Cuerpo serio para cena formal."
+    },
+    {
+      "id": "R007",
+      "si": "familia==amaderadas_humedas",
+      "entonces": {
+        "energia": "neutra",
+        "temperatura_emocional": "calido",
+        "persistencia": "larga",
+        "intensidad_sugerida": 4,
+        "nivel_lujo_sugerido": 4,
+        "familia_visual_compatible": ["industrial", "boho_mediterraneo", "glam_nocturno"],
+        "paleta_cromatica_sugerida": ["chocolate", "verde botella", "ladrillo", "negro humo"],
+        "tipo_luz_compatible": ["ambar_2200k", "calido_2700k"],
+        "intensidad_luminica": "baja_intima",
+        "texturas_compatibles": ["terciopelo_seda", "cuero", "cemento_pulido"],
+        "peso_visual_mobiliario": "opulento",
+        "densidad_textil": "denso",
+        "generos_musicales_compatibles": ["electronico_melodico", "lounge_oriental", "jazz_lounge"],
+        "bpm_sugerido": "95-115",
+        "instrumentacion_predominante": "electronica",
+        "ambiente_sonoro": "musica_protagonista",
+        "tipo_cliente_ideal": ["bar tematico", "estudio adulto", "boutique nicho"]
+      },
+      "recomendado_en": ["bar lounge", "concept store", "estudio fotografico"],
+      "evitar_en": ["clinica", "guarderia", "oficina luminosa"],
+      "confianza": "media",
+      "fuente": "Jellinek · patchouli como signature de identidad",
+      "justificacion": "Patchouli y vetiver humedo dejan estela densa; saturan rapido espacios pequenos y leen mal en contextos clinicos."
+    },
+    {
+      "id": "R008",
+      "si": "familia==orientales_ambar",
+      "entonces": {
+        "energia": "neutra",
+        "temperatura_emocional": "calido",
+        "persistencia": "larga",
+        "intensidad_sugerida": 4,
+        "nivel_lujo_sugerido": 5,
+        "familia_visual_compatible": ["glam_nocturno", "arabe_contemporaneo", "contemporaneo_calido"],
+        "paleta_cromatica_sugerida": ["vino burdeos", "dorado mate", "negro profundo", "ambar miel"],
+        "tipo_luz_compatible": ["ambar_2200k", "calido_2700k"],
+        "intensidad_luminica": "baja_intima",
+        "texturas_compatibles": ["terciopelo_seda", "latones", "marmol", "cuero"],
+        "peso_visual_mobiliario": "opulento",
+        "densidad_textil": "opulento",
+        "generos_musicales_compatibles": ["lounge_oriental", "world", "electronico_melodico", "soul_rnb"],
+        "bpm_sugerido": "95-115",
+        "instrumentacion_predominante": "mixto",
+        "ambiente_sonoro": "musica_protagonista",
+        "tipo_cliente_ideal": ["bar luxury", "boutique evening", "social club", "suite presidencial", "gastronomico fusion"]
+      },
+      "recomendado_en": ["bar nocturno", "salon social", "suite hotel", "boutique evening"],
+      "evitar_en": ["spa wellness", "guarderia", "clinica", "cafeteria diurna"],
+      "confianza": "alta",
+      "fuente": "Hirsch + Jellinek · ambar y memorabilidad",
+      "justificacion": "Resinas (benjui, labdano) con memorabilidad alta y signature olfativa percibida como lujo."
+    },
+    {
+      "id": "R009",
+      "si": "familia==orientales_ambar",
+      "entonces": {
+        "tipos_cocina_compatibles": ["mexicana_contemporanea", "internacional_lujo", "asiatica_oriental", "fine_dining_creativo"],
+        "sabores_predominantes_compatibles": ["dulce", "picante", "umami"],
+        "momento_consumo": "cena",
+        "maridaje_conceptual": "Orientales especiados (cardamomo, canela, azafran) funcionan en fusion arabe-mexicana, mole, curry y postres con especia. Coctel post cena con maderas dulces."
+      },
+      "confianza": "media",
+      "fuente": "Sensory dining · especiado y fusion",
+      "justificacion": "Orientales especiados dialogan con cocinas con base especiada. Carga lujo en cena evening."
+    },
+    {
+      "id": "R010",
+      "si": "familia==gourmand",
+      "entonces": {
+        "energia": "calmante",
+        "temperatura_emocional": "calido",
+        "persistencia": "larga",
+        "intensidad_sugerida": 4,
+        "nivel_lujo_sugerido": 3,
+        "familia_visual_compatible": ["clasico_transicional", "boho_mediterraneo", "contemporaneo_calido"],
+        "paleta_cromatica_sugerida": ["caramelo", "crema", "rosa palo", "marron chocolate"],
+        "tipo_luz_compatible": ["calido_2700k", "ambar_2200k"],
+        "intensidad_luminica": "media_difusa",
+        "texturas_compatibles": ["boucle_lana", "terciopelo_seda", "madera_natural"],
+        "peso_visual_mobiliario": "medio",
+        "densidad_textil": "denso",
+        "generos_musicales_compatibles": ["soul_rnb", "jazz_lounge", "acustico_indie"],
+        "bpm_sugerido": "70-95",
+        "instrumentacion_predominante": "voz",
+        "ambiente_sonoro": "murmullo_humano",
+        "tipo_cliente_ideal": ["pasteleria premium", "boutique kids/femenino", "hotel familiar", "lobby cozy", "gastronomico dulce"]
+      },
+      "recomendado_en": ["pasteleria", "lobby invierno", "tienda regalos", "salon te"],
+      "evitar_en": ["oficina foco", "co-working", "restaurante savory", "clinica"],
+      "confianza": "alta",
+      "fuente": "Herz · gourmand y adormecimiento cognitivo",
+      "justificacion": "Vainilla y caramelo aumentan placer percibido pero bajan alerta; compiten con aroma de comida salada."
+    },
+    {
+      "id": "R011",
+      "si": "familia==gourmand",
+      "entonces": {
+        "tipos_cocina_compatibles": ["pasteleria_cafeteria", "comfort_food", "internacional_lujo"],
+        "sabores_predominantes_compatibles": ["dulce"],
+        "momento_consumo": "merienda",
+        "maridaje_conceptual": "Gourmand acoge bien postres, reposteria, brunch dulce, chocolateria. Vainilla y caramelo amplifican lectura de confort comestible."
+      },
+      "confianza": "alta",
+      "fuente": "Sensory dining · gourmand y postre",
+      "justificacion": "Vainillina y notas comestibles son maridaje natural con pasteleria. Compiten con savory."
+    },
+    {
+      "id": "R012",
+      "si": "familia==acuaticas",
+      "entonces": {
+        "energia": "estimulante",
+        "temperatura_emocional": "frio",
+        "persistencia": "corta",
+        "intensidad_sugerida": 2,
+        "nivel_lujo_sugerido": 2,
+        "familia_visual_compatible": ["costero_tropical", "biophilic", "minimalista_nordico"],
+        "paleta_cromatica_sugerida": ["azul agua", "blanco arena", "verde mar", "gris perla"],
+        "tipo_luz_compatible": ["led_frio_5000k", "neutro_4000k"],
+        "intensidad_luminica": "alta_directa",
+        "texturas_compatibles": ["lino_algodon", "vidrio_metal_pulido", "ratan_yute"],
+        "peso_visual_mobiliario": "ligero",
+        "densidad_textil": "etereo",
+        "generos_musicales_compatibles": ["ambient_spa", "house_pop", "electronico_melodico"],
+        "bpm_sugerido": "95-115",
+        "instrumentacion_predominante": "electronica",
+        "ambiente_sonoro": "silencio_natural",
+        "tipo_cliente_ideal": ["hotel costero", "spa marino", "gimnasio premium", "retail playa"]
+      },
+      "recomendado_en": ["hotel costero", "spa marino", "lobby playa", "gym premium"],
+      "evitar_en": ["bar evening", "boutique evening", "espacios sin ventilacion"],
+      "confianza": "media",
+      "fuente": "Marketing acuatico · IFRA briefings",
+      "justificacion": "Calone y notas ozonicas leen como aire abierto. Persistencia baja por volatilidad."
+    },
+    {
+      "id": "R013",
+      "si": "familia==aromaticas_herbales",
+      "entonces": {
+        "energia": "calmante",
+        "temperatura_emocional": "templado",
+        "persistencia": "media",
+        "intensidad_sugerida": 3,
+        "nivel_lujo_sugerido": 3,
+        "familia_visual_compatible": ["biophilic", "japandi", "minimalista_nordico", "boho_mediterraneo"],
+        "paleta_cromatica_sugerida": ["verde salvia", "verde oliva", "beige natural", "blanco roto"],
+        "tipo_luz_compatible": ["neutro_4000k", "calido_2700k"],
+        "intensidad_luminica": "media_difusa",
+        "texturas_compatibles": ["lino_algodon", "madera_natural", "ratan_yute"],
+        "peso_visual_mobiliario": "medio",
+        "densidad_textil": "ligero",
+        "generos_musicales_compatibles": ["ambient_spa", "acustico_indie", "clasico"],
+        "bpm_sugerido": "50-70",
+        "instrumentacion_predominante": "piano",
+        "ambiente_sonoro": "silencio_natural",
+        "tipo_cliente_ideal": ["spa", "yoga studio", "clinica wellness", "consultorio integrativo"]
+      },
+      "recomendado_en": ["spa", "yoga", "consultorio bienestar", "retiro wellness"],
+      "evitar_en": ["bar nocturno", "showroom glam"],
+      "confianza": "alta",
+      "fuente": "Herz · lavanda y reduccion de cortisol",
+      "justificacion": "Linalool de lavanda con evidencia clinica de reduccion de cortisol y mejora del sueno."
+    },
+    {
+      "id": "R014",
+      "si": "familia==aromaticas_herbales",
+      "entonces": {
+        "tipos_cocina_compatibles": ["mediterranea", "vegetariana_saludable", "fine_dining_creativo"],
+        "sabores_predominantes_compatibles": ["amargo", "salado", "acido_citrico"],
+        "momento_consumo": "almuerzo",
+        "maridaje_conceptual": "Herbal mediterraneo (romero, tomillo, salvia) funciona en cocina mediterranea, vegetariana saludable y fine dining con hierbas frescas."
+      },
+      "confianza": "media",
+      "fuente": "Sensory dining · hierbas y mediterranea",
+      "justificacion": "Herbal aromatico es maridaje historico con mediterranea y vegetariana de autor."
+    },
+    {
+      "id": "R015",
+      "si": "familia==verdes_te",
+      "entonces": {
+        "energia": "neutra",
+        "temperatura_emocional": "fresco",
+        "persistencia": "media",
+        "intensidad_sugerida": 2,
+        "nivel_lujo_sugerido": 3,
+        "familia_visual_compatible": ["minimalista_nordico", "japandi", "biophilic", "contemporaneo_calido"],
+        "paleta_cromatica_sugerida": ["verde te", "blanco hueso", "beige claro", "gris zen"],
+        "tipo_luz_compatible": ["neutro_4000k", "led_frio_5000k"],
+        "intensidad_luminica": "media_difusa",
+        "texturas_compatibles": ["lino_algodon", "madera_natural", "ratan_yute"],
+        "peso_visual_mobiliario": "ligero",
+        "densidad_textil": "ligero",
+        "generos_musicales_compatibles": ["ambient_spa", "clasico", "acustico_indie"],
+        "bpm_sugerido": "50-70",
+        "instrumentacion_predominante": "piano",
+        "ambiente_sonoro": "silencio_natural",
+        "tipo_cliente_ideal": ["wellness premium", "oficina foco", "boutique japandi", "lobby zen"]
+      },
+      "recomendado_en": ["oficina foco", "wellness", "lobby zen", "spa premium", "salon te"],
+      "evitar_en": ["bar evening", "fiesta"],
+      "confianza": "alta",
+      "fuente": "Sense of Smell Institute · te verde y atencion sostenida",
+      "justificacion": "L-teanina y polifenoles del te se asocian a atencion calmada (alpha relaxed). Bridge limpieza-wellness."
+    },
+    {
+      "id": "R016",
+      "si": "familia==verdes_te",
+      "entonces": {
+        "tipos_cocina_compatibles": ["asiatica_oriental", "sushi_omakase", "vegetariana_saludable"],
+        "sabores_predominantes_compatibles": ["amargo", "umami"],
+        "momento_consumo": "almuerzo",
+        "maridaje_conceptual": "Te verde y matcha funcionan en cocina asiatica, sushi y vegetariana. Limpia paladar y refuerza umami sin saturar."
+      },
+      "confianza": "alta",
+      "fuente": "Sensory dining · te y asiatica",
+      "justificacion": "Te es maridaje canonico con cocina asiatica y sushi."
+    },
+    {
+      "id": "R017",
+      "si": "familia==cuero_tabaco",
+      "entonces": {
+        "energia": "neutra",
+        "temperatura_emocional": "calido",
+        "persistencia": "larga",
+        "intensidad_sugerida": 4,
+        "nivel_lujo_sugerido": 5,
+        "familia_visual_compatible": ["industrial", "glam_nocturno", "contemporaneo_calido", "arabe_contemporaneo"],
+        "paleta_cromatica_sugerida": ["cuero coñac", "negro humo", "verde botella", "dorado oscuro"],
+        "tipo_luz_compatible": ["ambar_2200k", "calido_2700k"],
+        "intensidad_luminica": "baja_intima",
+        "texturas_compatibles": ["cuero", "terciopelo_seda", "cemento_pulido", "latones"],
+        "peso_visual_mobiliario": "opulento",
+        "densidad_textil": "denso",
+        "generos_musicales_compatibles": ["jazz_lounge", "soul_rnb", "electronico_melodico"],
+        "bpm_sugerido": "70-95",
+        "instrumentacion_predominante": "voz",
+        "ambiente_sonoro": "murmullo_humano",
+        "tipo_cliente_ideal": ["club caballeros", "boutique masculino", "concept urban", "bar speakeasy", "gastronomico steakhouse"]
+      },
+      "recomendado_en": ["bar caballeros", "tabaqueria", "concept urban", "showroom masculino"],
+      "evitar_en": ["guarderia", "spa", "clinica", "boutique infantil", "wellness"],
+      "confianza": "alta",
+      "fuente": "Jellinek · cuero como masculinidad clasica",
+      "justificacion": "Isobutyl quinoline y cuero sintetico leen como masculinidad-tradicional adulta."
+    },
+    {
+      "id": "R018",
+      "si": "familia==cuero_tabaco",
+      "entonces": {
+        "tipos_cocina_compatibles": ["parrilla_steakhouse", "internacional_lujo"],
+        "sabores_predominantes_compatibles": ["umami", "salado"],
+        "momento_consumo": "coctel_post_cena",
+        "maridaje_conceptual": "Cuero y tabaco rubio funcionan en steakhouse, whisky bar, coctel post cena con destilados anejos. Carne madurada y humo dialogan con la familia."
+      },
+      "confianza": "alta",
+      "fuente": "Sensory dining · cuero y carne",
+      "justificacion": "Cuero/tabaco es maridaje canonico con destilados anejos y carnes."
+    },
+    {
+      "id": "R019",
+      "si": "familia==chipre",
+      "entonces": {
+        "energia": "neutra",
+        "temperatura_emocional": "templado",
+        "persistencia": "larga",
+        "intensidad_sugerida": 3,
+        "nivel_lujo_sugerido": 5,
+        "familia_visual_compatible": ["clasico_transicional", "contemporaneo_calido"],
+        "paleta_cromatica_sugerida": ["verde musgo", "marfil", "ocre suave", "marron tabaco"],
+        "tipo_luz_compatible": ["calido_2700k", "neutro_4000k"],
+        "intensidad_luminica": "media_difusa",
+        "texturas_compatibles": ["boucle_lana", "madera_natural", "marmol"],
+        "peso_visual_mobiliario": "medio",
+        "densidad_textil": "medio",
+        "generos_musicales_compatibles": ["clasico", "jazz_lounge", "opera"],
+        "bpm_sugerido": "70-95",
+        "instrumentacion_predominante": "cuerdas",
+        "ambiente_sonoro": "murmullo_humano",
+        "tipo_cliente_ideal": ["hotelería heritage", "boutique premium", "concept clasico"]
+      },
+      "recomendado_en": ["lobby heritage", "boutique premium", "salon ejecutivo"],
+      "evitar_en": ["guarderia", "fiesta tropical"],
+      "confianza": "media",
+      "fuente": "Jellinek · chipre y status sin estridencia",
+      "justificacion": "Bergamota + oakmoss + labdano forman acorde sofisticado historico de quiet luxury."
+    },
+    {
+      "id": "R020",
+      "si": "familia==frutales",
+      "entonces": {
+        "energia": "estimulante",
+        "temperatura_emocional": "templado",
+        "persistencia": "media",
+        "intensidad_sugerida": 3,
+        "nivel_lujo_sugerido": 2,
+        "familia_visual_compatible": ["boho_mediterraneo", "costero_tropical", "clasico_transicional"],
+        "paleta_cromatica_sugerida": ["rojo cereza", "coral", "verde lima", "amarillo soleado"],
+        "tipo_luz_compatible": ["neutro_4000k", "calido_2700k"],
+        "intensidad_luminica": "alta_directa",
+        "texturas_compatibles": ["lino_algodon", "ratan_yute", "madera_natural"],
+        "peso_visual_mobiliario": "ligero",
+        "densidad_textil": "ligero",
+        "generos_musicales_compatibles": ["bossa", "acustico_indie", "house_pop"],
+        "bpm_sugerido": "95-115",
+        "instrumentacion_predominante": "voz",
+        "ambiente_sonoro": "musica_protagonista",
+        "tipo_cliente_ideal": ["retail juvenil", "hotel familiar", "boutique lifestyle", "cafeteria", "gastronomico postre"]
+      },
+      "recomendado_en": ["retail juvenil", "hotel familiar", "lobby diurno", "cafeteria"],
+      "evitar_en": ["bar luxury", "concept evening", "showroom adulto sobrio"],
+      "confianza": "media",
+      "fuente": "Aroma marketing retail · frutas y permanencia",
+      "justificacion": "Frutales aumentan permanencia y rotacion en retail diurno."
+    },
+    {
+      "id": "R021",
+      "si": "familia==frutales",
+      "entonces": {
+        "tipos_cocina_compatibles": ["pasteleria_cafeteria", "comfort_food", "vegetariana_saludable"],
+        "sabores_predominantes_compatibles": ["dulce", "acido_citrico"],
+        "momento_consumo": "brunch",
+        "maridaje_conceptual": "Frutales dialogan con pasteleria, brunch fresco, postres frutales, helados. Lectura juvenil y luminosa."
+      },
+      "confianza": "media",
+      "fuente": "Sensory dining · frutal y brunch",
+      "justificacion": "Frutales son maridaje natural con postre y brunch luminoso."
+    },
+    {
+      "id": "R022",
+      "si": "acordes contains menta",
+      "entonces": {
+        "energia": "estimulante",
+        "temperatura_emocional": "frio",
+        "tipo_cliente_ideal": ["gimnasio", "clinica dental", "boutique deporte"]
+      },
+      "recomendado_en": ["gimnasio", "consultorio dental", "lobby gym", "vestidor"],
+      "evitar_en": ["dormitorio", "spa relax", "bar lounge", "comedor formal"],
+      "confianza": "alta",
+      "fuente": "Hirsch · mentol y alerta",
+      "justificacion": "Mentol activa receptores TRPM8 (frio) y aumenta alerta. Inadecuado en relajacion profunda."
+    },
+    {
+      "id": "R023",
+      "si": "acordes contains eucalipto",
+      "entonces": {
+        "energia": "estimulante",
+        "temperatura_emocional": "frio",
+        "tipo_cliente_ideal": ["spa de dia", "clinica respiratoria", "gimnasio premium", "sauna"]
+      },
+      "recomendado_en": ["spa diurno", "sauna", "clinica", "gym wellness"],
+      "evitar_en": ["bar nocturno", "boutique evening", "restaurante intimo"],
+      "confianza": "alta",
+      "fuente": "IFRA · eucalipto y respiracion percibida",
+      "justificacion": "1,8-cineol abre lectura de via aerea. Bridge wellness-limpieza."
+    },
+    {
+      "id": "R024",
+      "si": "acordes contains lavanda",
+      "entonces": {
+        "energia": "calmante",
+        "temperatura_emocional": "templado",
+        "bpm_sugerido": "50-70",
+        "ambiente_sonoro": "silencio_natural"
+      },
+      "recomendado_en": ["dormitorio", "spa", "salon meditacion", "consultorio bienestar"],
+      "evitar_en": ["oficina foco", "co-working", "bar evening"],
+      "confianza": "alta",
+      "fuente": "Herz · lavanda y reduccion de ansiedad",
+      "justificacion": "Linalool con evidencia clinica de reduccion de cortisol salival. Marca calma."
+    },
+    {
+      "id": "R025",
+      "si": "notas contains oud",
+      "entonces": {
+        "nivel_lujo_sugerido": 5,
+        "intensidad_sugerida": 5,
+        "temperatura_emocional": "caliente",
+        "persistencia": "larga",
+        "familia_visual_compatible": ["glam_nocturno", "arabe_contemporaneo", "contemporaneo_calido"],
+        "tipo_luz_compatible": ["ambar_2200k"],
+        "intensidad_luminica": "baja_intima",
+        "texturas_compatibles": ["terciopelo_seda", "latones", "cuero", "marmol"],
+        "peso_visual_mobiliario": "opulento",
+        "tipo_cliente_ideal": ["bar luxury", "concept evening", "suite presidencial", "boutique arabe"]
+      },
+      "recomendado_en": ["bar luxury", "suite presidencial", "boutique evening", "concept oriental"],
+      "evitar_en": ["wellness", "guarderia", "clinica", "cafeteria diurna", "gym"],
+      "confianza": "alta",
+      "fuente": "Sense of Smell Institute · oud y prestigio",
+      "justificacion": "Oud (agarwood) carga lujo cultural alto. Densidad incompatible con wellness o infantiles."
+    },
+    {
+      "id": "R026",
+      "si": "notas contains vainilla",
+      "entonces": {
+        "temperatura_emocional": "calido",
+        "energia": "calmante",
+        "tipos_cocina_compatibles": ["pasteleria_cafeteria", "comfort_food"],
+        "sabores_predominantes_compatibles": ["dulce"]
+      },
+      "recomendado_en": ["lobby invierno", "pasteleria", "boutique femenino", "salon te"],
+      "evitar_en": ["oficina foco", "restaurante savory", "showroom industrial"],
+      "confianza": "media",
+      "fuente": "Aroma marketing · vainilla y permanencia",
+      "justificacion": "Vainillina aumenta confort y permanencia; compite con savory."
+    },
+    {
+      "id": "R027",
+      "si": "notas contains café",
+      "entonces": {
+        "energia": "estimulante",
+        "temperatura_emocional": "calido",
+        "tipo_cliente_ideal": ["cafeteria", "boutique gourmand", "lobby breakfast"],
+        "tipos_cocina_compatibles": ["pasteleria_cafeteria", "comfort_food"],
+        "momento_consumo": "desayuno"
+      },
+      "recomendado_en": ["cafeteria", "lobby breakfast", "concept gourmand"],
+      "evitar_en": ["spa", "dormitorio", "consultorio bienestar"],
+      "confianza": "alta",
+      "fuente": "Hirsch · cafe y atencion",
+      "justificacion": "Aroma de cafe activa alerta percibida en estudios controlados."
+    },
+    {
+      "id": "R028",
+      "si": "notas contains coco",
+      "entonces": {
+        "familia_visual_compatible": ["costero_tropical", "boho_mediterraneo"],
+        "temperatura_emocional": "calido",
+        "tipo_cliente_ideal": ["hotel playa", "spa tropical", "boutique vacacional"]
+      },
+      "recomendado_en": ["hotel costero", "spa playa", "lobby tropical"],
+      "evitar_en": ["oficina ejecutiva", "boutique heritage", "concept urbano serio"],
+      "confianza": "media",
+      "fuente": "Aroma marketing turismo · coco y evasion",
+      "justificacion": "Coco activa imagineria de evasion vacacional. Lee infantilizado en corporativo."
+    },
+    {
+      "id": "R029",
+      "si": "notas contains tabaco",
+      "entonces": {
+        "familia_visual_compatible": ["industrial", "glam_nocturno", "contemporaneo_calido", "arabe_contemporaneo"],
+        "tipo_cliente_ideal": ["club caballeros", "bar whisky", "boutique masculino", "gastronomico steakhouse"]
+      },
+      "recomendado_en": ["bar whisky", "tabaqueria", "club caballeros"],
+      "evitar_en": ["guarderia", "spa", "boutique infantil", "wellness", "clinica"],
+      "confianza": "alta",
+      "fuente": "Marketing tabaco-sustitutos",
+      "justificacion": "Lectura cultural masculina-adulta-clasica."
+    },
+    {
+      "id": "R030",
+      "si": "notas contains sal marina",
+      "entonces": {
+        "familia_visual_compatible": ["costero_tropical", "biophilic"],
+        "temperatura_emocional": "frio"
+      },
+      "recomendado_en": ["hotel costero", "spa marino", "lobby playa"],
+      "evitar_en": ["bar evening", "concept urbano cerrado"],
+      "confianza": "media",
+      "fuente": "Marketing costero hospitality",
+      "justificacion": "Sal marina + aloe leen como aire abierto. Bridge wellness-costero."
+    },
+    {
+      "id": "R031",
+      "si": "notas contains rosa",
+      "entonces": {
+        "familia_visual_compatible": ["clasico_transicional", "glam_nocturno", "boho_mediterraneo", "arabe_contemporaneo"],
+        "temperatura_emocional": "templado",
+        "texturas_compatibles": ["terciopelo_seda", "boucle_lana"]
+      },
+      "recomendado_en": ["lobby hotel femenino", "boutique floral", "suite romantica"],
+      "evitar_en": ["gym vestidor masculino", "concept industrial duro"],
+      "confianza": "media",
+      "fuente": "Jellinek · rosa y feminidad clasica",
+      "justificacion": "Rosa lee como feminidad clasica universal. Acompana texturas blandas."
+    },
+    {
+      "id": "R032",
+      "si": "notas contains bergamota",
+      "entonces": {
+        "energia": "estimulante",
+        "temperatura_emocional": "fresco"
+      },
+      "recomendado_en": ["lobby matutino", "oficina", "retail diurno", "salon te"],
+      "evitar_en": ["bar evening intimo"],
+      "confianza": "media",
+      "fuente": "Hirsch · bergamota y estado de animo",
+      "justificacion": "Bergamota se asocia a elevacion de animo. Bridge citrico-chipre."
+    },
+    {
+      "id": "R033",
+      "si": "notas contains incienso",
+      "entonces": {
+        "familia_visual_compatible": ["glam_nocturno", "arabe_contemporaneo", "contemporaneo_calido"],
+        "nivel_lujo_sugerido": 4,
+        "temperatura_emocional": "calido",
+        "intensidad_luminica": "baja_intima"
+      },
+      "recomendado_en": ["concept evening", "boutique nicho", "lobby teatral"],
+      "evitar_en": ["guarderia", "clinica", "cafeteria diurna"],
+      "confianza": "media",
+      "fuente": "Jellinek · resinas y narrativa ritual",
+      "justificacion": "Incienso carga lectura ritual-sagrada con narrativa adulta."
+    },
+    {
+      "id": "R034",
+      "si": "flags.odor_control==true",
+      "entonces": {
+        "tipo_cliente_ideal": ["sanitarios", "estacionamientos", "lobby alto trafico", "gimnasio vestidor"],
+        "intensidad_sugerida": 4,
+        "intensidad_luminica": "alta_directa"
+      },
+      "recomendado_en": ["sanitario", "estacionamiento", "vestidor", "cocina industrial"],
+      "evitar_en": ["lobby premium", "boutique evening", "suite presidencial"],
+      "confianza": "alta",
+      "fuente": "Olfativa knowledge.js · sublinea odor control",
+      "justificacion": "Aromas con odor control son operacionales, no signature."
+    },
+    {
+      "id": "R035",
+      "si": "sublinea==nicho",
+      "entonces": {
+        "nivel_lujo_sugerido": 5,
+        "tipo_cliente_ideal": ["boutique premium", "suite signature", "concept nicho", "hotelería luxury"]
+      },
+      "recomendado_en": ["suite signature", "boutique nicho", "concept luxury"],
+      "evitar_en": ["alto trafico", "retail masivo", "lobby corporativo basico"],
+      "confianza": "alta",
+      "fuente": "Olfativa knowledge.js · sublinea nicho",
+      "justificacion": "Aromas nicho llevan complejidad olfativa y precio elevado."
+    },
+    {
+      "id": "R036",
+      "si": "objetivos contains foco",
+      "entonces": {
+        "energia": "estimulante",
+        "temperatura_emocional": "fresco",
+        "generos_musicales_compatibles": ["ambient_spa", "electronico_melodico"],
+        "bpm_sugerido": "70-95",
+        "instrumentacion_predominante": "piano",
+        "ambiente_sonoro": "silencio_natural",
+        "tipo_luz_compatible": ["led_frio_5000k", "neutro_4000k"],
+        "intensidad_luminica": "alta_directa",
+        "tipo_cliente_ideal": ["oficina foco", "co-working premium", "estudio"]
+      },
+      "recomendado_en": ["oficina", "co-working", "estudio", "biblioteca"],
+      "evitar_en": ["dormitorio", "bar lounge"],
+      "confianza": "media",
+      "fuente": "Aroma marketing productividad",
+      "justificacion": "Objetivo foco mapea a aromas frescos verdes-citricos-herbales suaves."
+    },
+    {
+      "id": "R037",
+      "si": "objetivos contains social",
+      "entonces": {
+        "energia": "neutra",
+        "temperatura_emocional": "calido",
+        "nivel_lujo_sugerido": 4,
+        "familia_visual_compatible": ["glam_nocturno", "industrial", "arabe_contemporaneo"],
+        "ambiente_sonoro": "musica_protagonista",
+        "tipo_cliente_ideal": ["bar lounge", "club", "concept evening"]
+      },
+      "recomendado_en": ["bar", "club", "lounge nocturno"],
+      "evitar_en": ["oficina foco", "guarderia", "clinica"],
+      "confianza": "media",
+      "fuente": "Hospitality nocturna",
+      "justificacion": "Objetivo social pide cuerpo, persistencia y signature memorable."
+    },
+    {
+      "id": "R038",
+      "si": "objetivos contains bienestar",
+      "entonces": {
+        "energia": "calmante",
+        "temperatura_emocional": "templado",
+        "familia_visual_compatible": ["biophilic", "minimalista_nordico", "japandi"],
+        "generos_musicales_compatibles": ["ambient_spa"],
+        "bpm_sugerido": "50-70",
+        "ambiente_sonoro": "silencio_natural"
+      },
+      "recomendado_en": ["spa", "wellness", "clinica integrativa", "yoga"],
+      "evitar_en": ["bar evening"],
+      "confianza": "alta",
+      "fuente": "Wellness sensorial",
+      "justificacion": "Objetivo bienestar empuja a perfiles herbales-verdes-amaderados suaves con ambient quieto."
+    },
+    {
+      "id": "R039",
+      "si": "objetivos contains premium",
+      "entonces": {
+        "nivel_lujo_sugerido": 5,
+        "familia_visual_compatible": ["contemporaneo_calido", "clasico_transicional", "glam_nocturno"],
+        "texturas_compatibles": ["terciopelo_seda", "marmol", "latones", "cuero"],
+        "peso_visual_mobiliario": "opulento",
+        "tipo_cliente_ideal": ["hotelería luxury", "suite", "boutique premium"]
+      },
+      "recomendado_en": ["suite presidencial", "boutique premium", "lobby luxury"],
+      "evitar_en": ["retail masivo basico"],
+      "confianza": "alta",
+      "fuente": "Olfativa § 7 objetivos comerciales",
+      "justificacion": "Objetivo premium requiere materialidad noble en todos los sentidos."
+    },
+    {
+      "id": "R040",
+      "si": "default",
+      "entonces": {
+        "energia": "neutra",
+        "temperatura_emocional": "templado",
+        "persistencia": "media",
+        "intensidad_sugerida": 3,
+        "nivel_lujo_sugerido": 3,
+        "familia_visual_compatible": ["clasico_transicional"],
+        "tipo_luz_compatible": ["neutro_4000k"],
+        "intensidad_luminica": "media_difusa",
+        "texturas_compatibles": ["lino_algodon"],
+        "peso_visual_mobiliario": "medio",
+        "densidad_textil": "medio",
+        "generos_musicales_compatibles": ["jazz_lounge"],
+        "bpm_sugerido": "70-95",
+        "instrumentacion_predominante": "mixto",
+        "ambiente_sonoro": "murmullo_humano",
+        "tipo_cliente_ideal": ["hospitality estándar"]
+      },
+      "confianza": "baja",
+      "fuente": "Default operativo Olfativa",
+      "justificacion": "Default conservador para aromas sin match. Tony debe override."
+    }
+  ],
+
+  "mapeos_sensoriales_5sentidos": {
+    "_nota": "Mapeos resumen por familia olfativa cruzando los 5 sentidos. Referencia rapida para UI y para entender la coherencia sensorial. Las reglas R001-R021 ya aplican estos valores per-familia; este bloque sirve como vista compacta y para la subseccion GUSTO (gastronomico).",
+    "familia_to_vista": [
+      { "familia": "citricas",            "familias_visuales": ["minimalista_nordico", "japandi", "costero_tropical", "biophilic"],             "paleta": ["blanco hueso", "amarillo limon suave", "verde lima", "azul cielo"],     "luz": ["led_frio_5000k", "neutro_4000k"], "intensidad_luminica": "alta_directa" },
+      { "familia": "florales_blancas",    "familias_visuales": ["clasico_transicional", "glam_nocturno", "boho_mediterraneo", "arabe_contemporaneo"], "paleta": ["blanco perla", "marfil", "rosa empolvado", "champagne"],            "luz": ["calido_2700k", "ambar_2200k"], "intensidad_luminica": "media_difusa" },
+      { "familia": "florales_suaves",     "familias_visuales": ["clasico_transicional", "minimalista_nordico", "japandi", "boho_mediterraneo"], "paleta": ["rosa polvo", "blanco roto", "verde salvia", "beige claro"],                "luz": ["neutro_4000k", "calido_2700k"], "intensidad_luminica": "media_difusa" },
+      { "familia": "amaderadas_secas",    "familias_visuales": ["contemporaneo_calido", "industrial", "clasico_transicional", "japandi"],     "paleta": ["nogal", "topo", "gris piedra", "tabaco claro"],                          "luz": ["calido_2700k", "ambar_2200k"], "intensidad_luminica": "media_difusa" },
+      { "familia": "amaderadas_humedas",  "familias_visuales": ["industrial", "boho_mediterraneo", "glam_nocturno"],                              "paleta": ["chocolate", "verde botella", "ladrillo", "negro humo"],                  "luz": ["ambar_2200k", "calido_2700k"], "intensidad_luminica": "baja_intima" },
+      { "familia": "orientales_ambar",    "familias_visuales": ["glam_nocturno", "arabe_contemporaneo", "contemporaneo_calido"],                  "paleta": ["vino burdeos", "dorado mate", "negro profundo", "ambar miel"],            "luz": ["ambar_2200k", "calido_2700k"], "intensidad_luminica": "baja_intima" },
+      { "familia": "gourmand",            "familias_visuales": ["clasico_transicional", "boho_mediterraneo", "contemporaneo_calido"],            "paleta": ["caramelo", "crema", "rosa palo", "marron chocolate"],                    "luz": ["calido_2700k", "ambar_2200k"], "intensidad_luminica": "media_difusa" },
+      { "familia": "acuaticas",           "familias_visuales": ["costero_tropical", "biophilic", "minimalista_nordico"],                          "paleta": ["azul agua", "blanco arena", "verde mar", "gris perla"],                  "luz": ["led_frio_5000k", "neutro_4000k"], "intensidad_luminica": "alta_directa" },
+      { "familia": "aromaticas_herbales", "familias_visuales": ["biophilic", "japandi", "minimalista_nordico", "boho_mediterraneo"],             "paleta": ["verde salvia", "verde oliva", "beige natural", "blanco roto"],            "luz": ["neutro_4000k", "calido_2700k"], "intensidad_luminica": "media_difusa" },
+      { "familia": "verdes_te",           "familias_visuales": ["minimalista_nordico", "japandi", "biophilic", "contemporaneo_calido"],         "paleta": ["verde te", "blanco hueso", "beige claro", "gris zen"],                    "luz": ["neutro_4000k", "led_frio_5000k"], "intensidad_luminica": "media_difusa" },
+      { "familia": "cuero_tabaco",        "familias_visuales": ["industrial", "glam_nocturno", "contemporaneo_calido", "arabe_contemporaneo"], "paleta": ["cuero coñac", "negro humo", "verde botella", "dorado oscuro"],          "luz": ["ambar_2200k", "calido_2700k"], "intensidad_luminica": "baja_intima" },
+      { "familia": "chipre",              "familias_visuales": ["clasico_transicional", "contemporaneo_calido"],                                  "paleta": ["verde musgo", "marfil", "ocre suave", "marron tabaco"],                  "luz": ["calido_2700k", "neutro_4000k"], "intensidad_luminica": "media_difusa" },
+      { "familia": "frutales",            "familias_visuales": ["boho_mediterraneo", "costero_tropical", "clasico_transicional"],                "paleta": ["rojo cereza", "coral", "verde lima", "amarillo soleado"],                "luz": ["neutro_4000k", "calido_2700k"], "intensidad_luminica": "alta_directa" }
+    ],
+    "familia_to_tacto": [
+      { "familia": "citricas",            "texturas": ["lino_algodon", "vidrio_metal_pulido", "madera_natural", "ratan_yute"],     "peso": "ligero",  "densidad": "ligero" },
+      { "familia": "florales_blancas",    "texturas": ["terciopelo_seda", "boucle_lana", "marmol", "latones"],                     "peso": "medio",   "densidad": "denso" },
+      { "familia": "florales_suaves",     "texturas": ["lino_algodon", "boucle_lana", "terciopelo_seda"],                          "peso": "ligero",  "densidad": "ligero" },
+      { "familia": "amaderadas_secas",    "texturas": ["madera_natural", "boucle_lana", "cuero", "marmol"],                        "peso": "medio",   "densidad": "medio" },
+      { "familia": "amaderadas_humedas",  "texturas": ["terciopelo_seda", "cuero", "cemento_pulido"],                              "peso": "opulento","densidad": "denso" },
+      { "familia": "orientales_ambar",    "texturas": ["terciopelo_seda", "latones", "marmol", "cuero"],                           "peso": "opulento","densidad": "opulento" },
+      { "familia": "gourmand",            "texturas": ["boucle_lana", "terciopelo_seda", "madera_natural"],                        "peso": "medio",   "densidad": "denso" },
+      { "familia": "acuaticas",           "texturas": ["lino_algodon", "vidrio_metal_pulido", "ratan_yute"],                       "peso": "ligero",  "densidad": "etereo" },
+      { "familia": "aromaticas_herbales", "texturas": ["lino_algodon", "madera_natural", "ratan_yute"],                            "peso": "medio",   "densidad": "ligero" },
+      { "familia": "verdes_te",           "texturas": ["lino_algodon", "madera_natural", "ratan_yute"],                            "peso": "ligero",  "densidad": "ligero" },
+      { "familia": "cuero_tabaco",        "texturas": ["cuero", "terciopelo_seda", "cemento_pulido", "latones"],                   "peso": "opulento","densidad": "denso" },
+      { "familia": "chipre",              "texturas": ["boucle_lana", "madera_natural", "marmol"],                                 "peso": "medio",   "densidad": "medio" },
+      { "familia": "frutales",            "texturas": ["lino_algodon", "ratan_yute", "madera_natural"],                            "peso": "ligero",  "densidad": "ligero" }
+    ],
+    "familia_to_oido": [
+      { "familia": "citricas",            "generos": ["bossa", "acustico_indie", "jazz_lounge", "house_pop"], "bpm": "95-115", "instrumentacion": "mixto",       "ambiente": "musica_protagonista" },
+      { "familia": "florales_blancas",    "generos": ["clasico", "jazz_lounge", "opera", "soul_rnb"],         "bpm": "70-95",  "instrumentacion": "cuerdas",     "ambiente": "murmullo_humano" },
+      { "familia": "florales_suaves",     "generos": ["clasico", "ambient_spa", "acustico_indie"],            "bpm": "70-95",  "instrumentacion": "piano",       "ambiente": "silencio_natural" },
+      { "familia": "amaderadas_secas",    "generos": ["jazz_lounge", "clasico", "ambient_spa", "electronico_melodico"], "bpm": "70-95", "instrumentacion": "cuerdas", "ambiente": "murmullo_humano" },
+      { "familia": "amaderadas_humedas",  "generos": ["electronico_melodico", "lounge_oriental", "jazz_lounge"], "bpm": "95-115", "instrumentacion": "electronica", "ambiente": "musica_protagonista" },
+      { "familia": "orientales_ambar",    "generos": ["lounge_oriental", "world", "electronico_melodico", "soul_rnb"], "bpm": "95-115", "instrumentacion": "mixto", "ambiente": "musica_protagonista" },
+      { "familia": "gourmand",            "generos": ["soul_rnb", "jazz_lounge", "acustico_indie"],            "bpm": "70-95",  "instrumentacion": "voz",         "ambiente": "murmullo_humano" },
+      { "familia": "acuaticas",           "generos": ["ambient_spa", "house_pop", "electronico_melodico"],     "bpm": "95-115", "instrumentacion": "electronica", "ambiente": "silencio_natural" },
+      { "familia": "aromaticas_herbales", "generos": ["ambient_spa", "acustico_indie", "clasico"],             "bpm": "50-70",  "instrumentacion": "piano",       "ambiente": "silencio_natural" },
+      { "familia": "verdes_te",           "generos": ["ambient_spa", "clasico", "acustico_indie"],             "bpm": "50-70",  "instrumentacion": "piano",       "ambiente": "silencio_natural" },
+      { "familia": "cuero_tabaco",        "generos": ["jazz_lounge", "soul_rnb", "electronico_melodico"],      "bpm": "70-95",  "instrumentacion": "voz",         "ambiente": "murmullo_humano" },
+      { "familia": "chipre",              "generos": ["clasico", "jazz_lounge", "opera"],                       "bpm": "70-95",  "instrumentacion": "cuerdas",     "ambiente": "murmullo_humano" },
+      { "familia": "frutales",            "generos": ["bossa", "acustico_indie", "house_pop"],                 "bpm": "95-115", "instrumentacion": "voz",         "ambiente": "musica_protagonista" }
+    ],
+    "familia_to_gusto": [
+      { "familia": "citricas",            "gastronomica": true,  "cocinas": ["mediterranea", "sushi_omakase", "vegetariana_saludable", "fine_dining_creativo", "pasteleria_cafeteria"], "sabores": ["acido_citrico", "dulce", "salado"],   "momento": "almuerzo", "maridaje": "Citricos aligeran sushi y pescados, refuerzan postres frescos (limon, yuzu, naranja), funcionan en mediterranea y brunch luminoso." },
+      { "familia": "amaderadas_secas",    "gastronomica": true,  "cocinas": ["parrilla_steakhouse", "internacional_lujo", "fine_dining_creativo"], "sabores": ["umami", "salado"], "momento": "cena", "maridaje": "Cedro y sandalo dialogan con carne madurada y humo de brasa. Cardamomo con cedro en cocina con especiado contenido." },
+      { "familia": "orientales_ambar",    "gastronomica": true,  "cocinas": ["mexicana_contemporanea", "internacional_lujo", "asiatica_oriental", "fine_dining_creativo"], "sabores": ["dulce", "picante", "umami"], "momento": "cena", "maridaje": "Orientales especiados funcionan en fusion arabe-mexicana, mole, curry y postres con especia." },
+      { "familia": "gourmand",            "gastronomica": true,  "cocinas": ["pasteleria_cafeteria", "comfort_food", "internacional_lujo"], "sabores": ["dulce"], "momento": "merienda", "maridaje": "Gourmand acoge postres, reposteria, brunch dulce, chocolateria." },
+      { "familia": "aromaticas_herbales", "gastronomica": true,  "cocinas": ["mediterranea", "vegetariana_saludable", "fine_dining_creativo"], "sabores": ["amargo", "salado", "acido_citrico"], "momento": "almuerzo", "maridaje": "Herbal mediterraneo (romero, tomillo, salvia) en mediterranea, vegetariana saludable y fine dining con hierbas frescas." },
+      { "familia": "verdes_te",           "gastronomica": true,  "cocinas": ["asiatica_oriental", "sushi_omakase", "vegetariana_saludable"], "sabores": ["amargo", "umami"], "momento": "almuerzo", "maridaje": "Te verde y matcha en cocina asiatica, sushi y vegetariana. Limpia paladar y refuerza umami." },
+      { "familia": "cuero_tabaco",        "gastronomica": true,  "cocinas": ["parrilla_steakhouse", "internacional_lujo"], "sabores": ["umami", "salado"], "momento": "coctel_post_cena", "maridaje": "Cuero y tabaco rubio en steakhouse, whisky bar, coctel post cena con destilados anejos." },
+      { "familia": "frutales",            "gastronomica": true,  "cocinas": ["pasteleria_cafeteria", "comfort_food", "vegetariana_saludable"], "sabores": ["dulce", "acido_citrico"], "momento": "brunch", "maridaje": "Frutales en pasteleria, brunch fresco, postres frutales, helados." },
+      { "familia": "florales_blancas",    "gastronomica": false, "cocinas": [], "sabores": [], "momento": "",        "maridaje": "Florales blancos densos compiten con paladar; uso ambiental, no gastronomico." },
+      { "familia": "florales_suaves",     "gastronomica": false, "cocinas": [], "sabores": [], "momento": "",        "maridaje": "Florales suaves uso ambiental; sin maridaje gastronomico recomendado." },
+      { "familia": "amaderadas_humedas",  "gastronomica": false, "cocinas": [], "sabores": [], "momento": "",        "maridaje": "Patchouli y vetiver humedo no funcionan en mesa; saturan paladar." },
+      { "familia": "acuaticas",           "gastronomica": false, "cocinas": [], "sabores": [], "momento": "",        "maridaje": "Acuaticos leen como aire abierto; no aportan al paladar." },
+      { "familia": "chipre",              "gastronomica": false, "cocinas": [], "sabores": [], "momento": "",        "maridaje": "Chipre uso lobby/hospitality; sin maridaje gastronomico canonico." }
+    ]
+  },
+
+  "contraindicaciones_por_contexto": [
+    {
+      "contexto": "clinica_hospital",
+      "evitar_familias": ["orientales_ambar", "cuero_tabaco", "gourmand", "amaderadas_humedas"],
+      "evitar_notas": ["oud", "tabaco", "incienso denso", "patchouli humedo"],
+      "preferir_familias": ["aromaticas_herbales", "verdes_te", "acuaticas"],
+      "confianza": "alta",
+      "justificacion": "Entornos clinicos requieren lectura limpia, fresca, no invasiva."
+    },
+    {
+      "contexto": "guarderia_infantil",
+      "evitar_familias": ["orientales_ambar", "cuero_tabaco", "amaderadas_humedas", "chipre"],
+      "evitar_notas": ["oud", "tabaco", "alcohol percibido", "incienso", "patchouli"],
+      "preferir_familias": ["frutales", "florales_suaves", "gourmand", "citricas"],
+      "confianza": "alta",
+      "justificacion": "Contexto infantil exige lectura amable sin signature adulta nocturna."
+    },
+    {
+      "contexto": "restaurante_savory",
+      "evitar_familias": ["gourmand", "florales_blancas"],
+      "evitar_notas": ["vainilla", "caramelo", "jazmin denso"],
+      "preferir_familias": ["citricas", "verdes_te", "amaderadas_secas"],
+      "confianza": "alta",
+      "justificacion": "Aromas dulces compiten con comida salada."
+    },
+    {
+      "contexto": "dormitorio",
+      "evitar_familias": ["citricas", "acuaticas", "frutales"],
+      "evitar_notas": ["menta", "eucalipto", "cafe"],
+      "preferir_familias": ["florales_suaves", "amaderadas_secas", "aromaticas_herbales"],
+      "confianza": "alta",
+      "justificacion": "Dormitorio requiere energia calmante; mentolados afectan calidad de sueno."
+    },
+    {
+      "contexto": "oficina_foco",
+      "evitar_familias": ["gourmand", "orientales_ambar"],
+      "evitar_notas": ["vainilla", "oud", "incienso denso"],
+      "preferir_familias": ["citricas", "verdes_te", "aromaticas_herbales"],
+      "confianza": "alta",
+      "justificacion": "Foco requiere alerta calmada. Gourmand y orientales bajan rendimiento cognitivo."
+    },
+    {
+      "contexto": "spa_wellness",
+      "evitar_familias": ["cuero_tabaco", "orientales_ambar", "gourmand"],
+      "evitar_notas": ["oud", "tabaco", "cuero"],
+      "preferir_familias": ["aromaticas_herbales", "verdes_te", "acuaticas", "florales_suaves"],
+      "confianza": "alta",
+      "justificacion": "Spa exige lectura limpia y restaurativa."
+    },
+    {
+      "contexto": "bar_nocturno",
+      "evitar_familias": ["acuaticas", "verdes_te"],
+      "evitar_notas": ["te blanco", "menta", "eucalipto"],
+      "preferir_familias": ["orientales_ambar", "cuero_tabaco", "amaderadas_humedas", "florales_blancas"],
+      "confianza": "media",
+      "justificacion": "Bar evening pide cuerpo, persistencia, signature memorable."
+    }
+  ]
+}
