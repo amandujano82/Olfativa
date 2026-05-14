@@ -228,3 +228,49 @@ window.OLF_KNOW.findDifusorByName = function(name) {
     d.key === norm.replace(/[^a-z0-9]+/g,'_')
   ) || null;
 };
+
+// ============================================================
+// Catalog overlay · Tony puede editar el catálogo desde Admin.
+// Los aromas DEFAULT del bundle quedan en _aromasDefault. Si en
+// localStorage existe `olfativa.catalogOverrides` válido (array de
+// objetos con al menos {nombre: string}), window.OLF_KNOW.aromas
+// pasa a reflejar esa versión. recommendAromas (engine) ya lee de
+// K.aromas, así que el motor toma la versión vigente sin cambios.
+// ============================================================
+window.OLF_KNOW._aromasDefault = window.OLF_KNOW.aromas;
+
+(function () {
+  try {
+    const raw = localStorage.getItem('olfativa.catalogOverrides');
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0
+        && parsed.every(a => a && typeof a.nombre === 'string')) {
+      window.OLF_KNOW.aromas = parsed;
+    }
+  } catch (_) { /* override corrupto · seguimos con default */ }
+})();
+
+window.OLF_KNOW.setCatalog = function (arr) {
+  if (!Array.isArray(arr)) throw new Error('catalog must be an array');
+  if (!arr.every(a => a && typeof a.nombre === 'string')) {
+    throw new Error('cada aroma requiere campo nombre (string)');
+  }
+  window.OLF_KNOW.aromas = arr;
+  try { localStorage.setItem('olfativa.catalogOverrides', JSON.stringify(arr)); } catch (_) {}
+  try {
+    window.dispatchEvent(new CustomEvent('olfativa:catalog-updated', {
+      detail: { count: arr.length, source: 'edit' }
+    }));
+  } catch (_) {}
+};
+
+window.OLF_KNOW.resetCatalog = function () {
+  window.OLF_KNOW.aromas = window.OLF_KNOW._aromasDefault;
+  try { localStorage.removeItem('olfativa.catalogOverrides'); } catch (_) {}
+  try {
+    window.dispatchEvent(new CustomEvent('olfativa:catalog-updated', {
+      detail: { count: window.OLF_KNOW._aromasDefault.length, source: 'reset' }
+    }));
+  } catch (_) {}
+};

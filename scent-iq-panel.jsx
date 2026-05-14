@@ -52,7 +52,7 @@
   // helpers
   // ----------------------------------------------------------
   function readDemo() {
-    return fetch('scent-iq-demo.json?v=20260514e').then(r => r.ok ? r.json() : null).catch(() => null);
+    return fetch('scent-iq-demo.json?v=20260514f').then(r => r.ok ? r.json() : null).catch(() => null);
   }
 
   function copyToClipboard(text) {

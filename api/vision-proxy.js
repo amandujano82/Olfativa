@@ -110,37 +110,59 @@ const SPACE_FALLBACK = {
 };
 
 // ----- Prompt rígido (Entregable 2)
-function buildPrompt(tipoDeEspacio) {
-  return [
-    'Eres un analista visual del Olfativa Sensory System. Tu tarea es leer la foto del espacio comercial o residencial y devolver SOLO un objeto JSON válido sin texto adicional.',
-    '',
-    'Debes elegir valores de los enums permitidos.',
-    '',
-    'familia_visual debe ser una de estas 8: organico_biophilic, minimalista_calmo, industrial_urbano, glam_nocturno, costero_tropical, bohemio_mexicano, quiet_luxury, contemporaneo_neutro.',
-    'tipo_de_luz una de: luz calida difusa, luz natural luminosa, luz neutra, luz fria contrastada, luz dramatica puntual.',
-    'saturacion una de: baja, media, alta.',
-    'contraste una de: bajo, medio, alto.',
-    'densidad una de: baja, media, alta.',
-    'nivel_premium una de: medio, medio alto, alto.',
-    'geometria una de: curvas, angular, mixta.',
-    'presencia_naturaleza una de: baja, media, alta.',
-    '',
-    'Otros campos texto libre corto:',
-    '  · materialidad (frase corta de 3 a 6 palabras)',
-    '  · materiales_principales (array de hasta 4 strings)',
-    '  · formas (frase corta)',
-    '  · tipo_de_espacio (frase corta inferida de la foto)',
-    '  · emocion_actual (frase corta)',
-    '  · emocion_deseada (frase corta)',
-    '  · m2_estimados (número entero entre 20 y 500)',
-    '  · altura_estimada_m (número entre 2.4 y 6.0)',
-    '',
-    'Contexto de uso: el usuario del cotizador es ejecutivo de cuenta de Olfativa, una marca de aromatización profesional. Subió esta foto del espacio del cliente.',
-    `Adicionalmente el ejecutivo indicó que el tipo de espacio es: ${tipoDeEspacio || 'no especificado'}.`,
-    'Considera ese tipo como ancla principal. La foto sirve para refinar materialidad, luz, paleta y emoción.',
-    '',
-    'Devuelve SOLO el JSON. No expliques.',
-  ].join('\n');
+// Si recibimos `catalogoResumen` lo prependemos como bloque
+// CATALOGO DISPONIBLE para que el modelo entienda el universo real
+// de aromas de Tony y no aluciné nombres genéricos.
+function buildPrompt(tipoDeEspacio, catalogoResumen) {
+  const parts = [];
+
+  if (catalogoResumen && catalogoResumen.trim().length > 0) {
+    parts.push('CATALOGO DISPONIBLE (universo real de aromas de Olfativa · una línea por aroma):');
+    parts.push(catalogoResumen.trim());
+    parts.push('');
+    parts.push('Reglas de uso del catálogo:');
+    parts.push('  · Elige aromas únicamente de este catálogo. No inventes nombres.');
+    parts.push('  · Respeta `ctx_no` de cada aroma (contextos_a_evitar). Si el espacio cae en uno, descártalo.');
+    parts.push('  · Prioriza match por `visual` (tags_visuales: maderas, materiales, paleta) sobre el nombre genérico de la familia.');
+    parts.push('  · Si ningún aroma del catálogo encaja bien, elige el más neutro disponible y marca `_meta.confianza: "baja"` en el JSON de salida.');
+    parts.push('  · En el JSON de salida incluye además el campo `aroma_sugerido_nombre` con el NOMBRE exacto del aroma elegido del catálogo.');
+    parts.push('');
+  }
+
+  parts.push('Eres un analista visual del Olfativa Sensory System. Tu tarea es leer la foto del espacio comercial o residencial y devolver SOLO un objeto JSON válido sin texto adicional.');
+  parts.push('');
+  parts.push('Debes elegir valores de los enums permitidos.');
+  parts.push('');
+  parts.push('familia_visual debe ser una de estas 8: organico_biophilic, minimalista_calmo, industrial_urbano, glam_nocturno, costero_tropical, bohemio_mexicano, quiet_luxury, contemporaneo_neutro.');
+  parts.push('tipo_de_luz una de: luz calida difusa, luz natural luminosa, luz neutra, luz fria contrastada, luz dramatica puntual.');
+  parts.push('saturacion una de: baja, media, alta.');
+  parts.push('contraste una de: bajo, medio, alto.');
+  parts.push('densidad una de: baja, media, alta.');
+  parts.push('nivel_premium una de: medio, medio alto, alto.');
+  parts.push('geometria una de: curvas, angular, mixta.');
+  parts.push('presencia_naturaleza una de: baja, media, alta.');
+  parts.push('');
+  parts.push('Otros campos texto libre corto:');
+  parts.push('  · materialidad (frase corta de 3 a 6 palabras)');
+  parts.push('  · materiales_principales (array de hasta 4 strings)');
+  parts.push('  · formas (frase corta)');
+  parts.push('  · tipo_de_espacio (frase corta inferida de la foto)');
+  parts.push('  · emocion_actual (frase corta)');
+  parts.push('  · emocion_deseada (frase corta)');
+  parts.push('  · m2_estimados (número entero entre 20 y 500)');
+  parts.push('  · altura_estimada_m (número entre 2.4 y 6.0)');
+  if (catalogoResumen && catalogoResumen.trim().length > 0) {
+    parts.push('  · aroma_sugerido_nombre (string · NOMBRE exacto del catálogo)');
+    parts.push('  · confianza_aroma (string · "alta" | "media" | "baja")');
+  }
+  parts.push('');
+  parts.push('Contexto de uso: el usuario del cotizador es ejecutivo de cuenta de Olfativa, una marca de aromatización profesional. Subió esta foto del espacio del cliente.');
+  parts.push(`Adicionalmente el ejecutivo indicó que el tipo de espacio es: ${tipoDeEspacio || 'no especificado'}.`);
+  parts.push('Considera ese tipo como ancla principal. La foto sirve para refinar materialidad, luz, paleta y emoción.');
+  parts.push('');
+  parts.push('Devuelve SOLO el JSON. No expliques.');
+
+  return parts.join('\n');
 }
 
 // ----- Validación / saneamiento de enums
@@ -308,6 +330,9 @@ export default async function handler(request) {
 
   const image = formData.get('image');
   const tipoDeEspacio = (formData.get('tipoDeEspacio') || '').toString().trim().toLowerCase();
+  // Catálogo vivo del cliente · si viene, se prepende al prompt como
+  // bloque CATALOGO DISPONIBLE para que el modelo no aluciné aromas.
+  const catalogoResumen = (formData.get('catalogoResumen') || '').toString();
   let override = null;
   const overrideRaw = formData.get('override');
   if (overrideRaw) {
@@ -338,7 +363,7 @@ export default async function handler(request) {
     }
   }
 
-  const prompt = buildPrompt(tipoDeEspacio);
+  const prompt = buildPrompt(tipoDeEspacio, catalogoResumen);
 
   try {
     const modelText = await callClaude(process.env.ANTHROPIC_API_KEY, imageBase64, mediaType, prompt);
@@ -346,11 +371,20 @@ export default async function handler(request) {
     const sane = sanitizeAnalisis(raw, tipoDeEspacio);
     const final = applyOverride(sane, override);
     final._source = 'claude-vision';
+    // Sugerencia de aroma del modelo (solo si llegó catálogo y el modelo
+    // respondió aroma_sugerido_nombre · validación que esté en el catálogo
+    // ocurre en el cliente porque el proxy no tiene la lista, solo el
+    // resumen compacto). confianza_aroma se usa para teñir el slide.
+    const aromaPick = typeof raw.aroma_sugerido_nombre === 'string' ? raw.aroma_sugerido_nombre.trim() : '';
+    const confianza = typeof raw.confianza_aroma === 'string' ? raw.confianza_aroma.trim().toLowerCase() : '';
     final._meta = {
       model: ANTHROPIC_MODEL,
       tipo_de_espacio_input: tipoDeEspacio || null,
       had_image: !!imageBase64,
       override_applied: !!override && Object.keys(override).length > 0,
+      catalog_injected: catalogoResumen.trim().length > 0,
+      modelo_aroma_sugerido: aromaPick || null,
+      confianza_aroma: ['alta','media','baja'].includes(confianza) ? confianza : null,
     };
     return jsonResponse(final, 200);
   } catch (e) {
