@@ -274,3 +274,326 @@ window.OLF_KNOW.resetCatalog = function () {
     }));
   } catch (_) {}
 };
+
+// ============================================================
+// FOUNDATIONS · ronda 6 · marco 5 sentidos
+// Cada aroma se extiende con dos bloques:
+//   · tipo_a · 24 campos derivables de foundations.json. Cada uno
+//     es {valor_sugerido, valor_override, confianza}. Tony override
+//     en el editor; el motor de vision recibe valor_efectivo (override
+//     si lo hay, sino sugerido).
+//   · tipo_b · 9 campos puramente humanos (a_que_huele, anecdotas,
+//     notas_internas_tony, etc). Sin sugerencia; solo input de Tony.
+//
+// seedFromFoundations() corre las reglas del JSON sobre cada aroma y
+// llena valor_sugerido + confianza para los tipo_a. No toca tipo_b ni
+// los valor_override (preservan ediciones de Tony).
+// ============================================================
+
+window.OLF_KNOW.TIPO_A_FIELDS = {
+  olfato: [
+    { id:'intensidad_sugerida',          shape:'escalar',    dominio:'1-5' },
+    { id:'persistencia',                 shape:'escalar',    dominio:'enum' },
+    { id:'temperatura_emocional',        shape:'escalar',    dominio:'enum' },
+    { id:'energia',                      shape:'escalar',    dominio:'enum' }
+  ],
+  vista: [
+    { id:'familia_visual_compatible',    shape:'lista',      dominio:'enum_multi' },
+    { id:'paleta_cromatica_sugerida',    shape:'lista',      dominio:'libre' },
+    { id:'tipo_luz_compatible',          shape:'lista',      dominio:'enum_multi' },
+    { id:'intensidad_luminica',          shape:'escalar',    dominio:'enum' }
+  ],
+  tacto: [
+    { id:'texturas_compatibles',         shape:'lista',      dominio:'enum_multi' },
+    { id:'peso_visual_mobiliario',       shape:'escalar',    dominio:'enum' },
+    { id:'densidad_textil',              shape:'escalar',    dominio:'enum' }
+  ],
+  oido: [
+    { id:'generos_musicales_compatibles',shape:'lista',      dominio:'enum_multi' },
+    { id:'nivel_volumen_exacto',         shape:'objeto',     dominio:'{escala 1-10, rango_db_sugerido}' },
+    { id:'instrumentacion_predominante', shape:'escalar',    dominio:'enum' },
+    { id:'ambiente_sonoro',              shape:'escalar',    dominio:'enum' },
+    { id:'playlist_sugerida',            shape:'lista_obj',  dominio:'[{genero, etiqueta, ejemplo_artista_o_track}]' }
+  ],
+  gusto: [
+    { id:'tipos_cocina_compatibles',     shape:'lista',      dominio:'enum_multi' },
+    { id:'sabores_predominantes_compatibles', shape:'lista', dominio:'enum_multi' },
+    { id:'tipos_bebida_compatibles',     shape:'lista',      dominio:'enum_multi' },
+    { id:'momento_consumo',              shape:'escalar',    dominio:'enum' },
+    { id:'maridaje_conceptual',          shape:'texto',      dominio:'libre' }
+  ],
+  general: [
+    { id:'contextos_recomendados',       shape:'lista',      dominio:'libre' },
+    { id:'contextos_a_evitar',           shape:'lista',      dominio:'libre' },
+    { id:'tipo_cliente_ideal',           shape:'lista',      dominio:'libre' },
+    { id:'nivel_lujo_sugerido',          shape:'escalar',    dominio:'1-5' }
+  ]
+};
+
+window.OLF_KNOW.TIPO_B_FIELDS = [
+  { id:'a_que_huele',         shape:'texto',     placeholder:'Descripción sensorial subjetiva · lo que realmente percibe usted y sus clientes.' },
+  { id:'adjetivos_vivenciales', shape:'chips',   placeholder:'Sexy · fresco · te abraza · te despierta · etc.' },
+  { id:'nivel_de_agrado_real', shape:'enum',     placeholder:'ama_mayoria · gusta_mayoria · divide · nicho · rechaza_mayoria' },
+  { id:'intensidad_real_medida', shape:'escalar',placeholder:'1-5 · calibración empírica suya en sus instalaciones (puede diferir de la sugerida).' },
+  { id:'gusta_o_no_gusta',    shape:'bool_razon',placeholder:'¿Le gusta? Sí/No + razón breve.' },
+  { id:'anecdotas_de_uso',    shape:'texto',     placeholder:'Dónde lo puso, qué pasó, feedback de clientes.' },
+  { id:'notas_internas_tony', shape:'texto',     placeholder:'Bloc de notas privado · NO se envía nunca al modelo de visión.', privado:true },
+  { id:'aromas_combos',       shape:'lista_refs',placeholder:'Aromas del catálogo con los que mezcla bien.' },
+  { id:'aromas_rivales',      shape:'lista_refs',placeholder:'Aromas con los que NO mezcla bien.' }
+];
+
+(function (K) {
+
+  function buildEmptyTipoA() {
+    const ta = {};
+    Object.keys(K.TIPO_A_FIELDS).forEach(sentido => {
+      K.TIPO_A_FIELDS[sentido].forEach(spec => {
+        const empty = (spec.shape === 'lista' || spec.shape === 'lista_obj') ? []
+                    : (spec.shape === 'objeto') ? null
+                    : (spec.shape === 'texto')  ? ''
+                    : null;
+        ta[spec.id] = {
+          valor_sugerido: empty,
+          valor_override: null,
+          confianza: 'baja'
+        };
+      });
+    });
+    return ta;
+  }
+
+  function buildEmptyTipoB() {
+    const tb = {};
+    K.TIPO_B_FIELDS.forEach(spec => {
+      tb[spec.id] = (spec.shape === 'chips' || spec.shape === 'lista_refs') ? []
+                  : (spec.shape === 'bool_razon') ? { value: null, razon: '' }
+                  : (spec.shape === 'escalar') ? null
+                  : (spec.shape === 'enum') ? ''
+                  : '';
+    });
+    return tb;
+  }
+
+  K._buildEmptyTipoA = buildEmptyTipoA;
+  K._buildEmptyTipoB = buildEmptyTipoB;
+
+  // valor efectivo = override si existe, sino sugerido
+  K.getEffectiveTipoA = function (aroma, fieldId) {
+    if (!aroma || !aroma.tipo_a || !aroma.tipo_a[fieldId]) return null;
+    const f = aroma.tipo_a[fieldId];
+    return (f.valor_override !== null && f.valor_override !== undefined) ? f.valor_override : f.valor_sugerido;
+  };
+
+  // ------------------------------------------------------------
+  // Parser de condicion `si`
+  // Soporta: 'default', '<campo>==<valor>', '<campo> contains <valor>'
+  // Campos: familia, sublinea, acordes, notas, objetivos, flags.<k>
+  // Comparaciones case+accent insensitive.
+  // ------------------------------------------------------------
+  function normStr(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  }
+
+  function aromaFieldHaystack(aroma, campo) {
+    if (campo === 'familia')   return normStr(aroma.familia);
+    if (campo === 'sublinea')  return normStr(aroma.sublinea);
+    if (campo === 'acordes')   return (aroma.acordes || []).map(normStr).join(' | ');
+    if (campo === 'objetivos') return (aroma.objetivos || []).map(normStr).join(' | ');
+    if (campo === 'notas') {
+      const n = aroma.notas || {};
+      return [n.salida, n.corazon, n.fondo].map(normStr).join(' | ');
+    }
+    if (campo.startsWith('flags.')) {
+      const k = campo.slice(6);
+      return (aroma.flags && aroma.flags[k]) ? 'true' : 'false';
+    }
+    return '';
+  }
+
+  function evalCondicion(aroma, si) {
+    if (!si) return false;
+    const s = String(si).trim();
+    if (s === 'default') return false; // default es fallback explicito
+    let m;
+    if ((m = s.match(/^([a-z_.]+)\s*==\s*(.+)$/i))) {
+      const campo = m[1].trim();
+      const valor = normStr(m[2]);
+      const hay   = aromaFieldHaystack(aroma, campo);
+      // Familia/sublinea aceptan match exacto o que el haystack contenga el valor
+      // (los catalogos usan 'Cítricas' como familia, foundations usa 'citricas')
+      return hay === valor || hay.startsWith(valor) || hay.includes(valor);
+    }
+    if ((m = s.match(/^([a-z_.]+)\s+contains\s+(.+)$/i))) {
+      const campo = m[1].trim();
+      const valor = normStr(m[2]);
+      const hay   = aromaFieldHaystack(aroma, campo);
+      return hay.includes(valor);
+    }
+    return false;
+  }
+
+  K._normStr      = normStr;
+  K._evalCondicion = evalCondicion;
+
+  // Confianza ordering · mayor gana en el merge
+  const CONFIANZA_RANK = { baja: 1, media: 2, alta: 3 };
+  function pickConfianza(a, b) {
+    return (CONFIANZA_RANK[b] || 0) > (CONFIANZA_RANK[a] || 0) ? b : a;
+  }
+
+  function uniqPush(arr, val) {
+    if (Array.isArray(val)) {
+      val.forEach(v => uniqPush(arr, v));
+      return arr;
+    }
+    if (val === null || val === undefined || val === '') return arr;
+    // Para objetos (playlist_sugerida) deduplicar por genero
+    if (typeof val === 'object' && val.genero) {
+      if (!arr.some(x => x && x.genero === val.genero)) arr.push(val);
+      return arr;
+    }
+    if (!arr.includes(val)) arr.push(val);
+    return arr;
+  }
+
+  // Campos escalares ordenables: tomar MAX (las reglas posteriores no rebajan)
+  const PERSISTENCIA_RANK = { corta:1, media:2, larga:3 };
+  function mergeEscalarOrdenable(campo, prev, incoming) {
+    if (prev === null || prev === undefined) return incoming;
+    if (campo === 'persistencia') {
+      return (PERSISTENCIA_RANK[incoming] || 0) > (PERSISTENCIA_RANK[prev] || 0) ? incoming : prev;
+    }
+    // numericos (intensidad_sugerida, nivel_lujo_sugerido)
+    const a = Number(prev), b = Number(incoming);
+    if (!isNaN(a) && !isNaN(b)) return Math.max(a, b);
+    return incoming;
+  }
+  const CAMPOS_ESCALAR_ORDENABLE = ['intensidad_sugerida', 'nivel_lujo_sugerido', 'persistencia'];
+
+  function applyRuleToTipoA(tipoA, rule) {
+    const ent  = rule.entonces || {};
+    const conf = rule.confianza || 'baja';
+    Object.keys(ent).forEach(campo => {
+      const slot = tipoA[campo];
+      if (!slot) return; // campo no es del TIPO A (ignorar)
+      const incoming = ent[campo];
+      if (Array.isArray(slot.valor_sugerido)) {
+        slot.valor_sugerido = uniqPush(slot.valor_sugerido.slice(), incoming);
+      } else if (CAMPOS_ESCALAR_ORDENABLE.indexOf(campo) >= 0) {
+        slot.valor_sugerido = mergeEscalarOrdenable(campo, slot.valor_sugerido, incoming);
+      } else if (slot.valor_sugerido !== null && typeof slot.valor_sugerido === 'object') {
+        // objeto (nivel_volumen_exacto) · last-wins
+        slot.valor_sugerido = incoming;
+      } else {
+        // escalar / texto · last-wins
+        slot.valor_sugerido = incoming;
+      }
+      slot.confianza = pickConfianza(slot.confianza, conf);
+    });
+    // recomendado_en y evitar_en alimentan contextos
+    if (Array.isArray(rule.recomendado_en) && tipoA.contextos_recomendados) {
+      tipoA.contextos_recomendados.valor_sugerido = uniqPush(tipoA.contextos_recomendados.valor_sugerido.slice(), rule.recomendado_en);
+      tipoA.contextos_recomendados.confianza = pickConfianza(tipoA.contextos_recomendados.confianza, conf);
+    }
+    if (Array.isArray(rule.evitar_en) && tipoA.contextos_a_evitar) {
+      tipoA.contextos_a_evitar.valor_sugerido = uniqPush(tipoA.contextos_a_evitar.valor_sugerido.slice(), rule.evitar_en);
+      tipoA.contextos_a_evitar.confianza = pickConfianza(tipoA.contextos_a_evitar.confianza, conf);
+    }
+  }
+
+  // ------------------------------------------------------------
+  // setFoundations · guarda el JSON y dispara seed
+  // ------------------------------------------------------------
+  K.setFoundations = function (obj) {
+    if (!obj || !Array.isArray(obj.reglas_psicoaromacologia)) {
+      throw new Error('foundations invalido · falta reglas_psicoaromacologia');
+    }
+    K.foundations = obj;
+    try {
+      window.dispatchEvent(new CustomEvent('olfativa:foundations-loaded', {
+        detail: { version: obj.meta && obj.meta.version, reglas: obj.reglas_psicoaromacologia.length }
+      }));
+    } catch (_) {}
+    // seed automatico sobre catalogo vigente, sin tocar overrides existentes
+    K.seedFromFoundations({ force: false });
+  };
+
+  // ------------------------------------------------------------
+  // seedFromFoundations({force, target})
+  //   force=false (default): solo aromas que aun no tienen tipo_a, o
+  //                          campos con confianza 'baja' sin override
+  //   force=true:            re-genera todos los valor_sugerido
+  //                          (nunca toca valor_override ni tipo_b)
+  //   target: aroma especifico (objeto) o null para todo el catalogo
+  // ------------------------------------------------------------
+  K.seedFromFoundations = function (opts) {
+    opts = opts || {};
+    const force  = !!opts.force;
+    const F      = K.foundations;
+    if (!F || !Array.isArray(F.reglas_psicoaromacologia)) {
+      return { applied: 0, skipped: 0, reason: 'foundations no cargadas' };
+    }
+    const reglas       = F.reglas_psicoaromacologia;
+    const defaultRule  = reglas.find(r => r.si === 'default') || null;
+    const aromas       = opts.target ? [opts.target] : (K.aromas || []);
+
+    let applied = 0;
+    aromas.forEach(aroma => {
+      // Asegurar bloques tipo_a y tipo_b
+      if (!aroma.tipo_a) aroma.tipo_a = buildEmptyTipoA();
+      if (!aroma.tipo_b) aroma.tipo_b = buildEmptyTipoB();
+
+      // Si force=true, resetear solo los valor_sugerido (preservar overrides)
+      if (force) {
+        const fresh = buildEmptyTipoA();
+        Object.keys(fresh).forEach(k => {
+          aroma.tipo_a[k].valor_sugerido = fresh[k].valor_sugerido;
+          aroma.tipo_a[k].confianza      = 'baja';
+          // valor_override se preserva
+        });
+      }
+
+      // Match reglas
+      const matched = reglas.filter(r => r.si !== 'default' && evalCondicion(aroma, r.si));
+      const effective = matched.length > 0 ? matched : (defaultRule ? [defaultRule] : []);
+      effective.forEach(r => applyRuleToTipoA(aroma.tipo_a, r));
+      applied++;
+    });
+
+    try {
+      window.dispatchEvent(new CustomEvent('olfativa:catalog-seeded', {
+        detail: { applied, force, version: F.meta && F.meta.version }
+      }));
+    } catch (_) {}
+    return { applied, skipped: 0 };
+  };
+
+  // ------------------------------------------------------------
+  // Autoload: intenta fetch del JSON. Si falla (file://, offline,
+  // CORS), queda silencioso · el editor o el cotizador.html puede
+  // setFoundations manualmente con el objeto ya cargado.
+  // ------------------------------------------------------------
+  (function autoLoad() {
+    if (K.foundations) return;
+    if (typeof fetch !== 'function') return;
+    // candidatos de ruta · soporta servido desde raiz o desde subpath
+    const candidates = [
+      './data/scent-iq-foundations.json',
+      '/data/scent-iq-foundations.json',
+      'data/scent-iq-foundations.json'
+    ];
+    (async function tryAll() {
+      for (const url of candidates) {
+        try {
+          const r = await fetch(url, { cache: 'no-cache' });
+          if (!r.ok) continue;
+          const data = await r.json();
+          K.setFoundations(data);
+          return;
+        } catch (_) { /* siguiente */ }
+      }
+    })();
+  })();
+
+})(window.OLF_KNOW);
