@@ -16,10 +16,43 @@
   const { useState, useMemo, useRef, useCallback, forwardRef } = W.React;
 
   // ----------------------------------------------------------
+  // Catálogo de Tipo de espacio · obligatorio antes de analizar
+  // Mapeo a profileIndex (0..4) del mock vision adapter para que el
+  // perfil mock al menos respete el giro real del negocio. Sin esto,
+  // el mock elegía perfil por hash(nombre+size) — p.ej. una oficina
+  // podía caer en "Costero tropical boutique costera".
+  // ----------------------------------------------------------
+  const SPACE_TYPES = [
+    { id: 'spa',         label: 'Spa o wellness',                 profileIndex: 0 },
+    { id: 'hotel',       label: 'Hotel lobby o quiet luxury',     profileIndex: 1 },
+    { id: 'boutique',    label: 'Boutique costero o resort',      profileIndex: 2 },
+    { id: 'bar',         label: 'Bar lounge o nightlife',         profileIndex: 3 },
+    { id: 'restaurante', label: 'Restaurante bohemio mexicano',   profileIndex: 4 },
+    { id: 'oficina',     label: 'Oficina corporativa',            profileIndex: 1 },
+    { id: 'retail',      label: 'Retail moda',                    profileIndex: 4 },
+    { id: 'showroom',    label: 'Showroom premium',               profileIndex: 1 },
+    { id: 'clinica',     label: 'Clínica o estética',             profileIndex: 0 },
+    { id: 'gym',         label: 'Gym o estudio',                  profileIndex: 0 },
+    { id: 'residencia',  label: 'Residencia premium',             profileIndex: 1 },
+  ];
+  const profileIndexForSpace = (id) => {
+    const s = SPACE_TYPES.find(s => s.id === id);
+    return s ? s.profileIndex : null;
+  };
+
+  // Tipos de luz disponibles para el override manual del especialista.
+  const TIPOS_LUZ = [
+    { id: 'calida_difusa', label: 'Cálida difusa' },
+    { id: 'neutra',        label: 'Neutra' },
+    { id: 'fria',          label: 'Fría' },
+    { id: 'dramatica',     label: 'Dramática' },
+  ];
+
+  // ----------------------------------------------------------
   // helpers
   // ----------------------------------------------------------
   function readDemo() {
-    return fetch('scent-iq-demo.json?v=20260514b').then(r => r.ok ? r.json() : null).catch(() => null);
+    return fetch('scent-iq-demo.json?v=20260514c').then(r => r.ok ? r.json() : null).catch(() => null);
   }
 
   function copyToClipboard(text) {
@@ -171,24 +204,50 @@
   // ----------------------------------------------------------
   // ImageUploader
   // ----------------------------------------------------------
-  function ImageUploader({ previewURL, onFile, onUseDemo, disabled }) {
+  function ImageUploader({ previewURL, onFile, onUseDemo, onAnalyzeWithoutPhoto, disabled, spaceType, onSpaceType }) {
     const inputRef = useRef(null);
     const [drag, setDrag] = useState(false);
+    const ready = !!spaceType;
 
     const onDrop = useCallback((e) => {
       e.preventDefault(); setDrag(false);
+      if (!ready) return;
       const f = e.dataTransfer.files?.[0];
       if (f && /^image\//.test(f.type)) onFile(f);
-    }, [onFile]);
+    }, [onFile, ready]);
 
     return (
       <div className="siq-uploader">
+        {/* Tipo de espacio · obligatorio antes de analizar */}
+        <div className="siq-space-type">
+          <label className="siq-space-type-label" htmlFor="siq-space-type-select">
+            Tipo de espacio <span className="siq-req">*</span>
+          </label>
+          <select
+            id="siq-space-type-select"
+            className="siq-space-type-select"
+            value={spaceType || ''}
+            onChange={(e) => onSpaceType(e.target.value || null)}
+          >
+            <option value="">— Selecciona el giro del cliente —</option>
+            {SPACE_TYPES.map(s => (
+              <option key={s.id} value={s.id}>{s.label}</option>
+            ))}
+          </select>
+          <div className="siq-space-type-hint">
+            {ready
+              ? 'Listo · el análisis usará este giro como base. Puedes subir foto o seguir sin imagen.'
+              : 'Selecciona primero el giro · sin esto el motor mock asigna perfil por hash del archivo y puede equivocar la lectura.'}
+          </div>
+        </div>
+
         <div
-          className={"siq-drop" + (drag ? ' is-drag' : '') + (previewURL ? ' has-preview' : '')}
-          onClick={() => !disabled && inputRef.current?.click()}
-          onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+          className={"siq-drop" + (drag ? ' is-drag' : '') + (previewURL ? ' has-preview' : '') + (!ready ? ' is-locked' : '')}
+          onClick={() => { if (!disabled && ready) inputRef.current?.click(); }}
+          onDragOver={(e) => { e.preventDefault(); if (ready) setDrag(true); }}
           onDragLeave={() => setDrag(false)}
           onDrop={onDrop}
+          title={!ready ? 'Selecciona primero el tipo de espacio' : ''}
         >
           {previewURL ? (
             <img src={previewURL} alt="preview" className="siq-preview" />
@@ -196,7 +255,11 @@
             <>
               <div className="siq-drop-icon">⬆</div>
               <div className="siq-drop-title">Sube una foto del espacio</div>
-              <div className="siq-drop-sub">Arrastra una imagen aquí, o haz click para seleccionar (JPG · PNG)</div>
+              <div className="siq-drop-sub">
+                {ready
+                  ? 'Arrastra una imagen aquí, o haz click para seleccionar (JPG · PNG)'
+                  : 'Bloqueado hasta seleccionar el tipo de espacio'}
+              </div>
             </>
           )}
         </div>
@@ -208,11 +271,19 @@
           onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }}
         />
         <div className="siq-uploader-actions">
-          <button className="btn-secondary" onClick={onUseDemo} disabled={disabled}>
+          <button
+            className="btn-primary"
+            onClick={onAnalyzeWithoutPhoto}
+            disabled={disabled || !ready}
+            title={!ready ? 'Selecciona primero el tipo de espacio' : 'Analizar usando solo el giro, sin foto (resultado marcado como estimado).'}
+          >
+            ⌖ Analizar sin foto
+          </button>
+          <button className="btn-secondary" onClick={onUseDemo} disabled={disabled || !ready} title={!ready ? 'Selecciona primero el tipo de espacio' : ''}>
             ▶ Usar análisis demo
           </button>
           <span className="siq-uploader-note">
-            Adapter actual: <b>mock</b> · genera análisis razonable para validar el flujo. Conectar vision real desde <code>scent-iq-engines.js</code>.
+            Adapter actual: <b>mock</b> · el giro elegido fija el perfil del catálogo; el override manual del especialista vive en la siguiente pantalla.
           </span>
         </div>
       </div>
@@ -333,6 +404,72 @@
   // ----------------------------------------------------------
   // 4 cards
   // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  // VisualOverridesPanel — overrides manuales del especialista
+  // sobre la lectura visual del motor. Si cambia un campo, el
+  // padre regenera output con buildOutput para que aroma + prompt
+  // queden coherentes con la lectura corregida.
+  // ----------------------------------------------------------
+  function VisualOverridesPanel({ analisis, overrides, onChange, onClear }) {
+    const ov = overrides || {};
+    const isOn = ov.familia_visual || ov.materialidad || ov.tipo_de_luz;
+    return (
+      <div className="siq-visual-overrides">
+        <div className="siq-visual-overrides-head">
+          <div>
+            <div className="siq-eyebrow">Override visual del especialista</div>
+            <div className="siq-visual-overrides-sub">
+              Si el motor leyó mal, ajusta aquí. Esto regenera la familia olfativa y el prompt Designer.
+            </div>
+          </div>
+          {isOn && (
+            <button className="siq-override-clear" onClick={onClear} title="Volver a la lectura del motor">
+              Volver a la lectura del motor
+            </button>
+          )}
+        </div>
+        <div className="siq-visual-overrides-grid">
+          <label className="siq-vo-field">
+            <span className="siq-vo-label">Familia visual</span>
+            <select
+              className="siq-vo-control"
+              value={ov.familia_visual || analisis?.familia_visual || ''}
+              onChange={(e) => onChange({ familia_visual: e.target.value })}
+            >
+              <option value="">— Detectada por motor —</option>
+              {OLF_KNOW.familiasVisuales.map(f => (
+                <option key={f.id} value={f.id}>{f.nombre}</option>
+              ))}
+            </select>
+          </label>
+          <label className="siq-vo-field">
+            <span className="siq-vo-label">Materialidad</span>
+            <input
+              type="text"
+              className="siq-vo-control"
+              value={ov.materialidad ?? (analisis?.materialidad || '')}
+              placeholder="madera clara, lino, mármol…"
+              onChange={(e) => onChange({ materialidad: e.target.value })}
+            />
+          </label>
+          <label className="siq-vo-field">
+            <span className="siq-vo-label">Tipo de luz</span>
+            <select
+              className="siq-vo-control"
+              value={ov.tipo_de_luz || analisis?.tipo_de_luz || ''}
+              onChange={(e) => onChange({ tipo_de_luz: e.target.value })}
+            >
+              <option value="">— Detectada por motor —</option>
+              {TIPOS_LUZ.map(t => (
+                <option key={t.id} value={t.label}>{t.label}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </div>
+    );
+  }
+
   function VisualAnalysisCard({ a }) {
     const fv = OLF_KNOW.familiasVisuales.find(f => f.id === a.familia_visual);
     const fv2 = OLF_KNOW.familiasVisuales.find(f => f.id === a.familia_visual_secundaria);
@@ -701,11 +838,20 @@
     const [shareData, setShareData] = useState(null); // { imageUrl, blob, text }
     const [copiedImg, setCopiedImg] = useState(false);
     const [copiedTxt, setCopiedTxt] = useState(false);
+    // Tipo de espacio · obligatorio antes de analizar. Mapea a profileIndex
+    // del mock para que el giro real del cliente nunca quede ignorado.
+    const [spaceType, setSpaceType] = useState(null);
     // Overrides manuales del especialista (encima del análisis IA)
     const [aromaOverride, setAromaOverride] = useState(null);
     const [difusorOverride, setDifusorOverride] = useState(null);
     const [aromaPickerOpen, setAromaPickerOpen] = useState(false);
     const [difusorPickerOpen, setDifusorPickerOpen] = useState(false);
+    // Overrides visuales (familia, materialidad, tipo de luz). Cuando el
+    // ejecutivo cambia uno, rearmamos `output` con buildOutput sobre un
+    // analisis fusionado para que la recomendación y el prompt Designer
+    // queden coherentes con lo que ve en el slide.
+    const [visualOverrides, setVisualOverrides] = useState(null);
+    const [analisisBase, setAnalisisBase] = useState(null);
 
     const close = () => { onClose && onClose(); };
 
@@ -717,12 +863,17 @@
         if (!an) {
           an = await OLF_IA.analyzeImage(opts.file || null, opts.adapterOpts);
         }
+        // Si el ejecutivo siguió sin foto, marcamos el resultado como
+        // estimado total para que el slide del deck lo declare.
+        if (opts.markEstimadoTotal) an = { ...an, _estimadoTotal: true };
         const out = OLF_IA.buildOutput(an);
         const v = OLF_IA.schemaValidate(out);
         if (!v.ok) {
           throw new Error('Output inválido: ' + v.errors.join(', '));
         }
         setAnalisis(an);
+        setAnalisisBase(an);
+        setVisualOverrides(null);
         setOutput(out);
         setPhase('result');
       } catch (e) {
@@ -738,7 +889,17 @@
       const url = URL.createObjectURL(f);
       setPreviewURL(url);
       setUsingDemo(false);
-      startAnalysis(null, { file: f });
+      // Pasamos profileIndex del giro al adapter para fijar el perfil mock.
+      startAnalysis(null, { file: f, adapterOpts: { profileIndex: profileIndexForSpace(spaceType) } });
+    };
+
+    const onAnalyzeWithoutPhoto = () => {
+      const pi = profileIndexForSpace(spaceType);
+      if (pi == null) return;
+      setFile(null);
+      if (previewURL) { URL.revokeObjectURL(previewURL); setPreviewURL(null); }
+      setUsingDemo(false);
+      startAnalysis(null, { file: null, adapterOpts: { profileIndex: pi }, markEstimadoTotal: true });
     };
 
     const onUseDemo = async () => {
@@ -750,6 +911,34 @@
         return;
       }
       startAnalysis(demo.analisis);
+    };
+
+    // Aplica un override visual y regenera el output completo con
+    // buildOutput sobre el analisis fusionado, así la recomendación
+    // y el prompt Designer reflejan lo que el especialista corrigió.
+    const applyVisualOverride = (patch) => {
+      const next = { ...(visualOverrides || {}), ...patch };
+      // Limpia entradas vacías
+      Object.keys(next).forEach(k => { if (next[k] === '' || next[k] == null) delete next[k]; });
+      setVisualOverrides(Object.keys(next).length ? next : null);
+      if (!analisisBase) return;
+      const merged = { ...analisisBase, ...next, _visualOverride: Object.keys(next).length > 0 };
+      try {
+        const out = OLF_IA.buildOutput(merged);
+        const v = OLF_IA.schemaValidate(out);
+        if (v.ok) {
+          setAnalisis(merged);
+          setOutput(out);
+        }
+      } catch (e) { console.error('rebuild output failed', e); }
+    };
+
+    const clearVisualOverrides = () => {
+      setVisualOverrides(null);
+      if (!analisisBase) return;
+      const out = OLF_IA.buildOutput(analisisBase);
+      setAnalisis(analisisBase);
+      setOutput(out);
     };
 
     const onCopyPrompt = async () => {
@@ -825,8 +1014,11 @@
       }
       base._meta.manual_overrides = {
         aroma:   !!aromaOverride,
-        difusor: !!difusorOverride
+        difusor: !!difusorOverride,
+        visual:  !!(visualOverrides && Object.keys(visualOverrides).length)
       };
+      base._meta.space_type    = spaceType || null;
+      base._meta.estimadoTotal = analisis?._estimadoTotal === true || !file;
       base._meta.previewURL = dataURL || previewURL || null;
 
       const payload = {
@@ -936,6 +1128,9 @@
       if (previewURL) URL.revokeObjectURL(previewURL);
       setFile(null); setPreviewURL(null); setAnalisis(null); setOutput(null);
       setUsingDemo(false); setApplied(false); setPhase('intro');
+      setSpaceType(null);
+      setVisualOverrides(null); setAnalisisBase(null);
+      setAromaOverride(null); setDifusorOverride(null);
     };
 
     const principalFull = output?._meta?.aroma_principal_full;
@@ -963,7 +1158,10 @@
                 previewURL={previewURL}
                 onFile={onFile}
                 onUseDemo={onUseDemo}
+                onAnalyzeWithoutPhoto={onAnalyzeWithoutPhoto}
                 disabled={false}
+                spaceType={spaceType}
+                onSpaceType={setSpaceType}
               />
             )}
 
@@ -989,6 +1187,16 @@
                 )}
 
                 <PhotoEvidenceCard ref={evidenceRef} previewURL={previewURL} analisis={analisis} output={output} />
+
+                {/* Override visual · permite al especialista corregir
+                    la lectura del motor (familia, materialidad, luz)
+                    y regenera la recomendación olfativa coherente. */}
+                <VisualOverridesPanel
+                  analisis={analisis}
+                  overrides={visualOverrides}
+                  onChange={applyVisualOverride}
+                  onClear={clearVisualOverrides}
+                />
 
                 <div className="siq-grid">
                   <VisualAnalysisCard a={analisis} />

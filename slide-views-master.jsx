@@ -1859,6 +1859,20 @@ function SlideScentAnalysis({ segment, clientName, idx, totalSlides, propId, pro
                 {o.resumen_comercial}
               </Body>
             )}
+
+            {/* Disclaimer · blindaje contra error de lectura del motor.
+                Siempre visible mientras el adapter sea mock (o cualquier
+                vision adapter de baja confianza). Color bone 0.5 · 10px
+                · italic · pegado al final del bloque de recomendación. */}
+            <div style={{
+              marginTop: 16,
+              fontFamily: 'Inter, sans-serif',
+              fontSize: 10, fontStyle: 'italic',
+              color: 'rgba(243, 237, 227, 0.5)',
+              letterSpacing: '0.02em',
+            }}>
+              Lectura asistida · estimada. Confirme con el cliente.
+            </div>
           </div>
         </div>
       </div>
