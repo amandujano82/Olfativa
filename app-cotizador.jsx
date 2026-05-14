@@ -980,6 +980,35 @@ function AdminPanel({ customSlides, enabledKinds, selected, onSave, onToggleInDe
   const [drag, setDrag] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Integración de visión · adapter seleccionado + URL del Worker.
+  // Persistido en localStorage; el adapter `claude` lee la URL de ahí.
+  const [visionAdapter, setVisionAdapter] = useState(() => {
+    try { return localStorage.getItem('olfativa.visionAdapter') || 'mock'; }
+    catch { return 'mock'; }
+  });
+  const [visionWorkerUrl, setVisionWorkerUrl] = useState(() => {
+    try { return localStorage.getItem('olfativa.visionWorkerUrl') || ''; }
+    catch { return ''; }
+  });
+  const [visionSaved, setVisionSaved] = useState(false);
+  const visionUrlEmpty = !visionWorkerUrl.trim();
+  const visionWarn = visionAdapter === 'claude' && visionUrlEmpty;
+  const saveVision = () => {
+    try {
+      localStorage.setItem('olfativa.visionAdapter', visionAdapter);
+      localStorage.setItem('olfativa.visionWorkerUrl', visionWorkerUrl.trim());
+    } catch (_) {}
+    // Aplica el adapter al engine en runtime · sin esto analyzeImage
+    // seguiría usando el adapter previo hasta el próximo refresh.
+    if (window.OLF_IA) {
+      window.OLF_IA.visionAdapter = (visionAdapter === 'claude' && !visionUrlEmpty)
+        ? 'claude'
+        : 'mock';
+    }
+    setVisionSaved(true);
+    setTimeout(() => setVisionSaved(false), 2200);
+  };
+
   const originalIds = useMemo(() => new Set((customSlides || []).map(s => s.id)), [customSlides]);
   const newlyCreated = draft.filter(s => !originalIds.has(s.id));
   const newCount = newlyCreated.length;
@@ -1223,6 +1252,75 @@ function AdminPanel({ customSlides, enabledKinds, selected, onSave, onToggleInDe
             </div>
           )}
         </div>
+
+        <section className="admin-vision">
+          <div className="admin-vision-head">
+            <div className="picker-eyebrow">Integración de visión</div>
+            <h3 className="admin-vision-title">Cómo lee la foto el Scent Advisor</h3>
+            <div className="admin-vision-sub">
+              El motor por defecto es un mock determinista. Conecta el Worker de Vercel para que Claude 3.5 Sonnet Vision analice la foto real. La API key vive como secret en Vercel — el front nunca la ve.
+            </div>
+          </div>
+
+          <div className="admin-vision-grid">
+            <div className="admin-vision-field">
+              <label className="admin-vision-label">Adapter</label>
+              <div className="admin-vision-radio-group">
+                <label className={"admin-vision-radio" + (visionAdapter === 'mock' ? ' is-on' : '')}>
+                  <input
+                    type="radio"
+                    name="visionAdapter"
+                    value="mock"
+                    checked={visionAdapter === 'mock'}
+                    onChange={() => setVisionAdapter('mock')}
+                  />
+                  <div>
+                    <div className="admin-vision-radio-title">Mock determinista (default)</div>
+                    <div className="admin-vision-radio-desc">Sin red. El giro del Scent Advisor fija el perfil.</div>
+                  </div>
+                </label>
+                <label className={"admin-vision-radio" + (visionAdapter === 'claude' ? ' is-on' : '')}>
+                  <input
+                    type="radio"
+                    name="visionAdapter"
+                    value="claude"
+                    checked={visionAdapter === 'claude'}
+                    onChange={() => setVisionAdapter('claude')}
+                  />
+                  <div>
+                    <div className="admin-vision-radio-title">Claude Vision real</div>
+                    <div className="admin-vision-radio-desc">Llama al Worker de Vercel → Anthropic API.</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div className="admin-vision-field">
+              <label className="admin-vision-label" htmlFor="admin-vision-url">URL del Worker</label>
+              <input
+                id="admin-vision-url"
+                type="url"
+                className="admin-vision-url"
+                placeholder="https://olfativa.vercel.app/api/vision-proxy"
+                value={visionWorkerUrl}
+                onChange={(e) => setVisionWorkerUrl(e.target.value)}
+              />
+              <div className="admin-vision-hint">
+                Pega aquí la URL completa del endpoint <code>/api/vision-proxy</code>. Pasos detallados en <code>docs/integracion-vision-real.md</code>.
+              </div>
+              {visionWarn && (
+                <div className="admin-vision-warn">
+                  ⚠ Sin URL no funciona · usaremos mock hasta que pegues la URL del Worker.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="admin-vision-actions">
+            {visionSaved && <span className="admin-vision-saved">✓ Integración guardada</span>}
+            <button className="btn-secondary" onClick={saveVision}>Guardar integración</button>
+          </div>
+        </section>
 
         <div className="picker-footer">
           <span className="picker-footer-info">

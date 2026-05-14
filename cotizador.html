@@ -1397,6 +1397,83 @@
     padding-top: 12px;
     border-top: 1px solid rgba(243,237,227,0.08);
   }
+
+  /* — Admin · Integración de visión (Claude Vision real vía Vercel) — */
+  .admin-vision {
+    margin: 0 32px 16px;
+    padding: 18px 20px;
+    background: rgba(243, 237, 227, 0.025);
+    border: 1px solid rgba(234, 226, 213, 0.1);
+    border-radius: 8px;
+  }
+  .admin-vision-head { margin-bottom: 14px; }
+  .admin-vision-title {
+    margin: 4px 0 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 500; color: #F5F0E8;
+    letter-spacing: -0.01em;
+  }
+  .admin-vision-sub {
+    font-size: 12.5px; line-height: 1.45; margin-top: 6px;
+    color: rgba(243, 237, 227, 0.55); max-width: 720px;
+  }
+  .admin-vision-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 760px) { .admin-vision-grid { grid-template-columns: 1fr; } }
+  .admin-vision-field { display: flex; flex-direction: column; gap: 8px; }
+  .admin-vision-label {
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(199, 166, 104, 0.7); font-weight: 600;
+  }
+  .admin-vision-radio-group {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .admin-vision-radio {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; border-radius: 5px;
+    background: rgba(243, 237, 227, 0.04);
+    border: 1px solid rgba(234, 226, 213, 0.1);
+    cursor: pointer; transition: border-color 160ms, background 160ms;
+  }
+  .admin-vision-radio:hover { border-color: rgba(234, 226, 213, 0.22); }
+  .admin-vision-radio.is-on {
+    border-color: rgba(199, 166, 104, 0.45);
+    background: rgba(199, 166, 104, 0.06);
+  }
+  .admin-vision-radio input[type="radio"] { accent-color: #CC6633; margin-top: 3px; flex-shrink: 0; }
+  .admin-vision-radio-title { font-size: 13px; font-weight: 600; color: #F5F0E8; }
+  .admin-vision-radio-desc { font-size: 11.5px; color: rgba(243, 237, 227, 0.55); margin-top: 2px; }
+  .admin-vision-url {
+    appearance: none; font-family: inherit;
+    background: rgba(243, 237, 227, 0.06);
+    border: 1px solid rgba(234, 226, 213, 0.18);
+    color: #F5F0E8; font-size: 13px;
+    padding: 9px 11px; border-radius: 5px; outline: none;
+  }
+  .admin-vision-url:focus { border-color: rgba(199, 166, 104, 0.55); background: rgba(199, 166, 104, 0.06); }
+  .admin-vision-hint {
+    font-size: 11.5px; color: rgba(243, 237, 227, 0.5); line-height: 1.4;
+  }
+  .admin-vision-hint code {
+    font-family: 'Courier New', monospace;
+    background: rgba(243, 237, 227, 0.06); padding: 1px 5px; border-radius: 3px;
+    font-size: 11px;
+  }
+  .admin-vision-warn {
+    font-size: 12px; color: #C47A48; font-weight: 600;
+    background: rgba(196, 122, 72, 0.08);
+    border-left: 2px solid #C47A48;
+    padding: 8px 10px; border-radius: 0 4px 4px 0;
+  }
+  .admin-vision-actions {
+    display: flex; align-items: center; justify-content: flex-end; gap: 12px;
+    margin-top: 4px;
+  }
+  .admin-vision-saved {
+    font-size: 12px; color: #8FB37E; font-weight: 600;
+  }
   .admin-row-del-btn {
     appearance: none; cursor: pointer; font-family: inherit;
     background: rgba(196,122,72,0.12);
@@ -2085,16 +2162,34 @@
 <script src="https://unpkg.com/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
 <!-- html2canvas standalone para captura PNG del PhotoEvidenceCard (compartir WhatsApp) -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="deck-stage.js?v=20260514c"></script>
-<script src="scent-iq-knowledge.js?v=20260514c"></script>
-<script src="scent-iq-engines.js?v=20260514c"></script>
-<script type="text/babel" src="tweaks-panel.jsx?v=20260514c"></script>
-<script type="text/babel" src="slides-master.jsx?v=20260514c"></script>
-<script type="text/babel" src="slide-views-master.jsx?v=20260514c"></script>
-<script type="text/babel" src="hero-difusor.jsx?v=20260514c"></script>
-<script type="text/babel" src="catalog-min.jsx?v=20260514c"></script>
-<script type="text/babel" src="control-olores.jsx?v=20260514c"></script>
-<script type="text/babel" src="scent-iq-panel.jsx?v=20260514c"></script>
-<script type="text/babel" src="app-cotizador.jsx?v=20260514c"></script>
+<script src="deck-stage.js?v=20260514d"></script>
+<script src="scent-iq-knowledge.js?v=20260514d"></script>
+<script src="scent-iq-engines.js?v=20260514d"></script>
+<!-- Vision real (Claude 3.5 Sonnet via Vercel proxy). Debe ir DESPUES
+     del engine para registrar W.OLF_IA.visionAdapters.claude. El toggle
+     en Admin elige entre mock y claude y persiste la URL del Worker. -->
+<script src="scent-iq-vision-claude.js?v=20260514d"></script>
+<script>
+  // Bootstrap del adapter elegido por el ejecutivo en Admin. Si el LS
+  // dice 'claude' y hay URL guardada, lo activamos antes que cualquier
+  // analyzeImage corra. Si no, dejamos el default 'mock' del engine.
+  (function () {
+    try {
+      var adapter = localStorage.getItem('olfativa.visionAdapter');
+      var url     = (localStorage.getItem('olfativa.visionWorkerUrl') || '').trim();
+      if (adapter === 'claude' && url && window.OLF_IA) {
+        window.OLF_IA.visionAdapter = 'claude';
+      }
+    } catch (_) {}
+  })();
+</script>
+<script type="text/babel" src="tweaks-panel.jsx?v=20260514d"></script>
+<script type="text/babel" src="slides-master.jsx?v=20260514d"></script>
+<script type="text/babel" src="slide-views-master.jsx?v=20260514d"></script>
+<script type="text/babel" src="hero-difusor.jsx?v=20260514d"></script>
+<script type="text/babel" src="catalog-min.jsx?v=20260514d"></script>
+<script type="text/babel" src="control-olores.jsx?v=20260514d"></script>
+<script type="text/babel" src="scent-iq-panel.jsx?v=20260514d"></script>
+<script type="text/babel" src="app-cotizador.jsx?v=20260514d"></script>
 </body>
 </html>
