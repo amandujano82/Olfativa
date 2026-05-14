@@ -973,12 +973,360 @@ function defaultSlideTitle() {
   return `Slide custom ${d.getDate()} ${months[d.getMonth()]} ${hh}:${mm}`;
 }
 
+// ============================================================
+// CatalogEditor — pestaña Admin para que Tony edite el catálogo
+// de aromas. Persiste en localStorage.olfativa.catalogOverrides
+// vía window.OLF_IA.setCatalog (alias de OLF_KNOW.setCatalog).
+// Soporta export/import JSON y restauración al bundle default.
+// ============================================================
+const CATALOG_TEXTAREA_FIELDS = [
+  { key: 'contextos_recomendados', label: 'Contextos recomendados', hint: 'Una línea por contexto · ej "oficina ejecutiva".' },
+  { key: 'contextos_a_evitar',     label: 'Contextos a evitar',     hint: 'Una línea por anti-contexto · ej "espacios costeros".' },
+];
+const linesToArray = (s) => String(s || '').split('\n').map(t => t.trim()).filter(Boolean);
+const arrayToLines = (a) => (Array.isArray(a) ? a.join('\n') : '');
+const csvToArray = (s) => String(s || '').split(',').map(t => t.trim()).filter(Boolean);
+const arrayToCsv = (a) => (Array.isArray(a) ? a.join(', ') : '');
+
+function readCatalogFromGlobals() {
+  try {
+    if (window.OLF_IA && Array.isArray(window.OLF_IA.catalog)) {
+      // Deep clone para que el draft no mute la fuente.
+      return window.OLF_IA.catalog.map(a => JSON.parse(JSON.stringify(a)));
+    }
+  } catch (_) {}
+  return [];
+}
+
+function CatalogEditor() {
+  const [aromas, setAromas]       = useState(readCatalogFromGlobals);
+  const [selectedIdx, setSelected] = useState(aromas.length ? 0 : -1);
+  const [search, setSearch]       = useState('');
+  const [savedHint, setSavedHint] = useState(null);
+  const [importError, setImportError] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // Si Tony cambia el catálogo desde otro lado (import, reset), sincroniza.
+  useEffect(() => {
+    const handler = () => {
+      const fresh = readCatalogFromGlobals();
+      setAromas(fresh);
+      setSelected(prev => (prev >= 0 && prev < fresh.length) ? prev : (fresh.length ? 0 : -1));
+    };
+    window.addEventListener('olfativa:catalog-updated', handler);
+    return () => window.removeEventListener('olfativa:catalog-updated', handler);
+  }, []);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return aromas.map((a, i) => ({ a, i }));
+    return aromas
+      .map((a, i) => ({ a, i }))
+      .filter(({ a }) =>
+        (a.nombre || '').toLowerCase().includes(q) ||
+        (a.familia_olfativa || a.familia || '').toLowerCase().includes(q));
+  }, [aromas, search]);
+
+  const current = selectedIdx >= 0 ? aromas[selectedIdx] : null;
+
+  const updateField = (key, value) => {
+    setAromas(prev => {
+      const next = prev.slice();
+      next[selectedIdx] = { ...next[selectedIdx], [key]: value };
+      return next;
+    });
+  };
+
+  const persist = (arr) => {
+    try {
+      window.OLF_IA.setCatalog(arr);
+      setSavedHint('✓ Catálogo guardado · disponible en próximo análisis.');
+      setTimeout(() => setSavedHint(null), 2400);
+    } catch (e) {
+      setSavedHint('✗ Error al guardar: ' + (e.message || e));
+      setTimeout(() => setSavedHint(null), 3500);
+    }
+  };
+
+  const saveCurrent = () => persist(aromas);
+
+  const deleteCurrent = () => {
+    if (selectedIdx < 0) return;
+    if (!confirm(`Eliminar "${current.nombre}" del catálogo?`)) return;
+    const next = aromas.slice();
+    next.splice(selectedIdx, 1);
+    setAromas(next);
+    setSelected(next.length ? Math.max(0, selectedIdx - 1) : -1);
+    persist(next);
+  };
+
+  const addNew = () => {
+    const id = 'A' + String(aromas.length + 1).padStart(3, '0');
+    const newAroma = {
+      id,
+      key: 'nuevo_' + Date.now(),
+      nombre: 'Aroma nuevo',
+      familia_olfativa: '',
+      familia: '',
+      subacorde: '',
+      acordes: [],
+      notas: { salida: '', corazon: '', fondo: '' },
+      descripcion: '',
+      contextos_recomendados: [],
+      contextos_a_evitar: [],
+      tags_visuales: [],
+    };
+    const next = [newAroma, ...aromas];
+    setAromas(next);
+    setSelected(0);
+    persist(next);
+  };
+
+  const exportJson = () => {
+    const blob = new Blob([JSON.stringify(aromas, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'catalogo-olfativa.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 500);
+  };
+
+  const importJson = (file) => {
+    if (!file) return;
+    setImportError(null);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (!Array.isArray(parsed)) throw new Error('El JSON debe ser un array.');
+        if (parsed.length === 0)    throw new Error('El array está vacío.');
+        if (!parsed.every(a => a && typeof a.nombre === 'string')) {
+          throw new Error('Cada aroma requiere un campo "nombre" string.');
+        }
+        setAromas(parsed);
+        setSelected(0);
+        persist(parsed);
+      } catch (err) {
+        setImportError('✗ Import falló: ' + (err.message || err) + ' · catálogo previo intacto.');
+        setTimeout(() => setImportError(null), 6000);
+      }
+    };
+    reader.onerror = () => {
+      setImportError('✗ No se pudo leer el archivo.');
+      setTimeout(() => setImportError(null), 4000);
+    };
+    reader.readAsText(file);
+  };
+
+  const resetDefault = () => {
+    if (!confirm('Restaurar el catálogo original del bundle? Tus ediciones se perderán.')) return;
+    try {
+      window.OLF_IA.resetCatalog();
+      const fresh = readCatalogFromGlobals();
+      setAromas(fresh);
+      setSelected(fresh.length ? 0 : -1);
+      setSavedHint('✓ Catálogo restaurado al default del bundle.');
+      setTimeout(() => setSavedHint(null), 2400);
+    } catch (e) {
+      setSavedHint('✗ Reset falló: ' + (e.message || e));
+    }
+  };
+
+  return (
+    <div className="catalog-editor">
+      <div className="catalog-editor-body">
+        <aside className="catalog-list">
+          <div className="catalog-list-head">
+            <input
+              type="text"
+              className="catalog-search"
+              placeholder="Buscar nombre o familia…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <button className="btn-secondary catalog-new-btn" onClick={addNew}>+ Nuevo aroma</button>
+          </div>
+          <div className="catalog-list-scroll">
+            {filtered.length === 0 ? (
+              <div className="catalog-empty">Sin resultados.</div>
+            ) : filtered.map(({ a, i }) => (
+              <button
+                key={a.id || a.key || i}
+                className={"catalog-list-item" + (i === selectedIdx ? ' is-on' : '')}
+                onClick={() => setSelected(i)}>
+                <div className="catalog-list-name">{a.nombre || '(sin nombre)'}</div>
+                <div className="catalog-list-fam">{a.familia_olfativa || a.familia || '—'}</div>
+              </button>
+            ))}
+          </div>
+          <div className="catalog-list-count">
+            {aromas.length} aroma{aromas.length === 1 ? '' : 's'} en el catálogo
+          </div>
+        </aside>
+
+        <section className="catalog-form">
+          {!current ? (
+            <div className="catalog-empty">Selecciona un aroma de la izquierda o crea uno nuevo.</div>
+          ) : (
+            <>
+              <div className="catalog-form-head">
+                <div className="picker-eyebrow">Editar aroma</div>
+                <h3 className="catalog-form-title">{current.nombre || '(sin nombre)'}</h3>
+              </div>
+
+              <div className="catalog-form-grid">
+                <label className="catalog-field">
+                  <span className="catalog-label">Nombre</span>
+                  <input
+                    type="text"
+                    className="catalog-input"
+                    value={current.nombre || ''}
+                    onChange={(e) => updateField('nombre', e.target.value)}
+                  />
+                </label>
+
+                <label className="catalog-field">
+                  <span className="catalog-label">Familia olfativa</span>
+                  <input
+                    type="text"
+                    className="catalog-input"
+                    list="catalog-familia-list"
+                    placeholder="Cítricas, Florales, Amaderadas…"
+                    value={current.familia_olfativa || current.familia || ''}
+                    onChange={(e) => {
+                      updateField('familia_olfativa', e.target.value);
+                      updateField('familia', e.target.value);
+                    }}
+                  />
+                  <datalist id="catalog-familia-list">
+                    <option value="Cítricas" />
+                    <option value="Herbales" />
+                    <option value="Verdes" />
+                    <option value="Florales" />
+                    <option value="Frutales" />
+                    <option value="Amaderadas" />
+                    <option value="De ocasión" />
+                    <option value="Personalizada" />
+                  </datalist>
+                </label>
+
+                <label className="catalog-field catalog-field-full">
+                  <span className="catalog-label">Subacorde</span>
+                  <input
+                    type="text"
+                    className="catalog-input"
+                    placeholder="ej. limón italiano + ámbar"
+                    value={current.subacorde || ''}
+                    onChange={(e) => updateField('subacorde', e.target.value)}
+                  />
+                </label>
+
+                <label className="catalog-field">
+                  <span className="catalog-label">Notas · salida</span>
+                  <textarea
+                    className="catalog-input catalog-textarea"
+                    rows={2}
+                    value={(current.notas && current.notas.salida) || ''}
+                    onChange={(e) => updateField('notas', { ...(current.notas || {}), salida: e.target.value })}
+                  />
+                </label>
+                <label className="catalog-field">
+                  <span className="catalog-label">Notas · corazón</span>
+                  <textarea
+                    className="catalog-input catalog-textarea"
+                    rows={2}
+                    value={(current.notas && current.notas.corazon) || ''}
+                    onChange={(e) => updateField('notas', { ...(current.notas || {}), corazon: e.target.value })}
+                  />
+                </label>
+                <label className="catalog-field">
+                  <span className="catalog-label">Notas · fondo</span>
+                  <textarea
+                    className="catalog-input catalog-textarea"
+                    rows={2}
+                    value={(current.notas && current.notas.fondo) || ''}
+                    onChange={(e) => updateField('notas', { ...(current.notas || {}), fondo: e.target.value })}
+                  />
+                </label>
+
+                <label className="catalog-field catalog-field-full">
+                  <span className="catalog-label">Descripción breve</span>
+                  <textarea
+                    className="catalog-input catalog-textarea"
+                    rows={3}
+                    value={current.descripcion || ''}
+                    onChange={(e) => updateField('descripcion', e.target.value)}
+                  />
+                </label>
+
+                {CATALOG_TEXTAREA_FIELDS.map(f => (
+                  <label key={f.key} className="catalog-field">
+                    <span className="catalog-label">{f.label}</span>
+                    <textarea
+                      className="catalog-input catalog-textarea"
+                      rows={4}
+                      placeholder={f.hint}
+                      value={arrayToLines(current[f.key])}
+                      onChange={(e) => updateField(f.key, linesToArray(e.target.value))}
+                    />
+                  </label>
+                ))}
+
+                <label className="catalog-field catalog-field-full">
+                  <span className="catalog-label">Tags visuales (separados por comas)</span>
+                  <textarea
+                    className="catalog-input catalog-textarea"
+                    rows={2}
+                    placeholder="maderas oscuras, cuero, metal pulido, paleta sobria"
+                    value={arrayToCsv(current.tags_visuales)}
+                    onChange={(e) => updateField('tags_visuales', csvToArray(e.target.value))}
+                  />
+                </label>
+              </div>
+
+              <div className="catalog-form-actions">
+                <button className="catalog-delete-btn" onClick={deleteCurrent}>Eliminar aroma</button>
+                <button className="btn-primary" onClick={saveCurrent}>Guardar aroma</button>
+              </div>
+            </>
+          )}
+        </section>
+      </div>
+
+      <div className="catalog-editor-footer">
+        <div className="catalog-editor-footer-info">
+          {importError ? <span className="catalog-import-error">{importError}</span>
+            : savedHint    ? <span className="catalog-saved-hint">{savedHint}</span>
+            : <>Los cambios se persisten en <code>localStorage.olfativa.catalogOverrides</code> y se inyectan al prompt de Claude Vision.</>}
+        </div>
+        <div className="catalog-editor-footer-btns">
+          <button className="btn-secondary" onClick={() => fileInputRef.current?.click()}>Importar JSON</button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            style={{ display: 'none' }}
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) importJson(f); e.target.value = ''; }}
+          />
+          <button className="btn-secondary" onClick={exportJson}>Exportar JSON</button>
+          <button className="btn-secondary catalog-reset-btn" onClick={resetDefault}>Restaurar default</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AdminPanel({ customSlides, enabledKinds, selected, onSave, onToggleInDeck, onClose }) {
   const [draft, setDraft] = useState(customSlides);
   const [editing, setEditing] = useState(null);
   const [savedHint, setSavedHint] = useState(null);
   const [drag, setDrag] = useState(false);
   const fileInputRef = useRef(null);
+  // Tabs del panel Admin · slides personalizados (default), catálogo
+  // de aromas, integración de visión. Cada pestaña renderiza su
+  // sección; el footer cambia según el tab activo.
+  const [activeTab, setActiveTab] = useState('slides');
 
   // Integración de visión · adapter seleccionado + URL del Worker.
   // Persistido en localStorage; el adapter `claude` lee la URL de ahí.
@@ -1119,13 +1467,36 @@ function AdminPanel({ customSlides, enabledKinds, selected, onSave, onToggleInDe
       <div className="picker-modal admin-modal" onClick={e => e.stopPropagation()}>
         <div className="picker-header">
           <div>
-            <div className="picker-eyebrow">Admin · Slides personalizados</div>
-            <h2 className="picker-title">Sube slides ya diseñados</h2>
-            <div className="picker-sub">Diseña la lámina en Microsoft Designer (u otra herramienta), súbela aquí como PNG/JPG y elige dónde insertarla en el deck.</div>
+            <div className="picker-eyebrow">Admin</div>
+            <h2 className="picker-title">Panel de administración</h2>
+            <div className="picker-sub">Sube slides personalizados, edita el catálogo de aromas y elige el motor de visión del Scent Advisor.</div>
           </div>
           <button className="picker-close" onClick={onClose} aria-label="Cerrar">×</button>
         </div>
 
+        <div className="admin-tabs">
+          <button
+            className={"admin-tab" + (activeTab === 'slides' ? ' is-on' : '')}
+            onClick={() => setActiveTab('slides')}>
+            Slides personalizados
+          </button>
+          <button
+            className={"admin-tab" + (activeTab === 'catalog' ? ' is-on' : '')}
+            onClick={() => setActiveTab('catalog')}>
+            Catálogo de aromas
+          </button>
+          <button
+            className={"admin-tab" + (activeTab === 'vision' ? ' is-on' : '')}
+            onClick={() => setActiveTab('vision')}>
+            Integración de visión
+          </button>
+        </div>
+
+        {activeTab === 'catalog' && (
+          <CatalogEditor onCloseModal={onClose} />
+        )}
+
+        {activeTab === 'slides' && (
         <div className="admin-body">
           <div className="admin-list">
             <div className="admin-list-head">
@@ -1252,7 +1623,9 @@ function AdminPanel({ customSlides, enabledKinds, selected, onSave, onToggleInDe
             </div>
           )}
         </div>
+        )}
 
+        {activeTab === 'vision' && (
         <section className="admin-vision">
           <div className="admin-vision-head">
             <div className="picker-eyebrow">Integración de visión</div>
@@ -1321,7 +1694,9 @@ function AdminPanel({ customSlides, enabledKinds, selected, onSave, onToggleInDe
             <button className="btn-secondary" onClick={saveVision}>Guardar integración</button>
           </div>
         </section>
+        )}
 
+        {activeTab === 'slides' && (
         <div className="picker-footer">
           <span className="picker-footer-info">
             {newCount > 0
@@ -1337,6 +1712,18 @@ function AdminPanel({ customSlides, enabledKinds, selected, onSave, onToggleInDe
             </button>
           </div>
         </div>
+        )}
+
+        {activeTab === 'vision' && (
+        <div className="picker-footer">
+          <span className="picker-footer-info">
+            La selección queda guardada al hacer click en <b>Guardar integración</b>.
+          </span>
+          <div className="picker-footer-btns">
+            <button className="btn-secondary" onClick={onClose}>Cerrar</button>
+          </div>
+        </div>
+        )}
       </div>
     </div>
   );
