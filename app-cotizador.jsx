@@ -978,6 +978,19 @@ function defaultSlideTitle() {
 // de aromas. Persiste en localStorage.olfativa.catalogOverrides
 // vía window.OLF_IA.setCatalog (alias de OLF_KNOW.setCatalog).
 // Soporta export/import JSON y restauración al bundle default.
+//
+// Ronda 6 · marco 5 sentidos. Click en un aroma de la lista abre
+// CatalogAromaModal con 3 secciones visualmente separadas:
+//   · SECCIÓN 1 (verde) · perfil sensorial 5 sentidos · campos
+//     TIPO A derivados de foundations.json. Cada campo muestra punto
+//     de confianza (verde = override Tony, amarillo = sugerido alta o
+//     media, gris = baja o sin dato) y botón "Restaurar a sugerencia".
+//   · SECCIÓN 2 (ámbar) · voz de Tony · campos TIPO B humanos sin
+//     sugerencia automática. notas_internas_tony es privado y nunca
+//     viaja al proxy de visión.
+//   · SECCIÓN 3 (gris) · operacional · nombre, familia, notas,
+//     descripción, tags visuales, precio relativo, stock, marca,
+//     inspiración, rating.
 // ============================================================
 const CATALOG_TEXTAREA_FIELDS = [
   { key: 'contextos_recomendados', label: 'Contextos recomendados', hint: 'Una línea por contexto · ej "oficina ejecutiva".' },
@@ -987,6 +1000,32 @@ const linesToArray = (s) => String(s || '').split('\n').map(t => t.trim()).filte
 const arrayToLines = (a) => (Array.isArray(a) ? a.join('\n') : '');
 const csvToArray = (s) => String(s || '').split(',').map(t => t.trim()).filter(Boolean);
 const arrayToCsv = (a) => (Array.isArray(a) ? a.join(', ') : '');
+
+// Vocabularios controlados · si el JSON de foundations ya está cargado,
+// los leemos de ahí; sino, fallback al hardcode (la UI no se rompe).
+function getFoundationsVocab() {
+  const F = (window.OLF_KNOW && window.OLF_KNOW.foundations) || null;
+  const v = F && F.meta && F.meta.vocabularios_controlados ? F.meta.vocabularios_controlados : {};
+  return {
+    familia_visual_compatible:        v.familia_visual_compatible        || ['minimalista_nordico','japandi','boho_mediterraneo','contemporaneo_calido','clasico_transicional','industrial','glam_nocturno','arabe_contemporaneo','biophilic','costero_tropical'],
+    tipo_luz_compatible:              v.tipo_luz_compatible              || ['led_frio_5000k','neutro_4000k','calido_2700k','ambar_2200k','mixto'],
+    intensidad_luminica:              v.intensidad_luminica              || ['alta_directa','media_difusa','baja_intima'],
+    texturas_compatibles:             v.texturas_compatibles             || ['lino_algodon','vidrio_metal_pulido','madera_natural','boucle_lana','terciopelo_seda','cuero','marmol','latones','ratan_yute','cemento_pulido'],
+    peso_visual_mobiliario:           v.peso_visual_mobiliario           || ['ligero','medio','opulento'],
+    densidad_textil:                  v.densidad_textil                  || ['etereo','ligero','medio','denso','opulento'],
+    generos_musicales_compatibles:    v.generos_musicales_compatibles    || [],
+    instrumentacion_predominante:     v.instrumentacion_predominante     || ['cuerdas','piano','electronica','voz','mixto'],
+    ambiente_sonoro:                  v.ambiente_sonoro                  || ['silencio_natural','murmullo_humano','musica_protagonista'],
+    tipos_cocina_compatibles:         v.tipos_cocina_compatibles         || ['mediterranea','asiatica_oriental','mexicana_contemporanea','internacional_lujo','comfort_food','sushi_omakase','parrilla_steakhouse','pasteleria_cafeteria','vegetariana_saludable','fine_dining_creativo'],
+    sabores_predominantes_compatibles:v.sabores_predominantes_compatibles|| ['dulce','salado','umami','acido_citrico','amargo','picante'],
+    tipos_bebida_compatibles:         v.tipos_bebida_compatibles         || ['cocteleria_clasica','cocteleria_de_autor','mocktails','vinos_tintos','vinos_blancos','vinos_espumosos','destilados_premium','cafe_especialidad','te_e_infusiones','refrescos_y_jugos','cerveza_artesanal'],
+    momento_consumo:                  v.momento_consumo                  || ['desayuno','brunch','almuerzo','merienda','cena','coctel_post_cena'],
+    energia:                          v.energia                          || ['calmante','neutra','estimulante','euforizante'],
+    temperatura_emocional:            v.temperatura_emocional            || ['frio','fresco','templado','calido','caliente'],
+    persistencia:                     v.persistencia                     || ['corta','media','larga'],
+    playlist_etiqueta:                v.playlist_etiqueta                || ['core','soporte','comercial'],
+  };
+}
 
 function readCatalogFromGlobals() {
   try {
@@ -998,41 +1037,785 @@ function readCatalogFromGlobals() {
   return [];
 }
 
+// Valor efectivo = override si existe, sino sugerido
+function getEffectiveTipoA(aroma, fieldId) {
+  if (!aroma || !aroma.tipo_a || !aroma.tipo_a[fieldId]) return null;
+  const s = aroma.tipo_a[fieldId];
+  if (s.valor_override !== null && s.valor_override !== undefined) return s.valor_override;
+  return s.valor_sugerido;
+}
+
+// Estado de confianza para el dot indicador
+//  verde  · Tony aplicó override
+//  amarillo · sugerido alta o media
+//  gris   · sin dato o baja
+function getConfidenceClass(slot) {
+  if (!slot) return 'siq-dot-gray';
+  if (slot.valor_override !== null && slot.valor_override !== undefined) return 'siq-dot-green';
+  if (slot.confianza === 'alta' || slot.confianza === 'media') return 'siq-dot-yellow';
+  return 'siq-dot-gray';
+}
+
+function ConfidenceDot({ slot, title }) {
+  const cls = getConfidenceClass(slot);
+  const tip = title || (slot && slot.valor_override !== null && slot.valor_override !== undefined
+    ? 'Override aplicado por Tony · sobreescribe la sugerencia'
+    : slot && (slot.confianza === 'alta' || slot.confianza === 'media')
+      ? `Sugerido por foundations · confianza ${slot.confianza}`
+      : 'Sin dato o confianza baja · llene a mano o restaure a la sugerencia');
+  return <span className={"siq-dot " + cls} title={tip} aria-label={tip}></span>;
+}
+
+// TIPO B completitud · cuántos campos humanos están llenos
+function tipoBProgress(aroma) {
+  const tb = aroma && aroma.tipo_b;
+  if (!tb) return 0;
+  const filled = [];
+  if (tb.a_que_huele && String(tb.a_que_huele).trim()) filled.push(1);
+  if (Array.isArray(tb.adjetivos_vivenciales) && tb.adjetivos_vivenciales.length) filled.push(1);
+  if (tb.nivel_de_agrado_real) filled.push(1);
+  if (tb.intensidad_real_medida != null) filled.push(1);
+  if (tb.gusta_o_no_gusta && (tb.gusta_o_no_gusta.value !== null || (tb.gusta_o_no_gusta.razon || '').trim())) filled.push(1);
+  if (tb.anecdotas_de_uso && String(tb.anecdotas_de_uso).trim()) filled.push(1);
+  if (tb.notas_internas_tony && String(tb.notas_internas_tony).trim()) filled.push(1);
+  if (Array.isArray(tb.aromas_combos) && tb.aromas_combos.length) filled.push(1);
+  if (Array.isArray(tb.aromas_rivales) && tb.aromas_rivales.length) filled.push(1);
+  return filled.length;
+}
+function tipoBStatus(aroma) {
+  const n = tipoBProgress(aroma);
+  if (n === 0) return 'vacio';
+  if (n < 5) return 'parcial';
+  return 'completo';
+}
+
+// Detección de gastronómico para la subsección 1.5 Gusto
+function isGastronomico(aroma) {
+  const tci = getEffectiveTipoA(aroma, 'tipo_cliente_ideal') || [];
+  if (!Array.isArray(tci)) return false;
+  return tci.some(s => /gastronomico|gastronómico|hospitality_food|cafeteria|cafetería|restaurante|bar/i.test(String(s)));
+}
+
+// Validación suave de playlist: min 3 géneros, ≥1 comercial
+function validatePlaylist(playlist) {
+  if (!Array.isArray(playlist) || playlist.length === 0) {
+    return { ok: false, msg: 'Sin playlist · agrega al menos 3 géneros, incluyendo uno comercial.' };
+  }
+  if (playlist.length < 3) {
+    return { ok: false, msg: 'Sugerencia: agrega al menos 3 géneros distintos para cubrir todos los perfiles del cliente final.' };
+  }
+  const hasComercial = playlist.some(p => p && p.etiqueta === 'comercial');
+  if (!hasComercial) {
+    return { ok: false, msg: 'Sugerencia: incluye al menos un género con etiqueta "comercial" como gancho masivo.' };
+  }
+  return { ok: true, msg: '' };
+}
+
+// =============================================================
+// Componente · TipoAField · render genérico de un campo TIPO A
+// Maneja: dot de confianza, sugerencia gris a la izquierda, input
+// override a la derecha, botón "Restaurar".
+// =============================================================
+function TipoAField({ aroma, fieldId, label, shape, options, placeholder, onChange, onRestore }) {
+  const slot = aroma && aroma.tipo_a && aroma.tipo_a[fieldId];
+  if (!slot) return null;
+  const sug   = slot.valor_sugerido;
+  const ovr   = slot.valor_override;
+  const eff   = (ovr !== null && ovr !== undefined) ? ovr : sug;
+  const hasOvr = (ovr !== null && ovr !== undefined);
+
+  const sugDisplay = Array.isArray(sug) ? (sug.length ? sug.join(', ') : '—')
+                   : (sug && typeof sug === 'object') ? JSON.stringify(sug)
+                   : (sug || '—');
+
+  const renderInput = () => {
+    if (shape === 'enum' && options) {
+      return (
+        <select className="siq-tipoa-input" value={(eff || '')} onChange={(e) => onChange(e.target.value || null)}>
+          <option value="">— sin valor —</option>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      );
+    }
+    if (shape === 'enum_multi' && options) {
+      const arr = Array.isArray(eff) ? eff : [];
+      return (
+        <div className="siq-tipoa-chips">
+          {options.map(o => {
+            const on = arr.indexOf(o) >= 0;
+            return (
+              <button
+                type="button"
+                key={o}
+                className={"siq-chip" + (on ? ' is-on' : '')}
+                onClick={() => {
+                  const next = on ? arr.filter(x => x !== o) : arr.concat(o);
+                  onChange(next);
+                }}>{o}</button>
+            );
+          })}
+        </div>
+      );
+    }
+    if (shape === 'numero') {
+      return (
+        <input
+          type="number"
+          className="siq-tipoa-input"
+          value={(eff === null || eff === undefined) ? '' : eff}
+          min={placeholder && placeholder.min}
+          max={placeholder && placeholder.max}
+          step="1"
+          onChange={(e) => {
+            const n = e.target.value === '' ? null : Number(e.target.value);
+            onChange(n);
+          }}
+        />
+      );
+    }
+    if (shape === 'lista_libre') {
+      const arr = Array.isArray(eff) ? eff : [];
+      return (
+        <textarea
+          className="siq-tipoa-input siq-tipoa-textarea"
+          rows={2}
+          placeholder={typeof placeholder === 'string' ? placeholder : 'Una línea por valor'}
+          value={arrayToLines(arr)}
+          onChange={(e) => onChange(linesToArray(e.target.value))}
+        />
+      );
+    }
+    if (shape === 'texto') {
+      return (
+        <textarea
+          className="siq-tipoa-input siq-tipoa-textarea"
+          rows={2}
+          placeholder={typeof placeholder === 'string' ? placeholder : ''}
+          value={eff || ''}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+    }
+    // default: texto plano
+    return (
+      <input
+        type="text"
+        className="siq-tipoa-input"
+        value={(eff === null || eff === undefined) ? '' : String(eff)}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    );
+  };
+
+  return (
+    <div className="siq-tipoa-field">
+      <div className="siq-tipoa-head">
+        <ConfidenceDot slot={slot} />
+        <span className="siq-tipoa-label">{label}</span>
+        {hasOvr && (
+          <button type="button" className="siq-tipoa-restore" onClick={onRestore} title="Restaurar valor sugerido por foundations">
+            ↺ Restaurar
+          </button>
+        )}
+      </div>
+      <div className="siq-tipoa-sug" title="Valor sugerido por foundations">
+        sugerido: <code>{sugDisplay}</code>
+      </div>
+      <div className="siq-tipoa-input-wrap">{renderInput()}</div>
+    </div>
+  );
+}
+
+// =============================================================
+// Componente · NivelVolumenField · {escala 1-10, rango_db_sugerido}
+// =============================================================
+function NivelVolumenField({ aroma, onChange, onRestore }) {
+  const slot = aroma && aroma.tipo_a && aroma.tipo_a.nivel_volumen_exacto;
+  if (!slot) return null;
+  const eff   = slot.valor_override || slot.valor_sugerido || {};
+  const hasOvr = !!slot.valor_override;
+  return (
+    <div className="siq-tipoa-field">
+      <div className="siq-tipoa-head">
+        <ConfidenceDot slot={slot} />
+        <span className="siq-tipoa-label">Nivel de volumen exacto</span>
+        {hasOvr && (
+          <button type="button" className="siq-tipoa-restore" onClick={onRestore} title="Restaurar valor sugerido por foundations">↺ Restaurar</button>
+        )}
+      </div>
+      <div className="siq-tipoa-sug">
+        sugerido: <code>{slot.valor_sugerido ? `escala ${slot.valor_sugerido.escala} · ${slot.valor_sugerido.rango_db_sugerido}` : '—'}</code>
+      </div>
+      <div className="siq-tipoa-input-wrap siq-tipoa-row">
+        <label className="siq-tipoa-sub">
+          <span>Escala (1-10)</span>
+          <input type="number" min="1" max="10" step="1" className="siq-tipoa-input siq-tipoa-input-num"
+            value={eff.escala || ''}
+            onChange={(e) => onChange({ ...eff, escala: e.target.value === '' ? null : Number(e.target.value) })} />
+        </label>
+        <label className="siq-tipoa-sub">
+          <span>Rango dB sugerido</span>
+          <input type="text" placeholder="ej. 45-55 dB" className="siq-tipoa-input"
+            value={eff.rango_db_sugerido || ''}
+            onChange={(e) => onChange({ ...eff, rango_db_sugerido: e.target.value })} />
+        </label>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================
+// Componente · PlaylistField · array de {genero, etiqueta, ejemplo}
+// Validación suave: mín 3 géneros, ≥1 con etiqueta "comercial".
+// =============================================================
+function PlaylistField({ aroma, onChange, onRestore }) {
+  const slot = aroma && aroma.tipo_a && aroma.tipo_a.playlist_sugerida;
+  if (!slot) return null;
+  const eff   = (slot.valor_override !== null && slot.valor_override !== undefined)
+    ? slot.valor_override
+    : (slot.valor_sugerido || []);
+  const hasOvr = (slot.valor_override !== null && slot.valor_override !== undefined);
+  const v     = validatePlaylist(eff);
+  const tags  = getFoundationsVocab().playlist_etiqueta;
+
+  const updateItem = (i, key, value) => {
+    const next = eff.slice();
+    next[i] = { ...next[i], [key]: value };
+    onChange(next);
+  };
+  const removeItem = (i) => {
+    const next = eff.slice();
+    next.splice(i, 1);
+    onChange(next);
+  };
+  const addItem = () => onChange(eff.concat([{ genero: '', etiqueta: 'soporte', ejemplo_artista_o_track: '' }]));
+
+  return (
+    <div className="siq-tipoa-field">
+      <div className="siq-tipoa-head">
+        <ConfidenceDot slot={slot} />
+        <span className="siq-tipoa-label">Playlist sugerida</span>
+        {hasOvr && (
+          <button type="button" className="siq-tipoa-restore" onClick={onRestore} title="Restaurar sugerencia">↺ Restaurar</button>
+        )}
+      </div>
+      {!v.ok && (
+        <div className="siq-tipoa-warn">⚠ {v.msg}</div>
+      )}
+      <div className="siq-playlist">
+        {eff.map((item, i) => (
+          <div className="siq-playlist-row" key={i}>
+            <input
+              type="text"
+              className="siq-tipoa-input siq-playlist-genero"
+              placeholder="género (ej. jazz_lounge)"
+              value={item.genero || ''}
+              onChange={(e) => updateItem(i, 'genero', e.target.value)} />
+            <select
+              className="siq-tipoa-input siq-playlist-tag"
+              value={item.etiqueta || 'soporte'}
+              onChange={(e) => updateItem(i, 'etiqueta', e.target.value)}>
+              {tags.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <input
+              type="text"
+              className="siq-tipoa-input siq-playlist-ej"
+              placeholder="artista / track (opcional)"
+              value={item.ejemplo_artista_o_track || ''}
+              onChange={(e) => updateItem(i, 'ejemplo_artista_o_track', e.target.value)} />
+            <button type="button" className="siq-playlist-del" onClick={() => removeItem(i)} aria-label="Eliminar">×</button>
+          </div>
+        ))}
+        <button type="button" className="siq-playlist-add" onClick={addItem}>+ agregar género</button>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================
+// Componente · CatalogAromaModal · 3 secciones visualmente separadas
+// =============================================================
+function CatalogAromaModal({ aroma, onChange, onClose, onSave }) {
+  // Subsecciones colapsables · 1.5 Gusto colapsada por default a menos
+  // que tipo_cliente_ideal incluya gastronomico/hospitality_food.
+  const gastro = useMemo(() => isGastronomico(aroma), [aroma]);
+  const [open, setOpen] = useState({
+    olfato: true,
+    vista: true,
+    tacto: true,
+    oido: true,
+    gusto: gastro,
+    voz: true,
+    op: true
+  });
+  useEffect(() => {
+    // Si cambia el flag gastronomico (override de tipo_cliente_ideal), reflejarlo
+    setOpen(prev => ({ ...prev, gusto: prev.gusto || gastro }));
+  }, [gastro]);
+
+  const vocab = getFoundationsVocab();
+
+  // Helper para actualizar un campo TIPO A (escribe en valor_override)
+  const updateTipoA = (fieldId, value) => {
+    onChange(prev => ({
+      ...prev,
+      tipo_a: {
+        ...prev.tipo_a,
+        [fieldId]: { ...prev.tipo_a[fieldId], valor_override: value }
+      }
+    }));
+  };
+  const restoreTipoA = (fieldId) => {
+    onChange(prev => ({
+      ...prev,
+      tipo_a: {
+        ...prev.tipo_a,
+        [fieldId]: { ...prev.tipo_a[fieldId], valor_override: null }
+      }
+    }));
+  };
+
+  const updateTipoB = (fieldId, value) => {
+    onChange(prev => ({
+      ...prev,
+      tipo_b: { ...prev.tipo_b, [fieldId]: value }
+    }));
+  };
+
+  const updateOp = (key, value) => onChange(prev => ({ ...prev, [key]: value }));
+
+  if (!aroma) return null;
+
+  return (
+    <div className="siq-modal-backdrop" onClick={(e) => { if (e.target.classList.contains('siq-modal-backdrop')) onClose(); }}>
+      <div className="siq-modal siq-modal-catalog" role="dialog" aria-modal="true">
+        <header className="siq-modal-head">
+          <div>
+            <div className="siq-modal-eyebrow">Editor de aroma · ronda 6 · 5 sentidos</div>
+            <h2 className="siq-modal-title">{aroma.nombre || '(sin nombre)'}</h2>
+            <div className="siq-modal-sub">{aroma.familia_olfativa || aroma.familia || 'sin familia'} · {aroma.sublinea || 'sin sublínea'}</div>
+          </div>
+          <button className="siq-modal-close" onClick={onClose} aria-label="Cerrar editor">×</button>
+        </header>
+
+        <div className="siq-modal-body">
+
+          {/* ============================================
+              SECCIÓN 1 · PERFIL SENSORIAL 5 SENTIDOS
+              =============================================*/}
+          <section className="siq-section siq-section-1">
+            <h3 className="siq-section-title">1. Perfil sensorial · los 5 sentidos del aroma</h3>
+            <p className="siq-section-help">
+              Campos derivados automáticamente de <code>foundations.json</code>. Cada uno muestra punto de confianza
+              (<span className="siq-dot siq-dot-green"></span> override aplicado · <span className="siq-dot siq-dot-yellow"></span> sugerencia
+              de foundations · <span className="siq-dot siq-dot-gray"></span> sin dato). Edite a la derecha para sobrescribir;
+              use <em>Restaurar</em> para volver a la sugerencia.
+            </p>
+
+            {/* 1.1 OLFATO */}
+            <div className={"siq-subsection" + (open.olfato ? ' is-open' : '')}>
+              <button type="button" className="siq-subsection-head" onClick={() => setOpen(s => ({ ...s, olfato: !s.olfato }))}>
+                <span className="siq-subsection-icon">🌫️</span>
+                <span className="siq-subsection-num">1.1</span>
+                <span className="siq-subsection-name">Olfato · el aroma en sí</span>
+                <span className="siq-subsection-chevron">{open.olfato ? '▾' : '▸'}</span>
+              </button>
+              {open.olfato && (
+                <div className="siq-subsection-body">
+                  <TipoAField aroma={aroma} fieldId="intensidad_sugerida"   label="Intensidad sugerida (1–5)" shape="numero" placeholder={{min:1,max:5}}
+                    onChange={(v) => updateTipoA('intensidad_sugerida', v)} onRestore={() => restoreTipoA('intensidad_sugerida')} />
+                  <TipoAField aroma={aroma} fieldId="persistencia"          label="Persistencia"               shape="enum" options={vocab.persistencia}
+                    onChange={(v) => updateTipoA('persistencia', v)} onRestore={() => restoreTipoA('persistencia')} />
+                  <TipoAField aroma={aroma} fieldId="temperatura_emocional" label="Temperatura emocional"      shape="enum" options={vocab.temperatura_emocional}
+                    onChange={(v) => updateTipoA('temperatura_emocional', v)} onRestore={() => restoreTipoA('temperatura_emocional')} />
+                  <TipoAField aroma={aroma} fieldId="energia"               label="Energía"                    shape="enum" options={vocab.energia}
+                    onChange={(v) => updateTipoA('energia', v)} onRestore={() => restoreTipoA('energia')} />
+                </div>
+              )}
+            </div>
+
+            {/* 1.2 VISTA */}
+            <div className={"siq-subsection" + (open.vista ? ' is-open' : '')}>
+              <button type="button" className="siq-subsection-head" onClick={() => setOpen(s => ({ ...s, vista: !s.vista }))}>
+                <span className="siq-subsection-icon">👁️</span>
+                <span className="siq-subsection-num">1.2</span>
+                <span className="siq-subsection-name">Vista · qué aroma encaja con el espacio</span>
+                <span className="siq-subsection-chevron">{open.vista ? '▾' : '▸'}</span>
+              </button>
+              {open.vista && (
+                <div className="siq-subsection-body">
+                  <TipoAField aroma={aroma} fieldId="familia_visual_compatible" label="Familia visual compatible"  shape="enum_multi" options={vocab.familia_visual_compatible}
+                    onChange={(v) => updateTipoA('familia_visual_compatible', v)} onRestore={() => restoreTipoA('familia_visual_compatible')} />
+                  <TipoAField aroma={aroma} fieldId="paleta_cromatica_sugerida" label="Paleta cromática sugerida"  shape="lista_libre" placeholder="Un color por línea (ej. nogal, beige cálido, dorado mate)"
+                    onChange={(v) => updateTipoA('paleta_cromatica_sugerida', v)} onRestore={() => restoreTipoA('paleta_cromatica_sugerida')} />
+                  <TipoAField aroma={aroma} fieldId="tipo_luz_compatible"       label="Tipo de luz compatible"     shape="enum_multi" options={vocab.tipo_luz_compatible}
+                    onChange={(v) => updateTipoA('tipo_luz_compatible', v)} onRestore={() => restoreTipoA('tipo_luz_compatible')} />
+                  <TipoAField aroma={aroma} fieldId="intensidad_luminica"       label="Intensidad lumínica"        shape="enum" options={vocab.intensidad_luminica}
+                    onChange={(v) => updateTipoA('intensidad_luminica', v)} onRestore={() => restoreTipoA('intensidad_luminica')} />
+                </div>
+              )}
+            </div>
+
+            {/* 1.3 TACTO */}
+            <div className={"siq-subsection" + (open.tacto ? ' is-open' : '')}>
+              <button type="button" className="siq-subsection-head" onClick={() => setOpen(s => ({ ...s, tacto: !s.tacto }))}>
+                <span className="siq-subsection-icon">✋</span>
+                <span className="siq-subsection-num">1.3</span>
+                <span className="siq-subsection-name">Tacto · texturas y materiales</span>
+                <span className="siq-subsection-chevron">{open.tacto ? '▾' : '▸'}</span>
+              </button>
+              {open.tacto && (
+                <div className="siq-subsection-body">
+                  <TipoAField aroma={aroma} fieldId="texturas_compatibles"   label="Texturas compatibles"      shape="enum_multi" options={vocab.texturas_compatibles}
+                    onChange={(v) => updateTipoA('texturas_compatibles', v)} onRestore={() => restoreTipoA('texturas_compatibles')} />
+                  <TipoAField aroma={aroma} fieldId="peso_visual_mobiliario" label="Peso visual del mobiliario" shape="enum" options={vocab.peso_visual_mobiliario}
+                    onChange={(v) => updateTipoA('peso_visual_mobiliario', v)} onRestore={() => restoreTipoA('peso_visual_mobiliario')} />
+                  <TipoAField aroma={aroma} fieldId="densidad_textil"        label="Densidad textil"            shape="enum" options={vocab.densidad_textil}
+                    onChange={(v) => updateTipoA('densidad_textil', v)} onRestore={() => restoreTipoA('densidad_textil')} />
+                </div>
+              )}
+            </div>
+
+            {/* 1.4 OÍDO */}
+            <div className={"siq-subsection" + (open.oido ? ' is-open' : '')}>
+              <button type="button" className="siq-subsection-head" onClick={() => setOpen(s => ({ ...s, oido: !s.oido }))}>
+                <span className="siq-subsection-icon">🎧</span>
+                <span className="siq-subsection-num">1.4</span>
+                <span className="siq-subsection-name">Oído · música que armoniza</span>
+                <span className="siq-subsection-chevron">{open.oido ? '▾' : '▸'}</span>
+              </button>
+              {open.oido && (
+                <div className="siq-subsection-body">
+                  <TipoAField aroma={aroma} fieldId="generos_musicales_compatibles" label="Géneros musicales compatibles" shape="lista_libre" placeholder="Uno por línea (jazz_lounge, bossa, etc.)"
+                    onChange={(v) => updateTipoA('generos_musicales_compatibles', v)} onRestore={() => restoreTipoA('generos_musicales_compatibles')} />
+                  <NivelVolumenField aroma={aroma}
+                    onChange={(v) => updateTipoA('nivel_volumen_exacto', v)} onRestore={() => restoreTipoA('nivel_volumen_exacto')} />
+                  <TipoAField aroma={aroma} fieldId="instrumentacion_predominante" label="Instrumentación predominante" shape="enum" options={vocab.instrumentacion_predominante}
+                    onChange={(v) => updateTipoA('instrumentacion_predominante', v)} onRestore={() => restoreTipoA('instrumentacion_predominante')} />
+                  <TipoAField aroma={aroma} fieldId="ambiente_sonoro"               label="Ambiente sonoro"               shape="enum" options={vocab.ambiente_sonoro}
+                    onChange={(v) => updateTipoA('ambiente_sonoro', v)} onRestore={() => restoreTipoA('ambiente_sonoro')} />
+                  <PlaylistField aroma={aroma}
+                    onChange={(v) => updateTipoA('playlist_sugerida', v)} onRestore={() => restoreTipoA('playlist_sugerida')} />
+                </div>
+              )}
+            </div>
+
+            {/* 1.5 GUSTO (colapsada por default si no gastronómico) */}
+            <div className={"siq-subsection" + (open.gusto ? ' is-open' : '') + (gastro ? '' : ' is-gusto-optional')}>
+              <button type="button" className="siq-subsection-head" onClick={() => setOpen(s => ({ ...s, gusto: !s.gusto }))}>
+                <span className="siq-subsection-icon">👅</span>
+                <span className="siq-subsection-num">1.5</span>
+                <span className="siq-subsection-name">Gusto · maridaje gastronómico {gastro ? '' : '(opcional · no es gastronómico por default)'}</span>
+                <span className="siq-subsection-chevron">{open.gusto ? '▾' : '▸'}</span>
+              </button>
+              {open.gusto && (
+                <div className="siq-subsection-body">
+                  <TipoAField aroma={aroma} fieldId="tipos_cocina_compatibles"          label="Tipos de cocina compatibles"        shape="enum_multi" options={vocab.tipos_cocina_compatibles}
+                    onChange={(v) => updateTipoA('tipos_cocina_compatibles', v)} onRestore={() => restoreTipoA('tipos_cocina_compatibles')} />
+                  <TipoAField aroma={aroma} fieldId="sabores_predominantes_compatibles" label="Sabores predominantes compatibles"  shape="enum_multi" options={vocab.sabores_predominantes_compatibles}
+                    onChange={(v) => updateTipoA('sabores_predominantes_compatibles', v)} onRestore={() => restoreTipoA('sabores_predominantes_compatibles')} />
+                  <TipoAField aroma={aroma} fieldId="tipos_bebida_compatibles"          label="Tipos de bebida compatibles"        shape="enum_multi" options={vocab.tipos_bebida_compatibles}
+                    onChange={(v) => updateTipoA('tipos_bebida_compatibles', v)} onRestore={() => restoreTipoA('tipos_bebida_compatibles')} />
+                  <TipoAField aroma={aroma} fieldId="momento_consumo"                   label="Momento de consumo"                  shape="enum" options={vocab.momento_consumo}
+                    onChange={(v) => updateTipoA('momento_consumo', v)} onRestore={() => restoreTipoA('momento_consumo')} />
+                  <TipoAField aroma={aroma} fieldId="maridaje_conceptual"               label="Maridaje conceptual (texto libre)"   shape="texto" placeholder="ej. La vainilla acoge postres; el cedro funciona en steakhouse"
+                    onChange={(v) => updateTipoA('maridaje_conceptual', v)} onRestore={() => restoreTipoA('maridaje_conceptual')} />
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* ============================================
+              SECCIÓN 2 · VOZ DE TONY · TIPO B
+              =============================================*/}
+          <section className="siq-section siq-section-2">
+            <h3 className="siq-section-title">2. Voz de Tony · su lectura humana del aroma</h3>
+            <p className="siq-section-help">
+              Estos campos <strong>solo los puede llenar usted</strong>: la IA no los puede inferir bien.
+              Sin sugerencia automática · solo input directo. <strong>Notas internas</strong> es privado y
+              nunca se envía al modelo de visión.
+            </p>
+
+            <div className="siq-section-grid">
+              <label className="siq-field">
+                <span className="siq-field-label">A qué huele · descripción sensorial libre</span>
+                <textarea className="siq-field-input siq-field-textarea" rows={3}
+                  placeholder="Descripción subjetiva · lo que realmente percibe usted y sus clientes."
+                  value={(aroma.tipo_b && aroma.tipo_b.a_que_huele) || ''}
+                  onChange={(e) => updateTipoB('a_que_huele', e.target.value)} />
+              </label>
+
+              <label className="siq-field">
+                <span className="siq-field-label">Adjetivos vivenciales (separados por comas)</span>
+                <input type="text" className="siq-field-input"
+                  placeholder="sexy, fresco, te abraza, te despierta…"
+                  value={arrayToCsv((aroma.tipo_b && aroma.tipo_b.adjetivos_vivenciales) || [])}
+                  onChange={(e) => updateTipoB('adjetivos_vivenciales', csvToArray(e.target.value))} />
+              </label>
+
+              <label className="siq-field">
+                <span className="siq-field-label">Nivel de agrado real</span>
+                <select className="siq-field-input"
+                  value={(aroma.tipo_b && aroma.tipo_b.nivel_de_agrado_real) || ''}
+                  onChange={(e) => updateTipoB('nivel_de_agrado_real', e.target.value)}>
+                  <option value="">— sin definir —</option>
+                  <option value="ama_mayoria">Ama mayoría</option>
+                  <option value="gusta_mayoria">Gusta mayoría</option>
+                  <option value="divide">Divide</option>
+                  <option value="nicho">Nicho</option>
+                  <option value="rechaza_mayoria">Rechaza mayoría</option>
+                </select>
+              </label>
+
+              <label className="siq-field">
+                <span className="siq-field-label">Intensidad real medida (1–5) · su calibración empírica</span>
+                <input type="number" min="1" max="5" step="1" className="siq-field-input"
+                  value={(aroma.tipo_b && aroma.tipo_b.intensidad_real_medida != null) ? aroma.tipo_b.intensidad_real_medida : ''}
+                  onChange={(e) => updateTipoB('intensidad_real_medida', e.target.value === '' ? null : Number(e.target.value))} />
+              </label>
+
+              <div className="siq-field siq-field-full">
+                <span className="siq-field-label">¿Le gusta?</span>
+                <div className="siq-field-row">
+                  <label className="siq-radio">
+                    <input type="radio" name="gusta" checked={aroma.tipo_b && aroma.tipo_b.gusta_o_no_gusta && aroma.tipo_b.gusta_o_no_gusta.value === true}
+                      onChange={() => updateTipoB('gusta_o_no_gusta', { ...((aroma.tipo_b && aroma.tipo_b.gusta_o_no_gusta) || {}), value: true })} />
+                    <span>Sí</span>
+                  </label>
+                  <label className="siq-radio">
+                    <input type="radio" name="gusta" checked={aroma.tipo_b && aroma.tipo_b.gusta_o_no_gusta && aroma.tipo_b.gusta_o_no_gusta.value === false}
+                      onChange={() => updateTipoB('gusta_o_no_gusta', { ...((aroma.tipo_b && aroma.tipo_b.gusta_o_no_gusta) || {}), value: false })} />
+                    <span>No</span>
+                  </label>
+                  <label className="siq-radio">
+                    <input type="radio" name="gusta" checked={!(aroma.tipo_b && aroma.tipo_b.gusta_o_no_gusta) || aroma.tipo_b.gusta_o_no_gusta.value === null}
+                      onChange={() => updateTipoB('gusta_o_no_gusta', { ...((aroma.tipo_b && aroma.tipo_b.gusta_o_no_gusta) || {}), value: null })} />
+                    <span>Sin opinión</span>
+                  </label>
+                </div>
+                <textarea className="siq-field-input siq-field-textarea" rows={2}
+                  placeholder="Razón breve · qué le funciona o no"
+                  value={(aroma.tipo_b && aroma.tipo_b.gusta_o_no_gusta && aroma.tipo_b.gusta_o_no_gusta.razon) || ''}
+                  onChange={(e) => updateTipoB('gusta_o_no_gusta', { ...((aroma.tipo_b && aroma.tipo_b.gusta_o_no_gusta) || {}), razon: e.target.value })} />
+              </div>
+
+              <label className="siq-field siq-field-full">
+                <span className="siq-field-label">Anécdotas de uso · dónde lo puso, qué pasó</span>
+                <textarea className="siq-field-input siq-field-textarea" rows={3}
+                  placeholder="Feedback de clientes, situaciones reales que vivió con este aroma."
+                  value={(aroma.tipo_b && aroma.tipo_b.anecdotas_de_uso) || ''}
+                  onChange={(e) => updateTipoB('anecdotas_de_uso', e.target.value)} />
+              </label>
+
+              <label className="siq-field siq-field-full siq-field-privada">
+                <span className="siq-field-label">🔒 Notas internas (privado · NO se envía al proxy)</span>
+                <textarea className="siq-field-input siq-field-textarea" rows={3}
+                  placeholder="Bloc de notas privado · este texto nunca sale al modelo de visión."
+                  value={(aroma.tipo_b && aroma.tipo_b.notas_internas_tony) || ''}
+                  onChange={(e) => updateTipoB('notas_internas_tony', e.target.value)} />
+              </label>
+
+              <label className="siq-field">
+                <span className="siq-field-label">Aromas que mezclan bien (id o nombre · uno por línea)</span>
+                <textarea className="siq-field-input siq-field-textarea" rows={3}
+                  value={arrayToLines((aroma.tipo_b && aroma.tipo_b.aromas_combos) || [])}
+                  onChange={(e) => updateTipoB('aromas_combos', linesToArray(e.target.value))} />
+              </label>
+
+              <label className="siq-field">
+                <span className="siq-field-label">Aromas rivales · NO mezclar (id o nombre · uno por línea)</span>
+                <textarea className="siq-field-input siq-field-textarea" rows={3}
+                  value={arrayToLines((aroma.tipo_b && aroma.tipo_b.aromas_rivales) || [])}
+                  onChange={(e) => updateTipoB('aromas_rivales', linesToArray(e.target.value))} />
+              </label>
+            </div>
+          </section>
+
+          {/* ============================================
+              SECCIÓN 3 · OPERACIONAL
+              =============================================*/}
+          <section className="siq-section siq-section-3">
+            <h3 className="siq-section-title">3. Operacional · identidad y comercialización</h3>
+            <p className="siq-section-help">Campos base del catálogo · familia, notas, descripción, precio relativo, stock, marca, inspiración, contextos, rating.</p>
+
+            <div className="siq-section-grid">
+              <label className="siq-field">
+                <span className="siq-field-label">Nombre</span>
+                <input type="text" className="siq-field-input"
+                  value={aroma.nombre || ''} onChange={(e) => updateOp('nombre', e.target.value)} />
+              </label>
+              <label className="siq-field">
+                <span className="siq-field-label">Familia olfativa</span>
+                <input type="text" className="siq-field-input" list="catalog-familia-list"
+                  value={aroma.familia_olfativa || aroma.familia || ''}
+                  onChange={(e) => { updateOp('familia_olfativa', e.target.value); updateOp('familia', e.target.value); }} />
+                <datalist id="catalog-familia-list">
+                  <option value="Cítricas" /><option value="Herbales" /><option value="Verdes" />
+                  <option value="Florales" /><option value="Frutales" /><option value="Amaderadas" />
+                  <option value="Orientales" /><option value="Gourmand" /><option value="Acuáticas" />
+                  <option value="Cuero / Tabaco" /><option value="Chipre" /><option value="De ocasión" />
+                  <option value="Personalizada" />
+                </datalist>
+              </label>
+              <label className="siq-field siq-field-full">
+                <span className="siq-field-label">Subacorde</span>
+                <input type="text" className="siq-field-input"
+                  placeholder="ej. limón italiano + ámbar"
+                  value={aroma.subacorde || ''} onChange={(e) => updateOp('subacorde', e.target.value)} />
+              </label>
+              <label className="siq-field">
+                <span className="siq-field-label">Notas · salida</span>
+                <textarea className="siq-field-input siq-field-textarea" rows={2}
+                  value={(aroma.notas && aroma.notas.salida) || ''}
+                  onChange={(e) => updateOp('notas', { ...(aroma.notas || {}), salida: e.target.value })} />
+              </label>
+              <label className="siq-field">
+                <span className="siq-field-label">Notas · corazón</span>
+                <textarea className="siq-field-input siq-field-textarea" rows={2}
+                  value={(aroma.notas && aroma.notas.corazon) || ''}
+                  onChange={(e) => updateOp('notas', { ...(aroma.notas || {}), corazon: e.target.value })} />
+              </label>
+              <label className="siq-field">
+                <span className="siq-field-label">Notas · fondo</span>
+                <textarea className="siq-field-input siq-field-textarea" rows={2}
+                  value={(aroma.notas && aroma.notas.fondo) || ''}
+                  onChange={(e) => updateOp('notas', { ...(aroma.notas || {}), fondo: e.target.value })} />
+              </label>
+              <label className="siq-field siq-field-full">
+                <span className="siq-field-label">Descripción breve</span>
+                <textarea className="siq-field-input siq-field-textarea" rows={3}
+                  value={aroma.descripcion || ''} onChange={(e) => updateOp('descripcion', e.target.value)} />
+              </label>
+
+              {CATALOG_TEXTAREA_FIELDS.map(f => (
+                <label key={f.key} className="siq-field">
+                  <span className="siq-field-label">{f.label}</span>
+                  <textarea className="siq-field-input siq-field-textarea" rows={4}
+                    placeholder={f.hint}
+                    value={arrayToLines(aroma[f.key])}
+                    onChange={(e) => updateOp(f.key, linesToArray(e.target.value))} />
+                </label>
+              ))}
+
+              <label className="siq-field siq-field-full">
+                <span className="siq-field-label">Tags visuales (separados por comas)</span>
+                <textarea className="siq-field-input siq-field-textarea" rows={2}
+                  placeholder="maderas oscuras, cuero, metal pulido, paleta sobria"
+                  value={arrayToCsv(aroma.tags_visuales)}
+                  onChange={(e) => updateOp('tags_visuales', csvToArray(e.target.value))} />
+              </label>
+
+              <label className="siq-field">
+                <span className="siq-field-label">Precio relativo</span>
+                <select className="siq-field-input"
+                  value={aroma.precio_relativo || ''}
+                  onChange={(e) => updateOp('precio_relativo', e.target.value)}>
+                  <option value="">— sin definir —</option>
+                  <option value="entry">Entry</option>
+                  <option value="mid">Mid</option>
+                  <option value="premium">Premium</option>
+                  <option value="ultra">Ultra</option>
+                </select>
+              </label>
+              <label className="siq-field">
+                <span className="siq-field-label">Stock disponible</span>
+                <select className="siq-field-input"
+                  value={aroma.stock_disponible === true ? 'true' : aroma.stock_disponible === false ? 'false' : ''}
+                  onChange={(e) => updateOp('stock_disponible', e.target.value === 'true' ? true : e.target.value === 'false' ? false : null)}>
+                  <option value="">— sin definir —</option>
+                  <option value="true">Disponible</option>
+                  <option value="false">Agotado</option>
+                </select>
+              </label>
+              <label className="siq-field">
+                <span className="siq-field-label">Marca</span>
+                <input type="text" className="siq-field-input"
+                  value={aroma.marca || ''} onChange={(e) => updateOp('marca', e.target.value)} />
+              </label>
+              <label className="siq-field">
+                <span className="siq-field-label">Rating interno (1–5)</span>
+                <input type="number" min="1" max="5" step="1" className="siq-field-input"
+                  value={aroma.rating_interno != null ? aroma.rating_interno : ''}
+                  onChange={(e) => updateOp('rating_interno', e.target.value === '' ? null : Number(e.target.value))} />
+              </label>
+              <label className="siq-field siq-field-full">
+                <span className="siq-field-label">Inspiración (referencia, story, perfumista, etc.)</span>
+                <input type="text" className="siq-field-input"
+                  value={aroma.inspiracion || ''} onChange={(e) => updateOp('inspiracion', e.target.value)} />
+              </label>
+            </div>
+          </section>
+        </div>
+
+        <footer className="siq-modal-foot">
+          <div className="siq-modal-foot-info">
+            Se persiste en <code>localStorage.olfativa.catalogOverrides</code>. Override de Tony siempre gana sobre la sugerencia de foundations.
+          </div>
+          <div className="siq-modal-foot-actions">
+            <button className="btn-secondary" onClick={onClose}>Cancelar</button>
+            <button className="btn-primary" onClick={onSave}>Guardar aroma</button>
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
 function CatalogEditor() {
   const [aromas, setAromas]       = useState(readCatalogFromGlobals);
-  const [selectedIdx, setSelected] = useState(aromas.length ? 0 : -1);
+  const [selectedIdx, setSelected] = useState(-1);
   const [search, setSearch]       = useState('');
+  const [filterFamilia, setFilterFamilia] = useState('');
+  const [filterTipoB, setFilterTipoB]     = useState(''); // '', 'vacio', 'parcial', 'completo'
   const [savedHint, setSavedHint] = useState(null);
   const [importError, setImportError] = useState(null);
   const fileInputRef = useRef(null);
 
-  // Si Tony cambia el catálogo desde otro lado (import, reset), sincroniza.
+  // Sincronizar con eventos externos (foundations cargadas, catalog-updated, seed)
   useEffect(() => {
-    const handler = () => {
+    const refresh = () => {
       const fresh = readCatalogFromGlobals();
       setAromas(fresh);
-      setSelected(prev => (prev >= 0 && prev < fresh.length) ? prev : (fresh.length ? 0 : -1));
+      setSelected(prev => (prev >= 0 && prev < fresh.length) ? prev : -1);
     };
-    window.addEventListener('olfativa:catalog-updated', handler);
-    return () => window.removeEventListener('olfativa:catalog-updated', handler);
+    window.addEventListener('olfativa:catalog-updated', refresh);
+    window.addEventListener('olfativa:catalog-seeded', refresh);
+    window.addEventListener('olfativa:foundations-loaded', refresh);
+    return () => {
+      window.removeEventListener('olfativa:catalog-updated', refresh);
+      window.removeEventListener('olfativa:catalog-seeded', refresh);
+      window.removeEventListener('olfativa:foundations-loaded', refresh);
+    };
   }, []);
+
+  // Lista de familias para el dropdown filtro
+  const familias = useMemo(() => {
+    const s = new Set();
+    aromas.forEach(a => { const f = a.familia_olfativa || a.familia; if (f) s.add(f); });
+    return Array.from(s).sort();
+  }, [aromas]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return aromas.map((a, i) => ({ a, i }));
     return aromas
       .map((a, i) => ({ a, i }))
-      .filter(({ a }) =>
-        (a.nombre || '').toLowerCase().includes(q) ||
-        (a.familia_olfativa || a.familia || '').toLowerCase().includes(q));
-  }, [aromas, search]);
+      .filter(({ a }) => {
+        if (q) {
+          const hay = ((a.nombre || '') + ' ' + (a.familia_olfativa || a.familia || '') + ' ' + (a.subacorde || '')).toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        if (filterFamilia && (a.familia_olfativa || a.familia) !== filterFamilia) return false;
+        if (filterTipoB && tipoBStatus(a) !== filterTipoB) return false;
+        return true;
+      });
+  }, [aromas, search, filterFamilia, filterTipoB]);
 
   const current = selectedIdx >= 0 ? aromas[selectedIdx] : null;
 
-  const updateField = (key, value) => {
+  const updateAroma = (idx, updater) => {
     setAromas(prev => {
       const next = prev.slice();
-      next[selectedIdx] = { ...next[selectedIdx], [key]: value };
+      next[idx] = (typeof updater === 'function') ? updater(next[idx]) : updater;
       return next;
     });
   };
@@ -1056,11 +1839,12 @@ function CatalogEditor() {
     const next = aromas.slice();
     next.splice(selectedIdx, 1);
     setAromas(next);
-    setSelected(next.length ? Math.max(0, selectedIdx - 1) : -1);
+    setSelected(-1);
     persist(next);
   };
 
   const addNew = () => {
+    const K = window.OLF_KNOW;
     const id = 'A' + String(aromas.length + 1).padStart(3, '0');
     const newAroma = {
       id,
@@ -1075,6 +1859,8 @@ function CatalogEditor() {
       contextos_recomendados: [],
       contextos_a_evitar: [],
       tags_visuales: [],
+      tipo_a: K && typeof K._buildEmptyTipoA === 'function' ? K._buildEmptyTipoA() : {},
+      tipo_b: K && typeof K._buildEmptyTipoB === 'function' ? K._buildEmptyTipoB() : {},
     };
     const next = [newAroma, ...aromas];
     setAromas(next);
@@ -1105,7 +1891,7 @@ function CatalogEditor() {
           throw new Error('Cada aroma requiere un campo "nombre" string.');
         }
         setAromas(parsed);
-        setSelected(0);
+        setSelected(-1);
         persist(parsed);
       } catch (err) {
         setImportError('✗ Import falló: ' + (err.message || err) + ' · catálogo previo intacto.');
@@ -1125,11 +1911,29 @@ function CatalogEditor() {
       window.OLF_IA.resetCatalog();
       const fresh = readCatalogFromGlobals();
       setAromas(fresh);
-      setSelected(fresh.length ? 0 : -1);
+      setSelected(-1);
       setSavedHint('✓ Catálogo restaurado al default del bundle.');
       setTimeout(() => setSavedHint(null), 2400);
     } catch (e) {
       setSavedHint('✗ Reset falló: ' + (e.message || e));
+    }
+  };
+
+  const reSeedAll = () => {
+    if (!confirm('Re-aplicar foundations.json a TODOS los aromas? Los valor_override de Tony se preservan; solo se regeneran los valor_sugerido.')) return;
+    try {
+      if (window.OLF_KNOW && typeof window.OLF_KNOW.seedFromFoundations === 'function') {
+        window.OLF_KNOW.seedFromFoundations({ force: true });
+        const fresh = readCatalogFromGlobals();
+        setAromas(fresh);
+        persist(fresh);
+        setSavedHint('✓ Seed aplicado a ' + fresh.length + ' aromas · overrides preservados.');
+        setTimeout(() => setSavedHint(null), 3000);
+      } else {
+        setSavedHint('✗ foundations no cargadas · revise scent-iq-knowledge.js y data/scent-iq-foundations.json');
+      }
+    } catch (e) {
+      setSavedHint('✗ Seed falló: ' + (e.message || e));
     }
   };
 
@@ -1141,155 +1945,71 @@ function CatalogEditor() {
             <input
               type="text"
               className="catalog-search"
-              placeholder="Buscar nombre o familia…"
+              placeholder="Buscar nombre, familia o acorde…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <button className="btn-secondary catalog-new-btn" onClick={addNew}>+ Nuevo aroma</button>
+            <button className="btn-secondary catalog-new-btn" onClick={addNew}>+ Nuevo</button>
+          </div>
+          <div className="catalog-list-filters">
+            <select className="catalog-filter" value={filterFamilia} onChange={(e) => setFilterFamilia(e.target.value)}>
+              <option value="">Familia · todas</option>
+              {familias.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+            <select className="catalog-filter" value={filterTipoB} onChange={(e) => setFilterTipoB(e.target.value)}>
+              <option value="">Voz de Tony · cualquier estado</option>
+              <option value="vacio">Sin voz de Tony</option>
+              <option value="parcial">Voz parcial</option>
+              <option value="completo">Voz completa</option>
+            </select>
           </div>
           <div className="catalog-list-scroll">
             {filtered.length === 0 ? (
               <div className="catalog-empty">Sin resultados.</div>
-            ) : filtered.map(({ a, i }) => (
-              <button
-                key={a.id || a.key || i}
-                className={"catalog-list-item" + (i === selectedIdx ? ' is-on' : '')}
-                onClick={() => setSelected(i)}>
-                <div className="catalog-list-name">{a.nombre || '(sin nombre)'}</div>
-                <div className="catalog-list-fam">{a.familia_olfativa || a.familia || '—'}</div>
-              </button>
-            ))}
+            ) : filtered.map(({ a, i }) => {
+              const status = tipoBStatus(a);
+              return (
+                <button
+                  key={a.id || a.key || i}
+                  className={"catalog-list-item" + (i === selectedIdx ? ' is-on' : '')}
+                  onClick={() => setSelected(i)}>
+                  <div className="catalog-list-name">
+                    {a.nombre || '(sin nombre)'}
+                    <span className={"catalog-list-badge catalog-list-badge-" + status} title={'Voz de Tony · ' + status}>
+                      {status === 'completo' ? '●●●' : status === 'parcial' ? '●●○' : '○○○'}
+                    </span>
+                  </div>
+                  <div className="catalog-list-fam">{a.familia_olfativa || a.familia || '—'}</div>
+                </button>
+              );
+            })}
           </div>
           <div className="catalog-list-count">
-            {aromas.length} aroma{aromas.length === 1 ? '' : 's'} en el catálogo
+            {filtered.length} de {aromas.length} aroma{aromas.length === 1 ? '' : 's'}
           </div>
         </aside>
 
         <section className="catalog-form">
           {!current ? (
-            <div className="catalog-empty">Selecciona un aroma de la izquierda o crea uno nuevo.</div>
+            <div className="catalog-empty">
+              <div style={{ marginBottom: 12 }}>Selecciona un aroma de la lista para editarlo a fondo.</div>
+              <div style={{ fontSize: 13, opacity: 0.7 }}>
+                El editor abre como modal con 3 secciones: <strong>perfil sensorial 5 sentidos</strong> (derivado de foundations),
+                <strong> voz de Tony</strong> (campos humanos privados/públicos) y <strong>operacional</strong> (catálogo base).
+              </div>
+            </div>
           ) : (
-            <>
-              <div className="catalog-form-head">
-                <div className="picker-eyebrow">Editar aroma</div>
-                <h3 className="catalog-form-title">{current.nombre || '(sin nombre)'}</h3>
-              </div>
-
-              <div className="catalog-form-grid">
-                <label className="catalog-field">
-                  <span className="catalog-label">Nombre</span>
-                  <input
-                    type="text"
-                    className="catalog-input"
-                    value={current.nombre || ''}
-                    onChange={(e) => updateField('nombre', e.target.value)}
-                  />
-                </label>
-
-                <label className="catalog-field">
-                  <span className="catalog-label">Familia olfativa</span>
-                  <input
-                    type="text"
-                    className="catalog-input"
-                    list="catalog-familia-list"
-                    placeholder="Cítricas, Florales, Amaderadas…"
-                    value={current.familia_olfativa || current.familia || ''}
-                    onChange={(e) => {
-                      updateField('familia_olfativa', e.target.value);
-                      updateField('familia', e.target.value);
-                    }}
-                  />
-                  <datalist id="catalog-familia-list">
-                    <option value="Cítricas" />
-                    <option value="Herbales" />
-                    <option value="Verdes" />
-                    <option value="Florales" />
-                    <option value="Frutales" />
-                    <option value="Amaderadas" />
-                    <option value="De ocasión" />
-                    <option value="Personalizada" />
-                  </datalist>
-                </label>
-
-                <label className="catalog-field catalog-field-full">
-                  <span className="catalog-label">Subacorde</span>
-                  <input
-                    type="text"
-                    className="catalog-input"
-                    placeholder="ej. limón italiano + ámbar"
-                    value={current.subacorde || ''}
-                    onChange={(e) => updateField('subacorde', e.target.value)}
-                  />
-                </label>
-
-                <label className="catalog-field">
-                  <span className="catalog-label">Notas · salida</span>
-                  <textarea
-                    className="catalog-input catalog-textarea"
-                    rows={2}
-                    value={(current.notas && current.notas.salida) || ''}
-                    onChange={(e) => updateField('notas', { ...(current.notas || {}), salida: e.target.value })}
-                  />
-                </label>
-                <label className="catalog-field">
-                  <span className="catalog-label">Notas · corazón</span>
-                  <textarea
-                    className="catalog-input catalog-textarea"
-                    rows={2}
-                    value={(current.notas && current.notas.corazon) || ''}
-                    onChange={(e) => updateField('notas', { ...(current.notas || {}), corazon: e.target.value })}
-                  />
-                </label>
-                <label className="catalog-field">
-                  <span className="catalog-label">Notas · fondo</span>
-                  <textarea
-                    className="catalog-input catalog-textarea"
-                    rows={2}
-                    value={(current.notas && current.notas.fondo) || ''}
-                    onChange={(e) => updateField('notas', { ...(current.notas || {}), fondo: e.target.value })}
-                  />
-                </label>
-
-                <label className="catalog-field catalog-field-full">
-                  <span className="catalog-label">Descripción breve</span>
-                  <textarea
-                    className="catalog-input catalog-textarea"
-                    rows={3}
-                    value={current.descripcion || ''}
-                    onChange={(e) => updateField('descripcion', e.target.value)}
-                  />
-                </label>
-
-                {CATALOG_TEXTAREA_FIELDS.map(f => (
-                  <label key={f.key} className="catalog-field">
-                    <span className="catalog-label">{f.label}</span>
-                    <textarea
-                      className="catalog-input catalog-textarea"
-                      rows={4}
-                      placeholder={f.hint}
-                      value={arrayToLines(current[f.key])}
-                      onChange={(e) => updateField(f.key, linesToArray(e.target.value))}
-                    />
-                  </label>
-                ))}
-
-                <label className="catalog-field catalog-field-full">
-                  <span className="catalog-label">Tags visuales (separados por comas)</span>
-                  <textarea
-                    className="catalog-input catalog-textarea"
-                    rows={2}
-                    placeholder="maderas oscuras, cuero, metal pulido, paleta sobria"
-                    value={arrayToCsv(current.tags_visuales)}
-                    onChange={(e) => updateField('tags_visuales', csvToArray(e.target.value))}
-                  />
-                </label>
-              </div>
-
-              <div className="catalog-form-actions">
-                <button className="catalog-delete-btn" onClick={deleteCurrent}>Eliminar aroma</button>
-                <button className="btn-primary" onClick={saveCurrent}>Guardar aroma</button>
-              </div>
-            </>
+            <CatalogAromaModal
+              aroma={current}
+              onChange={(updater) => updateAroma(selectedIdx, updater)}
+              onClose={() => setSelected(-1)}
+              onSave={() => { saveCurrent(); setSelected(-1); }}
+            />
+          )}
+          {current && (
+            <div className="catalog-form-actions" style={{ marginTop: 12 }}>
+              <button className="catalog-delete-btn" onClick={deleteCurrent}>Eliminar aroma</button>
+            </div>
           )}
         </section>
       </div>
@@ -1298,9 +2018,10 @@ function CatalogEditor() {
         <div className="catalog-editor-footer-info">
           {importError ? <span className="catalog-import-error">{importError}</span>
             : savedHint    ? <span className="catalog-saved-hint">{savedHint}</span>
-            : <>Los cambios se persisten en <code>localStorage.olfativa.catalogOverrides</code> y se inyectan al prompt de Claude Vision.</>}
+            : <>Cambios persistidos en <code>localStorage.olfativa.catalogOverrides</code>. Foundations: <code>{window.OLF_KNOW && window.OLF_KNOW.foundations && window.OLF_KNOW.foundations.meta && window.OLF_KNOW.foundations.meta.version || 'no cargadas'}</code></>}
         </div>
         <div className="catalog-editor-footer-btns">
+          <button className="btn-secondary" onClick={reSeedAll} title="Re-aplica las reglas de foundations.json a todos los aromas (preserva overrides)">↻ Re-seed</button>
           <button className="btn-secondary" onClick={() => fileInputRef.current?.click()}>Importar JSON</button>
           <input
             ref={fileInputRef}

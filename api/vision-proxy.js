@@ -113,19 +113,36 @@ const SPACE_FALLBACK = {
 // Si recibimos `catalogoResumen` lo prependemos como bloque
 // CATALOGO DISPONIBLE para que el modelo entienda el universo real
 // de aromas de Tony y no aluciné nombres genéricos.
-function buildPrompt(tipoDeEspacio, catalogoResumen) {
+// Si recibimos `foundationsResumen` lo prependemos ANTES del catálogo
+// como bloque PRINCIPIOS OLFATIVA para que el modelo razone con las
+// reglas científicas (psicoaromacología, mapeos 5 sentidos,
+// contraindicaciones por contexto). Schema de respuesta no cambia.
+function buildPrompt(tipoDeEspacio, catalogoResumen, foundationsResumen) {
   const parts = [];
 
+  if (foundationsResumen && foundationsResumen.trim().length > 0) {
+    parts.push('PRINCIPIOS OLFATIVA · base científica que rige el match aroma↔espacio.');
+    parts.push('Esta base es UNIVERSAL: alimenta hoy el Cotizador B2B y mañana Olfativa Home residencial.');
+    parts.push('Usa estas reglas para razonar coherencia sensorial completa en los 5 sentidos (olfato, vista, tacto, oído, gusto).');
+    parts.push('');
+    parts.push(foundationsResumen.trim());
+    parts.push('');
+  }
+
   if (catalogoResumen && catalogoResumen.trim().length > 0) {
-    parts.push('CATALOGO DISPONIBLE (universo real de aromas de Olfativa · una línea por aroma):');
+    parts.push('CATALOGO DISPONIBLE · universo real de aromas de Olfativa con los 5 sentidos por aroma.');
+    parts.push('Cada aroma trae bloques [OLFATO] [VISTA] [TACTO] [OIDO] [GUSTO] [VOZ_TONY] [CTX]. El campo `OVR:n` indica cuántos campos sobreescribió Tony manualmente · OVR > 0 significa criterio humano validado por el experto.');
+    parts.push('');
     parts.push(catalogoResumen.trim());
     parts.push('');
     parts.push('Reglas de uso del catálogo:');
     parts.push('  · Elige aromas únicamente de este catálogo. No inventes nombres.');
-    parts.push('  · Respeta `ctx_no` de cada aroma (contextos_a_evitar). Si el espacio cae en uno, descártalo.');
-    parts.push('  · Prioriza match por `visual` (tags_visuales: maderas, materiales, paleta) sobre el nombre genérico de la familia.');
-    parts.push('  · Si ningún aroma del catálogo encaja bien, elige el más neutro disponible y marca `_meta.confianza: "baja"` en el JSON de salida.');
-    parts.push('  · En el JSON de salida incluye además el campo `aroma_sugerido_nombre` con el NOMBRE exacto del aroma elegido del catálogo.');
+    parts.push('  · PRIORIZA aromas con OVR > 0 (override de Tony) por sobre los que solo tienen sugerencia automática · el override = criterio humano validado.');
+    parts.push('  · Respeta `[CTX] evitar` de cada aroma · si el espacio del análisis cae en uno, descarta el aroma.');
+    parts.push('  · Cruza los 5 sentidos del aroma con la foto: olfato (familia ↔ emoción), vista (familia_visual y luz coinciden con paleta detectada), tacto (texturas del aroma coinciden con materialidad de la foto), oído (energía del aroma coincide con ritmo esperado del espacio), gusto (solo si es restaurante/bar/cafetería).');
+    parts.push('  · Aplica los PRINCIPIOS OLFATIVA arriba: contraindicaciones por contexto son DURAS (clínica, guardería, restaurante savory, dormitorio, oficina foco, spa, bar nocturno).');
+    parts.push('  · Si ningún aroma del catálogo encaja bien, elige el más neutro disponible y marca `confianza_aroma: "baja"`.');
+    parts.push('  · En el JSON de salida incluye `aroma_sugerido_nombre` con el NOMBRE exacto del aroma elegido y `justificacion_5_sentidos` (objeto con 5 strings cortos: olfato, vista, tacto, oido, gusto · puede ser "" si no aplica al espacio).');
     parts.push('');
   }
 
@@ -154,6 +171,7 @@ function buildPrompt(tipoDeEspacio, catalogoResumen) {
   if (catalogoResumen && catalogoResumen.trim().length > 0) {
     parts.push('  · aroma_sugerido_nombre (string · NOMBRE exacto del catálogo)');
     parts.push('  · confianza_aroma (string · "alta" | "media" | "baja")');
+    parts.push('  · justificacion_5_sentidos (objeto · { olfato:string, vista:string, tacto:string, oido:string, gusto:string }). Cada string corto · "" si no aplica al tipo de espacio (por ejemplo gusto en oficina).');
   }
   parts.push('');
   parts.push('Contexto de uso: el usuario del cotizador es ejecutivo de cuenta de Olfativa, una marca de aromatización profesional. Subió esta foto del espacio del cliente.');
@@ -333,6 +351,9 @@ export default async function handler(request) {
   // Catálogo vivo del cliente · si viene, se prepende al prompt como
   // bloque CATALOGO DISPONIBLE para que el modelo no aluciné aromas.
   const catalogoResumen = (formData.get('catalogoResumen') || '').toString();
+  // Principios científicos (foundations.json compactado) · si viene,
+  // se prepende como PRINCIPIOS OLFATIVA al system prompt.
+  const foundationsResumen = (formData.get('foundationsResumen') || '').toString();
   let override = null;
   const overrideRaw = formData.get('override');
   if (overrideRaw) {
@@ -363,7 +384,7 @@ export default async function handler(request) {
     }
   }
 
-  const prompt = buildPrompt(tipoDeEspacio, catalogoResumen);
+  const prompt = buildPrompt(tipoDeEspacio, catalogoResumen, foundationsResumen);
 
   try {
     const modelText = await callClaude(process.env.ANTHROPIC_API_KEY, imageBase64, mediaType, prompt);
@@ -377,14 +398,31 @@ export default async function handler(request) {
     // resumen compacto). confianza_aroma se usa para teñir el slide.
     const aromaPick = typeof raw.aroma_sugerido_nombre === 'string' ? raw.aroma_sugerido_nombre.trim() : '';
     const confianza = typeof raw.confianza_aroma === 'string' ? raw.confianza_aroma.trim().toLowerCase() : '';
+    // Justificación 5 sentidos (opcional · solo si llegó catálogo).
+    // Saneamos a un objeto con 5 strings cortos para no romper el
+    // contrato con cotizador.html.
+    let just5 = null;
+    if (raw && typeof raw.justificacion_5_sentidos === 'object' && raw.justificacion_5_sentidos) {
+      const j = raw.justificacion_5_sentidos;
+      const str = (v) => (typeof v === 'string' ? v.slice(0, 240) : '');
+      just5 = {
+        olfato: str(j.olfato),
+        vista:  str(j.vista),
+        tacto:  str(j.tacto),
+        oido:   str(j.oido),
+        gusto:  str(j.gusto),
+      };
+    }
     final._meta = {
       model: ANTHROPIC_MODEL,
       tipo_de_espacio_input: tipoDeEspacio || null,
       had_image: !!imageBase64,
       override_applied: !!override && Object.keys(override).length > 0,
       catalog_injected: catalogoResumen.trim().length > 0,
+      foundations_injected: foundationsResumen.trim().length > 0,
       modelo_aroma_sugerido: aromaPick || null,
       confianza_aroma: ['alta','media','baja'].includes(confianza) ? confianza : null,
+      justificacion_5_sentidos: just5,
     };
     return jsonResponse(final, 200);
   } catch (e) {

@@ -1468,6 +1468,368 @@
     background: rgba(196, 122, 72, 0.08) !important;
   }
 
+  /* ============================================================
+     Catalog editor · ronda 6 · 5 sentidos
+     ============================================================ */
+
+  /* Filtros encima de la lista */
+  .catalog-list-filters {
+    display: flex;
+    gap: 6px;
+    padding: 6px 10px 10px;
+  }
+  .catalog-filter {
+    flex: 1;
+    font-size: 11.5px;
+    padding: 6px 8px;
+    background: rgba(255,255,255,0.04);
+    color: #E9DDC8;
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 6px;
+  }
+  .catalog-list-badge {
+    margin-left: 6px;
+    font-size: 9px;
+    letter-spacing: 1px;
+    opacity: 0.55;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+  }
+  .catalog-list-badge-completo { color: #8FB37E; opacity: 0.9; }
+  .catalog-list-badge-parcial  { color: #D5AB5E; opacity: 0.85; }
+  .catalog-list-badge-vacio    { color: rgba(255,255,255,0.35); }
+
+  /* Modal full-screen para edición a fondo */
+  .siq-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 6, 4, 0.78);
+    backdrop-filter: blur(2px);
+    z-index: 1500;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding: 24px;
+    overflow-y: auto;
+  }
+  .siq-modal {
+    width: 100%;
+    max-width: 1100px;
+    background: #14110D;
+    border: 1px solid rgba(196, 161, 95, 0.25);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: calc(100vh - 48px);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  }
+  .siq-modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+  }
+  .siq-modal-eyebrow {
+    font-size: 10.5px;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: rgba(196,161,95,0.7);
+    margin-bottom: 4px;
+  }
+  .siq-modal-title {
+    font-size: 22px;
+    color: #F4E9D2;
+    margin: 0 0 4px;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+  .siq-modal-sub {
+    font-size: 12.5px;
+    color: rgba(233, 221, 200, 0.65);
+  }
+  .siq-modal-close {
+    background: transparent;
+    border: none;
+    color: #E9DDC8;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 6px;
+  }
+  .siq-modal-close:hover { color: #fff; }
+
+  .siq-modal-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 18px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .siq-modal-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 22px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.18);
+    border-radius: 0 0 14px 14px;
+  }
+  .siq-modal-foot-info { font-size: 11.5px; color: rgba(233, 221, 200, 0.55); flex: 1; }
+  .siq-modal-foot-info code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; }
+  .siq-modal-foot-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+  /* Las 3 secciones con color de fondo distinto */
+  .siq-section {
+    border-radius: 10px;
+    padding: 16px 18px 18px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .siq-section-1 {
+    background: rgba(143, 179, 126, 0.06); /* verde claro */
+    border-color: rgba(143, 179, 126, 0.22);
+  }
+  .siq-section-2 {
+    background: rgba(213, 171, 94, 0.07);  /* ámbar claro */
+    border-color: rgba(213, 171, 94, 0.26);
+  }
+  .siq-section-3 {
+    background: rgba(255,255,255,0.025);    /* gris claro */
+    border-color: rgba(255,255,255,0.08);
+  }
+  .siq-section-title {
+    font-size: 14.5px;
+    color: #F4E9D2;
+    margin: 0 0 6px;
+    letter-spacing: 0.2px;
+  }
+  .siq-section-help {
+    font-size: 11.5px;
+    color: rgba(233, 221, 200, 0.62);
+    margin: 0 0 14px;
+    line-height: 1.5;
+  }
+  .siq-section-help code {
+    background: rgba(0,0,0,0.25);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 10.5px;
+  }
+  .siq-section-help em { color: rgba(196,161,95,0.95); font-style: normal; }
+
+  .siq-section-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+  }
+  @media (max-width: 720px) {
+    .siq-section-grid { grid-template-columns: 1fr; }
+  }
+
+  .siq-field { display: flex; flex-direction: column; gap: 4px; }
+  .siq-field-full { grid-column: 1 / -1; }
+  .siq-field-label {
+    font-size: 11px;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    color: rgba(233, 221, 200, 0.7);
+  }
+  .siq-field-input {
+    background: rgba(0,0,0,0.30);
+    color: #F4E9D2;
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 6px;
+    padding: 7px 9px;
+    font-size: 13px;
+    font-family: inherit;
+    width: 100%;
+  }
+  .siq-field-input:focus {
+    outline: none;
+    border-color: rgba(196,161,95,0.55);
+  }
+  .siq-field-textarea { resize: vertical; line-height: 1.45; }
+  .siq-field-row { display: flex; gap: 16px; padding: 4px 0; }
+  .siq-radio { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: #E9DDC8; cursor: pointer; }
+  .siq-field-privada .siq-field-label { color: #C47A48; }
+  .siq-field-privada .siq-field-input { border-color: rgba(196, 122, 72, 0.35); }
+
+  /* Subsecciones colapsables (1.1 a 1.5) */
+  .siq-subsection {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+  .siq-subsection-head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    color: #F4E9D2;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+  }
+  .siq-subsection-head:hover { background: rgba(255,255,255,0.04); }
+  .siq-subsection-icon { font-size: 16px; }
+  .siq-subsection-num {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    color: rgba(196,161,95,0.75);
+    font-size: 11px;
+    min-width: 28px;
+  }
+  .siq-subsection-name { flex: 1; }
+  .siq-subsection-chevron { color: rgba(255,255,255,0.45); font-size: 11px; }
+  .siq-subsection.is-gusto-optional .siq-subsection-name { color: rgba(233, 221, 200, 0.5); }
+  .siq-subsection-body {
+    padding: 6px 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  /* Campo TIPO A · sugerido + override + dot de confianza */
+  .siq-tipoa-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px 10px;
+    background: rgba(0,0,0,0.20);
+    border-radius: 6px;
+    border-left: 3px solid rgba(255,255,255,0.10);
+  }
+  .siq-tipoa-head { display: flex; align-items: center; gap: 8px; }
+  .siq-tipoa-label {
+    flex: 1;
+    font-size: 12px;
+    color: #E9DDC8;
+    letter-spacing: 0.2px;
+  }
+  .siq-tipoa-restore {
+    background: transparent;
+    border: 1px solid rgba(196,161,95,0.30);
+    color: rgba(196,161,95,0.85);
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    cursor: pointer;
+  }
+  .siq-tipoa-restore:hover {
+    border-color: rgba(196,161,95,0.70);
+    color: rgba(196,161,95,1);
+  }
+  .siq-tipoa-sug {
+    font-size: 10.5px;
+    color: rgba(233, 221, 200, 0.45);
+    line-height: 1.4;
+  }
+  .siq-tipoa-sug code {
+    color: rgba(233, 221, 200, 0.72);
+    background: transparent;
+    padding: 0;
+  }
+  .siq-tipoa-input-wrap { display: block; }
+  .siq-tipoa-row { display: flex; gap: 10px; }
+  .siq-tipoa-sub { display: flex; flex-direction: column; gap: 3px; flex: 1; font-size: 10.5px; color: rgba(233, 221, 200, 0.65); }
+  .siq-tipoa-input {
+    width: 100%;
+    background: rgba(0,0,0,0.36);
+    color: #F4E9D2;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 5px;
+    padding: 6px 8px;
+    font-size: 12.5px;
+    font-family: inherit;
+  }
+  .siq-tipoa-input:focus { outline: none; border-color: rgba(196,161,95,0.55); }
+  .siq-tipoa-input-num { max-width: 80px; }
+  .siq-tipoa-textarea { resize: vertical; }
+  .siq-tipoa-warn {
+    background: rgba(196, 122, 72, 0.10);
+    color: #E1AB7B;
+    border: 1px solid rgba(196, 122, 72, 0.32);
+    padding: 6px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    margin: 2px 0;
+  }
+
+  /* Chips multi-select para enum_multi */
+  .siq-tipoa-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .siq-chip {
+    background: rgba(255,255,255,0.05);
+    color: rgba(233,221,200,0.78);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 4px 9px;
+    border-radius: 14px;
+    font-size: 11.5px;
+    cursor: pointer;
+    transition: all 0.12s ease;
+  }
+  .siq-chip:hover { border-color: rgba(196,161,95,0.45); }
+  .siq-chip.is-on {
+    background: rgba(196, 161, 95, 0.18);
+    color: #F4E9D2;
+    border-color: rgba(196, 161, 95, 0.65);
+  }
+
+  /* Playlist sugerida (lista de objetos) */
+  .siq-playlist { display: flex; flex-direction: column; gap: 6px; }
+  .siq-playlist-row {
+    display: grid;
+    grid-template-columns: 1.4fr 0.8fr 1.4fr auto;
+    gap: 6px;
+    align-items: center;
+  }
+  .siq-playlist-genero, .siq-playlist-tag, .siq-playlist-ej { font-size: 12px; }
+  .siq-playlist-del {
+    background: transparent;
+    border: 1px solid rgba(196, 122, 72, 0.35);
+    color: rgba(196, 122, 72, 0.85);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    width: 26px;
+    height: 26px;
+  }
+  .siq-playlist-del:hover { background: rgba(196, 122, 72, 0.12); }
+  .siq-playlist-add {
+    align-self: flex-start;
+    background: transparent;
+    border: 1px dashed rgba(196,161,95,0.40);
+    color: rgba(196,161,95,0.9);
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-size: 11.5px;
+    cursor: pointer;
+    margin-top: 2px;
+  }
+  .siq-playlist-add:hover { border-color: rgba(196,161,95,0.75); }
+
+  /* Indicador de confianza · dot */
+  .siq-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .siq-dot-green  { background: #8FB37E; box-shadow: 0 0 4px rgba(143, 179, 126, 0.55); }
+  .siq-dot-yellow { background: #D5AB5E; box-shadow: 0 0 4px rgba(213, 171, 94, 0.45); }
+  .siq-dot-gray   { background: rgba(255,255,255,0.22); }
+
   /* — Admin panel (slides personalizados) — */
   .admin-body {
     display: grid; grid-template-columns: 1.1fr 1fr;
@@ -2335,13 +2697,13 @@
 <script src="https://unpkg.com/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
 <!-- html2canvas standalone para captura PNG del PhotoEvidenceCard (compartir WhatsApp) -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="deck-stage.js?v=20260514f"></script>
-<script src="scent-iq-knowledge.js?v=20260514f"></script>
-<script src="scent-iq-engines.js?v=20260514f"></script>
+<script src="deck-stage.js?v=20260514g"></script>
+<script src="scent-iq-knowledge.js?v=20260514g"></script>
+<script src="scent-iq-engines.js?v=20260514g"></script>
 <!-- Vision real (Claude 3.5 Sonnet via Vercel proxy). Debe ir DESPUES
      del engine para registrar W.OLF_IA.visionAdapters.claude. El toggle
      en Admin elige entre mock y claude y persiste la URL del Worker. -->
-<script src="scent-iq-vision-claude.js?v=20260514f"></script>
+<script src="scent-iq-vision-claude.js?v=20260514g"></script>
 <script>
   // Bootstrap del adapter elegido por el ejecutivo en Admin. Si el LS
   // dice 'claude' y hay URL guardada, lo activamos antes que cualquier
@@ -2356,13 +2718,13 @@
     } catch (_) {}
   })();
 </script>
-<script type="text/babel" src="tweaks-panel.jsx?v=20260514f"></script>
-<script type="text/babel" src="slides-master.jsx?v=20260514f"></script>
-<script type="text/babel" src="slide-views-master.jsx?v=20260514f"></script>
-<script type="text/babel" src="hero-difusor.jsx?v=20260514f"></script>
-<script type="text/babel" src="catalog-min.jsx?v=20260514f"></script>
-<script type="text/babel" src="control-olores.jsx?v=20260514f"></script>
-<script type="text/babel" src="scent-iq-panel.jsx?v=20260514f"></script>
-<script type="text/babel" src="app-cotizador.jsx?v=20260514f"></script>
+<script type="text/babel" src="tweaks-panel.jsx?v=20260514g"></script>
+<script type="text/babel" src="slides-master.jsx?v=20260514g"></script>
+<script type="text/babel" src="slide-views-master.jsx?v=20260514g"></script>
+<script type="text/babel" src="hero-difusor.jsx?v=20260514g"></script>
+<script type="text/babel" src="catalog-min.jsx?v=20260514g"></script>
+<script type="text/babel" src="control-olores.jsx?v=20260514g"></script>
+<script type="text/babel" src="scent-iq-panel.jsx?v=20260514g"></script>
+<script type="text/babel" src="app-cotizador.jsx?v=20260514g"></script>
 </body>
 </html>
