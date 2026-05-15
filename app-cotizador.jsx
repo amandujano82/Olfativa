@@ -214,10 +214,20 @@ const loadState = () => {
 };
 const saveState = (s) => { try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch {} };
 
+// Fecha dinamica para nuevas cotizaciones · "14 MAY 2026" segun el dia
+// que el ejecutivo abre la app. Si el usuario ya tiene una cotizacion
+// guardada en localStorage con propDate custom, ese valor se preserva
+// (loadState gana sobre CLIENT_DEFAULTS).
+function getDefaultPropDate() {
+  const d = new Date();
+  const meses = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  return String(d.getDate()).padStart(2, '0') + ' ' + meses[d.getMonth()] + ' ' + d.getFullYear();
+}
+
 const CLIENT_DEFAULTS = {
   clientName: "Cliente",
   propId: "PROP-2026-001",
-  propDate: "01 MAY 2026",
+  propDate: getDefaultPropDate(),
   account: "Ejecutivo Olfativa",
   accountEmail: "ventas@olfativa.com",
 };

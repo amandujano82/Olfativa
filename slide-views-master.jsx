@@ -89,11 +89,15 @@ function SlideCover({ segment, clientName, propId, propDate, totalSlides, idx })
         </div>
       </div>
 
-      {/* TÍTULO PRINCIPAL — esquina inferior izquierda, escala editorial */}
+      {/* TÍTULO PRINCIPAL — esquina inferior izquierda, escala editorial.
+          Ronda 7 · alivia "aplastante": títulos -14% (144->124, 152->132),
+          ancla del bloque sube de bottom:280 a bottom:320 para dar aire
+          contra el bottom strip, y el subtítulo respira con marginTop
+          duplicado, ancho más estrecho, text-shadow sutil contra la foto. */}
       <div style={{
         position: 'absolute',
         left: SPACING.paddingX, right: SPACING.paddingX,
-        bottom: 280,
+        bottom: 320,
         zIndex: 2,
         maxWidth: 1320,
       }}>
@@ -102,35 +106,48 @@ function SlideCover({ segment, clientName, propId, propDate, totalSlides, idx })
           fontSize: 11.5, fontWeight: 600,
           color: PALETTE.gold,
           letterSpacing: '0.34em', textTransform: 'uppercase',
-          marginBottom: 36,
+          marginBottom: 32,
           display: 'flex', alignItems: 'center', gap: 14,
         }}>
           <span style={{ width: 52, height: 1, background: PALETTE.gold, opacity: 0.7 }} />
           Propuesta de aromatización profesional
         </div>
-        <div style={{ lineHeight: 0.95 }}>
+        <div style={{ lineHeight: 0.98 }}>
           <div style={{
             fontFamily: "'Cormorant Garamond', serif",
             fontStyle: 'normal', fontWeight: 400,
-            fontSize: 144,
+            fontSize: 124,
             color: PALETTE.bone,
-            letterSpacing: '-0.028em',
+            letterSpacing: '-0.024em',
           }}>
             {t1}
           </div>
           <div style={{
             fontFamily: "'Cormorant Garamond', serif",
             fontStyle: 'italic', fontWeight: 400,
-            fontSize: 152,
+            fontSize: 132,
             color: PALETTE.gold,
-            letterSpacing: '-0.028em',
-            marginTop: -10,
+            letterSpacing: '-0.024em',
+            marginTop: -6,
           }}>
             {t2}
           </div>
         </div>
-        <div style={{ marginTop: 28, maxWidth: 760 }}>
-          <Body size={TYPE_SCALE.body - 2} color={PALETTE.boneSoft} weight={300}>
+        <div style={{
+          marginTop: 56,
+          maxWidth: 620,
+          paddingLeft: 14,
+          borderLeft: `1px solid rgba(199,166,104,0.45)`,
+        }}>
+          <Body
+            size={TYPE_SCALE.body - 3}
+            color="rgba(243,237,227,0.72)"
+            weight={300}
+            style={{
+              lineHeight: 1.55,
+              letterSpacing: '0.01em',
+              textShadow: '0 1px 12px rgba(14,14,14,0.55)',
+            }}>
             {segment.propSubtitle}
           </Body>
         </div>
